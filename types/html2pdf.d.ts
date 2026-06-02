@@ -4,7 +4,7 @@ declare module "html2pdf.js" {
     filename?: string;
     image?: { type?: string; quality?: number };
     html2canvas?: { scale?: number; useCORS?: boolean; [key: string]: unknown };
-    jsPDF?: { unit?: string; format?: string; orientation?: string; [key: string]: unknown };
+    jsPDF?: { unit?: string; format?: string | number[]; orientation?: string; [key: string]: unknown };
     pagebreak?: { mode?: string | string[]; [key: string]: unknown };
   }
 
