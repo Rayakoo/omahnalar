@@ -10,6 +10,24 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+
+  --color-brand-900: #4A4763;
+  --color-brand-700: #7C78A8;
+  --color-brand-100: #E6E4F9;
+
+  --color-secondary-200: #FDE5C0;
+  --color-secondary-500: #FAC775;
+  --color-secondary-600: #E4B56A;
+
+  --color-page-50: #FFF9F1;
+}
+
+@utility no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -17,10 +35,4 @@
     --background: #0a0a0a;
     --foreground: #ededed;
   }
-}
-
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
 }
