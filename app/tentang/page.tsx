@@ -59,7 +59,7 @@ const features = [
 ];
 
 export default function TentangPage() {
-  const [flippedId, setFlippedId] = useState<number | null>(null);
+  const [flippedId, setFlippedId] = useState<string | null>(null);
 
   return (
     <div className="min-h-screen bg-page-50 font-sans antialiased text-brand-900 overflow-hidden">
