@@ -25,7 +25,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .catch(() => setUser(null))
       .finally(() => setLoading(false));
 
-    const { data: sub } = onAuthStateChange((u) => {
+    const sub = onAuthStateChange((u) => {
       setUser(u);
       setLoading(false);
     });
