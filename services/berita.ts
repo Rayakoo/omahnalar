@@ -36,13 +36,9 @@ function getSupabaseConfig() {
 
 async function supabaseGet<T>(path: string): Promise<T> {
   const { url, anonKey } = getSupabaseConfig();
-  const token = getAccessToken();
-  const res = await fetch(`${url}${path}`, {
-    headers: {
-      apikey: anonKey,
-      Authorization: `Bearer ${token}`,
-    },
-  });
+  const headers: Record<string, string> = { apikey: anonKey };
+  try { headers.Authorization = `Bearer ${getAccessToken()}`; } catch {}
+  const res = await fetch(`${url}${path}`, { headers });
   if (!res.ok) {
     const errText = await res.text();
     throw new Error(`Supabase GET failed: ${res.status} ${errText}`);
