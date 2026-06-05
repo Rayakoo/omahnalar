@@ -27,11 +27,15 @@ export type CreateBeritaInput = {
   published_at?: string;
 };
 
-const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-if (!url || !anonKey) throw new Error("Supabase env vars not set");
+function getSupabaseConfig() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  if (!url || !anonKey) throw new Error("Supabase env vars not set");
+  return { url, anonKey };
+}
 
 async function supabaseGet<T>(path: string): Promise<T> {
+  const { url, anonKey } = getSupabaseConfig();
   const token = getAccessToken();
   const res = await fetch(`${url}${path}`, {
     headers: {
@@ -83,6 +87,7 @@ export async function createBerita(input: CreateBeritaInput) {
   };
   console.log("[createBerita] payload:", JSON.stringify(payload, null, 2));
 
+  const { url, anonKey } = getSupabaseConfig();
   const token = getAccessToken();
   const res = await fetch(`${url}/rest/v1/berita`, {
     method: "POST",
@@ -109,6 +114,7 @@ export async function updateBerita(
   id: string,
   updates: Partial<Pick<Berita, "title" | "slug" | "content" | "excerpt" | "image_url" | "author" | "is_published" | "published_at">>
 ) {
+  const { url, anonKey } = getSupabaseConfig();
   const token = getAccessToken();
   const res = await fetch(`${url}/rest/v1/berita?id=eq.${id}`, {
     method: "PATCH",
@@ -130,6 +136,7 @@ export async function updateBerita(
 }
 
 export async function deleteBerita(id: string) {
+  const { url, anonKey } = getSupabaseConfig();
   const token = getAccessToken();
   const res = await fetch(`${url}/rest/v1/berita?id=eq.${id}`, {
     method: "DELETE",

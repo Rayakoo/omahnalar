@@ -30,11 +30,15 @@ export type CreateProgramInput = {
   goals?: string[];
 };
 
-const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-if (!url || !anonKey) throw new Error("Supabase env vars not set");
+function getSupabaseConfig() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  if (!url || !anonKey) throw new Error("Supabase env vars not set");
+  return { url, anonKey };
+}
 
 async function supabaseGet<T>(path: string): Promise<T> {
+  const { url, anonKey } = getSupabaseConfig();
   const token = getAccessToken();
   const res = await fetch(`${url}${path}`, {
     headers: {
@@ -69,6 +73,7 @@ export async function createProgram(input: CreateProgramInput) {
   };
   console.log("[createProgram] payload:", JSON.stringify(payload, null, 2));
 
+  const { url, anonKey } = getSupabaseConfig();
   const token = getAccessToken();
   const res = await fetch(`${url}/rest/v1/programs`, {
     method: "POST",
@@ -111,6 +116,7 @@ export async function updateProgram(
   id: string,
   updates: Partial<Pick<Program, "slug" | "title" | "tag" | "period" | "location" | "image_url" | "tagline" | "descriptions" | "target" | "goals">>
 ) {
+  const { url, anonKey } = getSupabaseConfig();
   const token = getAccessToken();
   const res = await fetch(`${url}/rest/v1/programs?id=eq.${id}`, {
     method: "PATCH",
@@ -132,6 +138,7 @@ export async function updateProgram(
 }
 
 export async function deleteProgram(id: string) {
+  const { url, anonKey } = getSupabaseConfig();
   const token = getAccessToken();
   const res = await fetch(`${url}/rest/v1/programs?id=eq.${id}`, {
     method: "DELETE",
