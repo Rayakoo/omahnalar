@@ -1,4 +1,4 @@
-import { supabase } from "@/lib/supabaseClient";
+import { getSupabase } from "@/lib/supabaseClient";
 
 // ── Helpers ──────────────────────────────────────────────────
 function generateTicketId(): string {
@@ -135,7 +135,7 @@ export async function updateReport(
 }
 
 export async function deleteReport(id: string) {
-  const { error } = await supabase.from("reports").delete().eq("id", id);
+  const { error } = await getSupabase().from("reports").delete().eq("id", id);
   if (error) throw error;
 }
 

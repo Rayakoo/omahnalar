@@ -1,4 +1,4 @@
-import { supabase } from "@/lib/supabaseClient";
+import { getSupabase } from "@/lib/supabaseClient";
 
 // ── User Course Progress ─────────────────────────────────────
 export type UserCourse = {
@@ -13,7 +13,7 @@ export type UserCourse = {
 };
 
 export async function getUserCourse(userId: string, courseId: string) {
-  const { data, error } = await supabase
+  const { data, error } = await getSupabase()
     .from("user_courses")
     .select("*")
     .eq("user_id", userId)
@@ -25,7 +25,7 @@ export async function getUserCourse(userId: string, courseId: string) {
 }
 
 export async function enrollCourse(userId: string, courseId: string) {
-  const { data, error } = await supabase
+  const { data, error } = await getSupabase()
     .from("user_courses")
     .insert({ user_id: userId, course_id: courseId })
     .select()
@@ -40,7 +40,7 @@ export async function updateProgress(
   courseId: string,
   urutan: number
 ) {
-  const { data, error } = await supabase
+  const { data, error } = await getSupabase()
     .from("user_courses")
     .update({ current_urutan: urutan })
     .eq("user_id", userId)
@@ -53,7 +53,7 @@ export async function updateProgress(
 }
 
 export async function completeCourse(userId: string, courseId: string) {
-  const { data, error } = await supabase
+  const { data, error } = await getSupabase()
     .from("user_courses")
     .update({
       is_completed: true,
@@ -69,7 +69,7 @@ export async function completeCourse(userId: string, courseId: string) {
 }
 
 export async function getUserCourses(userId: string) {
-  const { data, error } = await supabase
+  const { data, error } = await getSupabase()
     .from("user_courses")
     .select("*, course:courses(*)")
     .eq("user_id", userId);
@@ -90,7 +90,7 @@ export type UserQuizResult = {
 };
 
 export async function getUserQuizResults(userId: string, quizId: string) {
-  const { data, error } = await supabase
+  const { data, error } = await getSupabase()
     .from("user_quiz_results")
     .select("*")
     .eq("user_id", userId)
@@ -102,7 +102,7 @@ export async function getUserQuizResults(userId: string, quizId: string) {
 }
 
 export async function getLatestQuizResult(userId: string, quizId: string) {
-  const { data, error } = await supabase
+  const { data, error } = await getSupabase()
     .from("user_quiz_results")
     .select("*")
     .eq("user_id", userId)

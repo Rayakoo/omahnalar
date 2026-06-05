@@ -1,21 +1,17 @@
-import { supabase, getAccessToken } from "@/lib/supabaseClient";
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-if (!supabaseUrl || !supabaseAnonKey) throw new Error("Supabase env vars not set");
+import { getSupabase, getAccessToken } from "@/lib/supabaseClient";
 
 // ── Categories & Levels ──────────────────────────────────────
 export type Category = { id: string; name: string; slug: string };
 export type EducationLevel = { id: string; name: string; slug: string };
 
 export async function getCategories() {
-  const { data, error } = await supabase.from("categories").select("*");
+  const { data, error } = await getSupabase().from("categories").select("*");
   if (error) throw error;
   return data as Category[];
 }
 
 export async function getEducationLevels() {
-  const { data, error } = await supabase.from("education_levels").select("*");
+  const { data, error } = await getSupabase().from("education_levels").select("*");
   if (error) throw error;
   return data as EducationLevel[];
 }
@@ -36,7 +32,7 @@ export type CourseWithRelations = Course & {
 };
 
 export async function getCourses() {
-  const { data, error } = await supabase
+  const { data, error } = await getSupabase()
     .from("courses")
     .select("*, category:categories(*), education_level:education_levels(*)")
     .order("created_at", { ascending: true });
@@ -46,7 +42,7 @@ export async function getCourses() {
 }
 
 export async function getCoursesByCategory(categorySlug: string) {
-  const { data, error } = await supabase
+  const { data, error } = await getSupabase()
     .from("courses")
     .select("*, category:categories(*), education_level:education_levels(*)")
     .eq("category.slug", categorySlug)
@@ -59,8 +55,8 @@ export async function getCoursesByCategory(categorySlug: string) {
 export async function getCourseById(id: string) {
   const token = getAccessToken();
   const res = await fetch(
-    `${supabaseUrl}/rest/v1/courses?id=eq.${id}&select=*,category:categories(*),education_level:education_levels(*)`,
-    { headers: { apikey: supabaseAnonKey, Authorization: `Bearer ${token}` } }
+    `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/courses?id=eq.${id}&select=*,category:categories(*),education_level:education_levels(*)`,
+    { headers: { apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, Authorization: `Bearer ${token}` } }
   );
   if (!res.ok) {
     const errText = await res.text();
@@ -79,7 +75,7 @@ export type CreateCourseInput = {
 };
 
 export async function createCourse(input: CreateCourseInput) {
-  const { data, error } = await supabase
+  const { data, error } = await getSupabase()
     .from("courses")
     .insert(input)
     .select("*, category:categories(*), education_level:education_levels(*)")
@@ -95,12 +91,12 @@ export async function updateCourse(
 ) {
   const token = getAccessToken();
   const res = await fetch(
-    `${supabaseUrl}/rest/v1/courses?id=eq.${id}&select=*,category:categories(*),education_level:education_levels(*)`,
+    `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/courses?id=eq.${id}&select=*,category:categories(*),education_level:education_levels(*)`,
     {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
-        apikey: supabaseAnonKey,
+        apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
         Authorization: `Bearer ${token}`,
         Prefer: "return=representation",
       },
@@ -118,9 +114,9 @@ export async function updateCourse(
 
 export async function deleteCourse(id: string) {
   const token = getAccessToken();
-  const res = await fetch(`${supabaseUrl}/rest/v1/courses?id=eq.${id}`, {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/courses?id=eq.${id}`, {
     method: "DELETE",
-    headers: { apikey: supabaseAnonKey, Authorization: `Bearer ${token}` },
+    headers: { apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, Authorization: `Bearer ${token}` },
   });
   if (!res.ok) {
     const errText = await res.text();
@@ -139,7 +135,7 @@ export type CourseVideo = {
 };
 
 export async function getCourseVideos(courseId: string) {
-  const { data, error } = await supabase
+  const { data, error } = await getSupabase()
     .from("course_videos")
     .select("*")
     .eq("course_id", courseId)
@@ -155,7 +151,7 @@ export async function createCourseVideo(input: {
   video_url: string;
   urutan?: number;
 }) {
-  const { data, error } = await supabase
+  const { data, error } = await getSupabase()
     .from("course_videos")
     .insert(input)
     .select()
@@ -169,7 +165,7 @@ export async function updateCourseVideo(
   id: string,
   updates: Partial<Pick<CourseVideo, "title" | "video_url" | "urutan">>
 ) {
-  const { data, error } = await supabase
+  const { data, error } = await getSupabase()
     .from("course_videos")
     .update(updates)
     .eq("id", id)
@@ -181,7 +177,7 @@ export async function updateCourseVideo(
 }
 
 export async function deleteCourseVideo(id: string) {
-  const { error } = await supabase
+  const { error } = await getSupabase()
     .from("course_videos")
     .delete()
     .eq("id", id);
@@ -200,7 +196,7 @@ export type CourseMaterial = {
 };
 
 export async function getCourseMaterials(courseId: string) {
-  const { data, error } = await supabase
+  const { data, error } = await getSupabase()
     .from("course_materials")
     .select("*")
     .eq("course_id", courseId)
@@ -216,7 +212,7 @@ export async function createCourseMaterial(input: {
   content: string;
   urutan?: number;
 }) {
-  const { data, error } = await supabase
+  const { data, error } = await getSupabase()
     .from("course_materials")
     .insert(input)
     .select()
@@ -230,7 +226,7 @@ export async function updateCourseMaterial(
   id: string,
   updates: Partial<Pick<CourseMaterial, "title" | "content" | "urutan">>
 ) {
-  const { data, error } = await supabase
+  const { data, error } = await getSupabase()
     .from("course_materials")
     .update(updates)
     .eq("id", id)
@@ -242,7 +238,7 @@ export async function updateCourseMaterial(
 }
 
 export async function deleteCourseMaterial(id: string) {
-  const { error } = await supabase
+  const { error } = await getSupabase()
     .from("course_materials")
     .delete()
     .eq("id", id);
@@ -260,7 +256,7 @@ export async function getCourseSections(courseId: string) {
   const [videos, materials, quizzes] = await Promise.all([
     getCourseVideos(courseId),
     getCourseMaterials(courseId),
-    supabase
+    getSupabase()
       .from("quizzes")
       .select("id, title, urutan")
       .eq("course_id", courseId)

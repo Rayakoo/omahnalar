@@ -1,4 +1,4 @@
-import { supabase } from "@/lib/supabaseClient";
+import { getSupabase } from "@/lib/supabaseClient";
 
 // ── Quizzes ──────────────────────────────────────────────────
 export type Quiz = {
@@ -64,7 +64,7 @@ export async function updateQuiz(
 }
 
 export async function deleteQuiz(id: string) {
-  const { error } = await supabase.from("quizzes").delete().eq("id", id);
+  const { error } = await getSupabase().from("quizzes").delete().eq("id", id);
   if (error) throw error;
 }
 

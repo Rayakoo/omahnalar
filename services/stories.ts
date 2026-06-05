@@ -1,4 +1,4 @@
-import { supabase } from "@/lib/supabaseClient";
+import { getSupabase } from "@/lib/supabaseClient";
 
 export type Story = {
   id: string;
@@ -75,6 +75,6 @@ export async function updateStory(
 }
 
 export async function deleteStory(id: string) {
-  const { error } = await supabase.from("stories").delete().eq("id", id);
+  const { error } = await getSupabase().from("stories").delete().eq("id", id);
   if (error) throw error;
 }

@@ -1,8 +1,4 @@
-import { supabase, getAccessToken } from "@/lib/supabaseClient";
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-if (!supabaseUrl || !supabaseAnonKey) throw new Error("Supabase env vars not set");
+import { getSupabase, getAccessToken } from "@/lib/supabaseClient";
 
 export type Profile = {
   id: string;
@@ -24,7 +20,7 @@ export type User = {
 
 // ── Sign Up ──────────────────────────────────────────────────
 export async function signUp(email: string, password: string, fullName?: string) {
-  const { data, error } = await supabase.auth.signUp({
+  const { data, error } = await getSupabase().auth.signUp({
     email,
     password,
     options: {
@@ -55,14 +51,14 @@ export async function signUp(email: string, password: string, fullName?: string)
 
 // ── Sign In ──────────────────────────────────────────────────
 export async function signIn(email: string, password: string) {
-  const { data, error } = await supabase.auth.signInWithPassword({
+  const { data, error } = await getSupabase().auth.signInWithPassword({
     email,
     password,
   });
 
   if (error) throw error;
 
-  const { data: profile } = await supabase
+  const { data: profile } = await getSupabase()
     .from("profiles")
     .select("role")
     .eq("id", data.user.id)
@@ -84,16 +80,16 @@ export async function signIn(email: string, password: string) {
 
 // ── Sign Out ─────────────────────────────────────────────────
 export async function signOut() {
-  const { error } = await supabase.auth.signOut();
+  const { error } = await getSupabase().auth.signOut();
   if (error) throw error;
 }
 
 // ── Get Current User ─────────────────────────────────────────
 export async function getCurrentUser() {
-  const { data, error } = await supabase.auth.getUser();
+  const { data, error } = await getSupabase().auth.getUser();
   if (error || !data.user) return null;
 
-  const { data: profile } = await supabase
+  const { data: profile } = await getSupabase()
     .from("profiles")
     .select("role")
     .eq("id", data.user.id)
@@ -112,20 +108,20 @@ export async function getCurrentUser() {
 
 // ── Get Session ──────────────────────────────────────────────
 export async function getSession() {
-  const { data, error } = await supabase.auth.getSession();
+  const { data, error } = await getSupabase().auth.getSession();
   if (error) throw error;
   return data.session;
 }
 
 // ── Reset Password ───────────────────────────────────────────
 export async function resetPassword(email: string) {
-  const { error } = await supabase.auth.resetPasswordForEmail(email);
+  const { error } = await getSupabase().auth.resetPasswordForEmail(email);
   if (error) throw error;
 }
 
 // ── Update Password ──────────────────────────────────────────
 export async function updatePassword(newPassword: string) {
-  const { error } = await supabase.auth.updateUser({
+  const { error } = await getSupabase().auth.updateUser({
     password: newPassword,
   });
   if (error) throw error;
@@ -133,14 +129,14 @@ export async function updatePassword(newPassword: string) {
 
 // ── Update Profile ──────────────────────────────────────────
 export async function updateProfile(data: { full_name?: string; avatar_url?: string }) {
-  const { error } = await supabase.auth.updateUser({
+  const { error } = await getSupabase().auth.updateUser({
     data,
   });
   if (error) throw error;
 }
 
 export async function getUserRole(userId: string) {
-  const { data, error } = await supabase
+  const { data, error } = await getSupabase()
     .from("profiles")
     .select("role")
     .eq("id", userId)
@@ -152,7 +148,7 @@ export async function getUserRole(userId: string) {
 
 // ── Auth State Listener ──────────────────────────────────────
 export function onAuthStateChange(callback: (user: User | null) => void) {
-  return supabase.auth.onAuthStateChange(async (_event, session) => {
+  return getSupabase().auth.onAuthStateChange(async (_event, session) => {
     if (session?.user) {
       const { data: profile } = await supabase
         .from("profiles")
@@ -178,8 +174,8 @@ export function onAuthStateChange(callback: (user: User | null) => void) {
 // ── User Management (Admin) ───────────────────────────────────
 export async function getProfiles(): Promise<Profile[]> {
   const token = getAccessToken();
-  const res = await fetch(`${supabaseUrl}/rest/v1/rpc/get_all_profiles_admin`, {
-    headers: { apikey: supabaseAnonKey, Authorization: `Bearer ${token}` },
+  const res = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/rpc/get_all_profiles_admin`, {
+    headers: { apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, Authorization: `Bearer ${token}` },
   });
   if (!res.ok) {
     const errText = await res.text();
@@ -190,11 +186,11 @@ export async function getProfiles(): Promise<Profile[]> {
 
 export async function updateUserRole(userId: string, newRole: string): Promise<void> {
   const token = getAccessToken();
-  const res = await fetch(`${supabaseUrl}/rest/v1/rpc/update_user_role_admin`, {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/rpc/update_user_role_admin`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      apikey: supabaseAnonKey,
+      apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
       Authorization: `Bearer ${token}`,
     },
     body: JSON.stringify({ user_id: userId, new_role: newRole }),
