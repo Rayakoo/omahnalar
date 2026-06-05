@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import {
@@ -43,7 +43,15 @@ function formatDateTime(iso: string) {
   return d.toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit" });
 }
 
-export default function DetailLaporan() {
+export default function DetailLaporanPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-[#FFFBF3] flex items-center justify-center"><div className="w-5 h-5 border-2 border-[#736A9C] border-t-transparent rounded-full animate-spin" /></div>}>
+      <DetailLaporan />
+    </Suspense>
+  );
+}
+
+function DetailLaporan() {
   const searchParams = useSearchParams();
   const ticket = searchParams.get("ticket") || "";
 

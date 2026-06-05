@@ -1,11 +1,20 @@
 "use client";
 
+import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useState } from "react";
 import { Check, Info, ClipboardList, Home, Copy, CheckCheck } from "lucide-react";
 
-export default function LaporanSukses() {
+export default function LaporanSuksesPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-[#FFFBF3] flex items-center justify-center"><div className="w-5 h-5 border-2 border-[#736A9C] border-t-transparent rounded-full animate-spin" /></div>}>
+      <LaporanSukses />
+    </Suspense>
+  );
+}
+
+function LaporanSukses() {
   const searchParams = useSearchParams();
   const kodeLaporan = searchParams.get("ticket") || "TN-XXXXX";
   const [copied, setCopied] = useState(false);
