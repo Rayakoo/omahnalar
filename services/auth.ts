@@ -1,5 +1,13 @@
 import { getSupabase, getAccessToken } from "@/lib/supabaseClient";
 
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+function getSupabaseConfig() {
+  if (!supabaseUrl || !supabaseAnonKey) throw new Error("Supabase env vars not set");
+  return { url: supabaseUrl, anonKey: supabaseAnonKey };
+}
+
 export type Profile = {
   id: string;
   full_name: string;
@@ -20,19 +28,24 @@ export type User = {
 
 // ── Sign Up ──────────────────────────────────────────────────
 export async function signUp(email: string, password: string, fullName?: string) {
-  const { data, error } = await getSupabase().auth.signUp({
-    email,
-    password,
-    options: {
-      data: {
-        full_name: fullName ?? "",
-        role: "user",
-      },
+  const { url, anonKey } = getSupabaseConfig();
+  const res = await fetch(`${url}/auth/v1/signup`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      apikey: anonKey,
     },
+    body: JSON.stringify({
+      email,
+      password,
+      data: { full_name: fullName ?? "", role: "user" },
+    }),
   });
-
-  if (error) throw error;
-
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.msg || err.error || "Sign up failed");
+  }
+  const data = await res.json();
   return {
     user: data.user
       ? {
@@ -45,24 +58,39 @@ export async function signUp(email: string, password: string, fullName?: string)
           },
         }
       : null,
-    session: data.session,
+    session: null,
   };
 }
 
 // ── Sign In ──────────────────────────────────────────────────
 export async function signIn(email: string, password: string) {
-  const { data, error } = await getSupabase().auth.signInWithPassword({
-    email,
-    password,
+  const { url, anonKey } = getSupabaseConfig();
+  const res = await fetch(`${url}/auth/v1/token?grant_type=password`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      apikey: anonKey,
+    },
+    body: JSON.stringify({ email, password }),
   });
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.msg || err.error || "Login failed");
+  }
+  const data = await res.json();
 
-  if (error) throw error;
+  // Simpan session ke localStorage
+  localStorage.setItem(
+    `sb-${url.match(/\/\/([^.]+)/)?.[1] ?? "local"}-auth-token`,
+    JSON.stringify({
+      access_token: data.access_token,
+      refresh_token: data.refresh_token,
+      expires_at: Date.now() + (data.expires_in || 3600) * 1000,
+      user: data.user,
+    })
+  );
 
-  const { data: profile } = await getSupabase()
-    .from("profiles")
-    .select("role")
-    .eq("id", data.user.id)
-    .maybeSingle();
+  const role = await getUserRole(data.user.id, data.access_token);
 
   return {
     user: {
@@ -71,111 +99,159 @@ export async function signIn(email: string, password: string) {
       user_metadata: {
         full_name: data.user.user_metadata?.full_name as string | undefined,
         avatar_url: data.user.user_metadata?.avatar_url as string | undefined,
-        role: (profile?.role as string) || data.user.user_metadata?.role || "user",
+        role: role || data.user.user_metadata?.role || "user",
       },
     },
-    session: data.session,
+    session: { access_token: data.access_token, refresh_token: data.refresh_token },
   };
 }
 
 // ── Sign Out ─────────────────────────────────────────────────
 export async function signOut() {
-  const { error } = await getSupabase().auth.signOut();
-  if (error) throw error;
+  try {
+    const { url, anonKey } = getSupabaseConfig();
+    const token = getAccessToken();
+    await fetch(`${url}/auth/v1/logout`, {
+      method: "POST",
+      headers: { apikey: anonKey, Authorization: `Bearer ${token}` },
+    });
+  } catch {}
+  // Hapus session dari localStorage
+  const key = Object.keys(localStorage).find((k) => k.startsWith("sb-") && k.endsWith("-auth-token"));
+  if (key) localStorage.removeItem(key);
 }
 
 // ── Get Current User ─────────────────────────────────────────
 export async function getCurrentUser() {
-  const { data, error } = await getSupabase().auth.getUser();
-  if (error || !data.user) return null;
+  try {
+    const token = getAccessToken();
+    const { url, anonKey } = getSupabaseConfig();
+    const res = await fetch(`${url}/auth/v1/user`, {
+      headers: { apikey: anonKey, Authorization: `Bearer ${token}` },
+    });
+    if (!res.ok) return null;
+    const userData = await res.json();
+    if (!userData?.id) return null;
 
-  const { data: profile } = await getSupabase()
-    .from("profiles")
-    .select("role")
-    .eq("id", data.user.id)
-    .maybeSingle();
+    const role = await getUserRole(userData.id, token);
 
-  return {
-    id: data.user.id,
-    email: data.user.email!,
-    user_metadata: {
-      full_name: data.user.user_metadata?.full_name as string | undefined,
-      avatar_url: data.user.user_metadata?.avatar_url as string | undefined,
-      role: (profile?.role as string) || data.user.user_metadata?.role || "user",
-    },
-  } as User;
+    return {
+      id: userData.id,
+      email: userData.email!,
+      user_metadata: {
+        full_name: userData.user_metadata?.full_name as string | undefined,
+        avatar_url: userData.user_metadata?.avatar_url as string | undefined,
+        role: role || userData.user_metadata?.role || "user",
+      },
+    } as User;
+  } catch {
+    return null;
+  }
 }
 
 // ── Get Session ──────────────────────────────────────────────
 export async function getSession() {
-  const { data, error } = await getSupabase().auth.getSession();
-  if (error) throw error;
-  return data.session;
+  try {
+    const token = getAccessToken();
+    return { access_token: token };
+  } catch {
+    return null;
+  }
 }
 
 // ── Reset Password ───────────────────────────────────────────
 export async function resetPassword(email: string) {
-  const { error } = await getSupabase().auth.resetPasswordForEmail(email);
-  if (error) throw error;
+  const { url, anonKey } = getSupabaseConfig();
+  const res = await fetch(`${url}/auth/v1/recover`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      apikey: anonKey,
+    },
+    body: JSON.stringify({ email }),
+  });
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.msg || err.error || "Reset password failed");
+  }
 }
 
 // ── Update Password ──────────────────────────────────────────
 export async function updatePassword(newPassword: string) {
-  const { error } = await getSupabase().auth.updateUser({
-    password: newPassword,
+  const token = getAccessToken();
+  const { url, anonKey } = getSupabaseConfig();
+  const res = await fetch(`${url}/auth/v1/user`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      apikey: anonKey,
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ password: newPassword }),
   });
-  if (error) throw error;
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.msg || err.error || "Update password failed");
+  }
 }
 
 // ── Update Profile ──────────────────────────────────────────
-export async function updateProfile(data: { full_name?: string; avatar_url?: string }) {
-  const { error } = await getSupabase().auth.updateUser({
-    data,
+export async function updateProfile(input: { full_name?: string; avatar_url?: string }) {
+  const token = getAccessToken();
+  const { url, anonKey } = getSupabaseConfig();
+  const res = await fetch(`${url}/auth/v1/user`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      apikey: anonKey,
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ data: input }),
   });
-  if (error) throw error;
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.msg || err.error || "Update profile failed");
+  }
 }
 
-export async function getUserRole(userId: string) {
-  const { data, error } = await getSupabase()
-    .from("profiles")
-    .select("role")
-    .eq("id", userId)
-    .maybeSingle();
-
-  if (error) throw error;
-  return (data?.role as string) || "user";
+export async function getUserRole(userId: string, accessToken?: string) {
+  const token = accessToken || getAccessToken();
+  const { url, anonKey } = getSupabaseConfig();
+  const res = await fetch(`${url}/rest/v1/profiles?select=role&id=eq.${userId}`, {
+    headers: { apikey: anonKey, Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) return "user";
+  const data = await res.json();
+  return (data?.[0]?.role as string) || "user";
 }
 
 // ── Auth State Listener ──────────────────────────────────────
 export function onAuthStateChange(callback: (user: User | null) => void) {
-  return getSupabase().auth.onAuthStateChange(async (_event, session) => {
+  const { data } = getSupabase().auth.onAuthStateChange(async (_event, session) => {
     if (session?.user) {
-      const { data: profile } = await getSupabase()
-        .from("profiles")
-        .select("role")
-        .eq("id", session.user.id)
-        .maybeSingle();
-
+      const role = await getUserRole(session.user.id, session.access_token);
       callback({
         id: session.user.id,
         email: session.user.email!,
         user_metadata: {
           full_name: session.user.user_metadata?.full_name as string | undefined,
           avatar_url: session.user.user_metadata?.avatar_url as string | undefined,
-          role: (profile?.role as string) || session.user.user_metadata?.role || "user",
+          role: role || session.user.user_metadata?.role || "user",
         },
       });
     } else {
       callback(null);
     }
   });
+  return data;
 }
 
 // ── User Management (Admin) ───────────────────────────────────
 export async function getProfiles(): Promise<Profile[]> {
   const token = getAccessToken();
-  const res = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/rpc/get_all_profiles_admin`, {
-    headers: { apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, Authorization: `Bearer ${token}` },
+  const { url, anonKey } = getSupabaseConfig();
+  const res = await fetch(`${url}/rest/v1/rpc/get_all_profiles_admin`, {
+    headers: { apikey: anonKey, Authorization: `Bearer ${token}` },
   });
   if (!res.ok) {
     const errText = await res.text();
@@ -186,11 +262,12 @@ export async function getProfiles(): Promise<Profile[]> {
 
 export async function updateUserRole(userId: string, newRole: string): Promise<void> {
   const token = getAccessToken();
-  const res = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/rpc/update_user_role_admin`, {
+  const { url, anonKey } = getSupabaseConfig();
+  const res = await fetch(`${url}/rest/v1/rpc/update_user_role_admin`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      apikey: anonKey,
       Authorization: `Bearer ${token}`,
     },
     body: JSON.stringify({ user_id: userId, new_role: newRole }),
