@@ -1,4 +1,16 @@
-import { supabase } from "@/lib/supabaseClient";
+import { supabase, getAccessToken } from "@/lib/supabaseClient";
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+if (!supabaseUrl || !supabaseAnonKey) throw new Error("Supabase env vars not set");
+
+export type Profile = {
+  id: string;
+  full_name: string;
+  role: string;
+  created_at: string;
+  updated_at: string;
+};
 
 export type User = {
   id: string;
@@ -161,4 +173,34 @@ export function onAuthStateChange(callback: (user: User | null) => void) {
       callback(null);
     }
   });
+}
+
+// ── User Management (Admin) ───────────────────────────────────
+export async function getProfiles(): Promise<Profile[]> {
+  const token = getAccessToken();
+  const res = await fetch(`${supabaseUrl}/rest/v1/rpc/get_all_profiles_admin`, {
+    headers: { apikey: supabaseAnonKey, Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) {
+    const errText = await res.text();
+    throw new Error(`Failed to fetch profiles: ${res.status} ${errText}`);
+  }
+  return res.json();
+}
+
+export async function updateUserRole(userId: string, newRole: string): Promise<void> {
+  const token = getAccessToken();
+  const res = await fetch(`${supabaseUrl}/rest/v1/rpc/update_user_role_admin`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      apikey: supabaseAnonKey,
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ user_id: userId, new_role: newRole }),
+  });
+  if (!res.ok) {
+    const errText = await res.text();
+    throw new Error(`Failed to update role: ${res.status} ${errText}`);
+  }
 }
