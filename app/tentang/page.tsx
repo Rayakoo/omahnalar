@@ -1,11 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { MapPin, Target, BookOpen, Heart, MessageSquare, Shield, Award, ExternalLink, Calendar, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import dynamic from "next/dynamic";
-import { getAllPrograms } from "@/components/ProgramDetail";
+import { getPrograms, type Program, type ImageUrl } from "@/services/programs";
 
 const PetaMitraJaringan = dynamic(() => import("@/components/PetaMitraJaringan"), {
   ssr: false,
@@ -58,8 +58,31 @@ const features = [
   { icon: Heart, title: "Komunitas Peduli", desc: "Bergabung dengan Kawan Nalar yang saling mendukung dan tumbuh bersama." },
 ];
 
+function getThumbnail(image_url: ImageUrl[]): string | null {
+  const thumb = image_url.find((img) => img.is_thumbnail);
+  return thumb?.url || image_url[0]?.url || null;
+}
+
+const THEMES: Record<string, string> = {
+  "seminar-parenting": "bg-secondary-500",
+  "seminar-guru": "bg-brand-100",
+  "workshop-bullying": "bg-rose-100",
+  "pelatihan-menulis": "bg-emerald-100",
+  "buku-baca": "bg-sky-100",
+  "kerjasama-eksternal": "bg-purple-100",
+};
+
+function getTheme(slug: string): string {
+  return THEMES[slug] || "bg-brand-100";
+}
+
 export default function TentangPage() {
+  const [programs, setPrograms] = useState<Program[]>([]);
   const [flippedId, setFlippedId] = useState<string | null>(null);
+
+  useEffect(() => {
+    getPrograms().then(setPrograms).catch(() => {});
+  }, []);
 
   return (
     <div className="min-h-screen bg-page-50 font-sans antialiased text-brand-900 overflow-hidden">
@@ -405,9 +428,9 @@ export default function TentangPage() {
         </motion.div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 max-w-5xl mx-auto">
-          {getAllPrograms().map((prog, idx) => {
-            const IconComponent = prog.icon;
-            const theme = prog.color;
+          {programs.map((prog, idx) => {
+            const imgUrl = getThumbnail(prog.image_url);
+            const theme = getTheme(prog.slug);
             return (
               <motion.div
                 key={prog.id}
@@ -417,25 +440,25 @@ export default function TentangPage() {
                 transition={{ delay: idx * 0.08 }}
               >
                 <Link
-                  href={`/program/${prog.id}`}
+                  href={`/program/${prog.slug}`}
                   className="group block bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
                 >
                   <div className={`relative h-40 overflow-hidden bg-gradient-to-br ${theme}/90 ${theme}/40`}>
-                    <img
-                      src={prog.image}
-                      alt={prog.title}
-                      className="w-full h-full object-cover mix-blend-overlay opacity-60 group-hover:scale-105 transition-transform duration-500"
-                    />
+                    {imgUrl ? (
+                      <img
+                        src={imgUrl}
+                        alt={prog.title}
+                        className="w-full h-full object-cover mix-blend-overlay opacity-60 group-hover:scale-105 transition-transform duration-500"
+                        onError={(e) => {
+                          (e.currentTarget as HTMLImageElement).style.display = "none";
+                        }}
+                      />
+                    ) : null}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
                     <div className="absolute top-3 left-3">
-                      <span className={`inline-block bg-white/90 ${prog.textColor} text-[9px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider shadow-sm`}>
+                      <span className="inline-block bg-white/90 text-brand-900 text-[9px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider shadow-sm">
                         {prog.tag}
                       </span>
-                    </div>
-                    <div className="absolute bottom-3 right-3">
-                      <div className="w-9 h-9 rounded-xl bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-sm">
-                        {IconComponent && <IconComponent className="w-4 h-4 text-brand-700" />}
-                      </div>
                     </div>
                   </div>
 

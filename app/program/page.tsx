@@ -1,10 +1,14 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Calendar, MapPin, ArrowRight } from "lucide-react";
-import { getAllPrograms } from "@/components/ProgramDetail";
+import { getPrograms, type Program, type ImageUrl } from "@/services/programs";
 
-const PROGRAMS = getAllPrograms();
+function getThumbnail(image_url: ImageUrl[]): string | null {
+  const thumb = image_url.find((img) => img.is_thumbnail);
+  return thumb?.url || image_url[0]?.url || null;
+}
 
 const THEMES: Record<string, { from: string; to: string; badge: string }> = {
   "seminar-parenting": { from: "from-secondary-500/90", to: "to-secondary-600/70", badge: "bg-secondary-500 text-brand-900" },
@@ -15,7 +19,21 @@ const THEMES: Record<string, { from: string; to: string; badge: string }> = {
   "kerjasama-eksternal": { from: "from-purple-100/90", to: "to-purple-300/50", badge: "bg-purple-100 text-purple-800" },
 };
 
+function getTheme(slug: string) {
+  return THEMES[slug] || { from: "from-brand-100/90", to: "to-brand-700/40", badge: "bg-brand-100 text-brand-900" };
+}
+
 export default function ProgramPage() {
+  const [programs, setPrograms] = useState<Program[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    getPrograms()
+      .then(setPrograms)
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
+
   return (
     <div className="min-h-screen bg-page-50 font-sans antialiased text-brand-900 flex flex-col">
       {/* Hero */}
@@ -40,66 +58,72 @@ export default function ProgramPage() {
 
       {/* Grid */}
       <main className="max-w-6xl mx-auto w-full px-4 md:px-6 -mt-8 mb-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {PROGRAMS.map((prog) => {
-            const IconComponent = prog.icon;
-            const theme = THEMES[prog.id];
+        {loading ? (
+          <div className="flex items-center justify-center py-20">
+            <div className="w-8 h-8 border-4 border-[#4D455D] border-t-transparent rounded-full animate-spin" />
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            {programs.map((prog) => {
+              const imgUrl = getThumbnail(prog.image_url);
+              const theme = getTheme(prog.slug);
 
-            return (
-              <Link
-                key={prog.id}
-                href={`/program/${prog.id}`}
-                className="group relative bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1 flex flex-col"
-              >
-                {/* Top colored section with image */}
-                <div className={`relative h-44 overflow-hidden bg-gradient-to-br ${theme?.from} ${theme?.to}`}>
-                  <img
-                    src={prog.image}
-                    alt={prog.title}
-                    className="w-full h-full object-cover mix-blend-overlay opacity-60 group-hover:scale-105 transition-transform duration-500"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
-                  <div className="absolute top-3 left-3">
-                    <span className={`inline-block ${theme?.badge} text-[9px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider shadow-sm`}>
-                      {prog.tag}
-                    </span>
-                  </div>
-                  <div className="absolute bottom-3 right-3">
-                    <div className="w-10 h-10 rounded-xl bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-sm">
-                      {IconComponent && <IconComponent className="w-5 h-5 text-brand-700" />}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Content */}
-                <div className="flex-1 p-5 flex flex-col justify-between">
-                  <div>
-                    <h3 className="text-base font-bold text-brand-900 leading-snug group-hover:text-brand-700 transition-colors">
-                      {prog.title}
-                    </h3>
-                    <p className="text-xs text-brand-700/60 mt-2 line-clamp-2 leading-relaxed">
-                      {prog.tagline}
-                    </p>
-                  </div>
-
-                  <div className="flex items-center justify-between mt-4 pt-3 border-t border-gray-100">
-                    <div className="flex flex-wrap gap-x-3 gap-y-1 text-[10px] font-medium text-brand-700/50">
-                      <span className="flex items-center gap-1">
-                        <Calendar className="w-3 h-3" /> {prog.period}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <MapPin className="w-3 h-3" /> {prog.location}
+              return (
+                <Link
+                  key={prog.id}
+                  href={`/program/${prog.slug}`}
+                  className="group relative bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1 flex flex-col"
+                >
+                  {/* Top colored section with image */}
+                  <div className={`relative h-44 overflow-hidden bg-gradient-to-br ${theme.from} ${theme.to}`}>
+                    {imgUrl ? (
+                      <img
+                        src={imgUrl}
+                        alt={prog.title}
+                        className="w-full h-full object-cover mix-blend-overlay opacity-60 group-hover:scale-105 transition-transform duration-500"
+                        onError={(e) => {
+                          (e.currentTarget as HTMLImageElement).style.display = "none";
+                        }}
+                      />
+                    ) : null}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
+                    <div className="absolute top-3 left-3">
+                      <span className={`inline-block ${theme.badge} text-[9px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider shadow-sm`}>
+                        {prog.tag}
                       </span>
                     </div>
-                    <span className="w-7 h-7 rounded-full bg-brand-100 flex items-center justify-center group-hover:bg-brand-900 group-hover:text-white transition-all">
-                      <ArrowRight className="w-3.5 h-3.5" />
-                    </span>
                   </div>
-                </div>
-              </Link>
-            );
-          })}
-        </div>
+
+                  {/* Content */}
+                  <div className="flex-1 p-5 flex flex-col justify-between">
+                    <div>
+                      <h3 className="text-base font-bold text-brand-900 leading-snug group-hover:text-brand-700 transition-colors">
+                        {prog.title}
+                      </h3>
+                      <p className="text-xs text-brand-700/60 mt-2 line-clamp-2 leading-relaxed">
+                        {prog.tagline}
+                      </p>
+                    </div>
+
+                    <div className="flex items-center justify-between mt-4 pt-3 border-t border-gray-100">
+                      <div className="flex flex-wrap gap-x-3 gap-y-1 text-[10px] font-medium text-brand-700/50">
+                        <span className="flex items-center gap-1">
+                          <Calendar className="w-3 h-3" /> {prog.period}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <MapPin className="w-3 h-3" /> {prog.location}
+                        </span>
+                      </div>
+                      <span className="w-7 h-7 rounded-full bg-brand-100 flex items-center justify-center group-hover:bg-brand-900 group-hover:text-white transition-all">
+                        <ArrowRight className="w-3.5 h-3.5" />
+                      </span>
+                    </div>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        )}
       </main>
     </div>
   );

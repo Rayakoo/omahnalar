@@ -1,9 +1,11 @@
 "use client";
 
-import { useState, useMemo, useId } from "react";
+import { useState, useMemo, useEffect, useId } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, ArrowRight, Heart, MessageSquare, Flag } from "lucide-react";
+import { getStories, type Story } from "@/services/stories";
+import { DUMMY_STORIES } from "@/data/dummyStories";
 
 const CARD_THEMES = [
   { bg: "#F07A94", text: "#FFFFFF" },
@@ -13,54 +15,6 @@ const CARD_THEMES = [
   { bg: "#E6E4F9", text: "#4A4763" },
 ];
 
-const RAW_STORIES = [
-  {
-    id: 1,
-    title: "Aku akhirnya berani cerita ke sini setelah setahun memendam sendiri",
-    date: "28 Maret 2026",
-    content:
-      "setelah berulang kali berpikir, aku akhirnya memutuskan untuk bercerita disini karena sudah tidak kuat menanggung beban ini sendiri. mungkin dengan bercerita sebagai anonim akan dapat membuat perasaanku lebih lega...",
-    likes: 18,
-    comments: 8,
-  },
-  {
-    id: 2,
-    title: "Belajar menerima kenyataan pahit dan mulai melangkah ke depan",
-    date: "12 Mei 2026",
-    content:
-      "Terima kasih atas ruang aman ini. Menuliskan apa yang ada di kepala rasanya melepas separuh beban yang selama ini menghimpit dada. Untuk kalian yang sedang berjuang, kita tidak sendirian...",
-    likes: 34,
-    comments: 5,
-  },
-  {
-    id: 3,
-    title: "Perjalananku mencari jati diri di tengah tekanan sosial",
-    date: "2 Mei 2026",
-    content:
-      "Selama ini aku merasa tertekan dengan ekspektasi orang sekitar. Melalui ruang ini, aku belajar bahwa setiap orang punya waktunya sendiri untuk tumbuh dan berkembang.",
-    likes: 27,
-    comments: 12,
-  },
-  {
-    id: 4,
-    title: "Berani mengatakan tidak pada toxic relationship",
-    date: "19 Mei 2026",
-    content:
-      "Butuh waktu lama untuk menyadari bahwa aku pantas diperlakukan lebih baik. Sekarang aku lebih berani menetapkan batasan dan menghargai diriku sendiri.",
-    likes: 42,
-    comments: 9,
-  },
-  {
-    id: 5,
-    title: "Syukur bisa menemukan komunitas yang mendukung",
-    date: "25 Mei 2026",
-    content:
-      "Aku tidak pernah menyangka akan menemukan tempat yang menerima aku apa adanya. Terima kasih untuk semua yang telah berbagi cerita dan memberi semangat.",
-    likes: 51,
-    comments: 20,
-  },
-];
-
 function seededPick(seed: number, i: number, total: number) {
   const idx = (seed + i * 3) % CARD_THEMES.length;
   const prev = (seed + (i - 1) * 3) % CARD_THEMES.length;
@@ -68,22 +22,47 @@ function seededPick(seed: number, i: number, total: number) {
   return CARD_THEMES[final];
 }
 
+function formatDate(iso: string) {
+  const d = new Date(iso);
+  return d.toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" });
+}
+
 export default function HomeCeritaSection() {
   const router = useRouter();
+  const [dbStories, setDbStories] = useState<Story[]>([]);
   const id = useId();
-  const seed = id.split("").reduce((acc, c) => acc + c.charCodeAt(0), 0);
+  const seed = useMemo(() => {
+    let h = 0;
+    for (let i = 0; i < id.length; i++) h = ((h << 5) - h) + id.charCodeAt(i), h |= 0;
+    return Math.abs(h) % 1000;
+  }, [id]);
 
-  const [index, setIndex] = useState(0);
-  const [direction, setDirection] = useState(0);
+  useEffect(() => {
+    getStories()
+      .then(setDbStories)
+      .catch(() => {});
+  }, []);
+
+  const activeStories = dbStories.length > 0 ? dbStories : DUMMY_STORIES;
 
   const stories = useMemo(
     () =>
-      RAW_STORIES.map((story, i) => ({
-        ...story,
-        theme: seededPick(seed, i, RAW_STORIES.length),
+      activeStories.map((s, i) => ({
+        id: s.id,
+        title: s.title,
+        author: s.is_anonymous ? "Anonim" : s.name,
+        category: s.category || "",
+        date: formatDate(s.created_at),
+        content: s.content,
+        likes: 0,
+        comments: 0,
+        theme: seededPick(seed, i, activeStories.length),
       })),
-    [seed],
+    [activeStories, seed],
   );
+
+  const [index, setIndex] = useState(0);
+  const [direction, setDirection] = useState(0);
 
   const handleNext = () => {
     setDirection(1);
@@ -95,8 +74,8 @@ export default function HomeCeritaSection() {
     setIndex((prev) => (prev - 1 + stories.length) % stories.length);
   };
 
-  const currentStory = stories[index];
-  const theme = currentStory.theme;
+  const currentStory = stories[index] || stories[0];
+  const theme = currentStory?.theme || CARD_THEMES[0];
 
   const stackThemes = useMemo(() => {
     const COLORS = CARD_THEMES.map((t) => t.bg);
@@ -152,39 +131,26 @@ export default function HomeCeritaSection() {
                 key={index}
                 custom={direction}
                 variants={{
-                  enter: (dir: number) => ({
-                    rotateY: dir > 0 ? 90 : -90,
-                    opacity: 0,
-                    scale: 0.92,
-                  }),
-                  center: {
-                    rotateY: 0,
-                    opacity: 1,
-                    scale: 1,
-                    transition: { duration: 0.55, ease: [0.25, 1, 0.5, 1] },
-                  },
-                  exit: (dir: number) => ({
-                    rotateY: dir > 0 ? -90 : 90,
-                    opacity: 0,
-                    scale: 0.92,
-                    transition: { duration: 0.35 },
-                  }),
+                  enter: (dir: number) => ({ rotateY: dir > 0 ? 90 : -90, opacity: 0, scale: 0.92 }),
+                  center: { rotateY: 0, opacity: 1, scale: 1, transition: { duration: 0.55, ease: [0.25, 1, 0.5, 1] } },
+                  exit: (dir: number) => ({ rotateY: dir > 0 ? -90 : 90, opacity: 0, scale: 0.92, transition: { duration: 0.35 } }),
                 }}
                 initial="enter"
                 animate="center"
                 exit="exit"
-                style={{
-                  backfaceVisibility: "hidden",
-                  transformStyle: "preserve-3d",
-                  backgroundColor: theme.bg,
-                  color: theme.text,
-                }}
+                style={{ backfaceVisibility: "hidden", transformStyle: "preserve-3d", backgroundColor: theme.bg, color: theme.text }}
                 className="w-full p-8 md:p-12 rounded-[28px] shadow-xl relative z-10 flex flex-col justify-between min-h-[340px]"
               >
                 <div className="text-center flex flex-col gap-4">
                   <h3 className="text-xl md:text-2xl font-bold tracking-wide leading-snug px-4" style={{ color: theme.text }}>
                     {currentStory.title}
                   </h3>
+                  <span className="inline-block mx-auto text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-full" style={{ backgroundColor: `${theme.text}22`, color: theme.text }}>
+                    {currentStory.category}
+                  </span>
+                  <p className="text-xs font-medium" style={{ color: theme.text, opacity: 0.6 }}>
+                    oleh {currentStory.author}
+                  </p>
                   <p className="text-xs font-medium tracking-widest" style={{ color: theme.text, opacity: 0.7 }}>
                     {currentStory.date}
                   </p>
@@ -200,11 +166,11 @@ export default function HomeCeritaSection() {
                   <div className="flex items-center gap-5">
                     <button className="flex items-center gap-1.5 hover:opacity-80 transition-opacity">
                       <Heart className="w-4 h-4" style={{ fill: theme.text, color: theme.text }} />
-                      <span>suka ({currentStory.likes})</span>
+                      <span>suka (0)</span>
                     </button>
                     <button className="flex items-center gap-1.5 hover:opacity-80 transition-opacity">
                       <MessageSquare className="w-4 h-4" />
-                      <span>komentar ({currentStory.comments})</span>
+                      <span>komentar (0)</span>
                     </button>
                   </div>
                   <button className="flex items-center gap-1.5 transition-all" style={{ color: theme.text, opacity: 0.9 }}>

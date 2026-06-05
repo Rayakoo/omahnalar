@@ -1,25 +1,84 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { ShieldCheck, Phone, Scale, Brain, Users, Shield, UploadCloud, ArrowUpRight } from 'lucide-react';
-import CustomDatePicker from '@/components/CustomDatePicker';
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { ShieldCheck, Phone, Scale, Brain, Users, Shield, UploadCloud, ArrowUpRight } from "lucide-react";
+import CustomDatePicker from "@/components/CustomDatePicker";
+import { createReport, getReportByTicket } from "@/services/reports";
 
 export default function TanyaNalarPage() {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<'cek' | 'buat'>('buat');
-  const [selectedDate, setSelectedDate] = useState<string>('');
+  const [activeTab, setActiveTab] = useState<"cek" | "buat">("buat");
+
+  // Form fields
+  const [email, setEmail] = useState("");
+  const [selectedDate, setSelectedDate] = useState("");
+  const [location, setLocation] = useState("");
+  const [chronology, setChronology] = useState("");
+  const [images, setImages] = useState<string[]>([]);
+  const [submitting, setSubmitting] = useState(false);
+
+  // Cek status
+  const [cekEmail, setCekEmail] = useState("");
+  const [cekTicket, setCekTicket] = useState("");
+  const [cekError, setCekError] = useState("");
+  const [ceking, setCeking] = useState(false);
 
   const direktoriBantuan = [
-    { nama: 'LBH Malang', sub: 'Bantuan hukum', icon: <Scale className="w-5 h-5 text-[#4C4765]" /> },
-    { nama: 'Psikolog & Konselor', sub: 'Penanganan mental', icon: <Brain className="w-5 h-5 text-[#4C4765]" /> },
-    { nama: 'KPAI', sub: '021-319-015-32', icon: <Users className="w-5 h-5 text-[#4C4765]" /> },
-    { nama: 'Polres / Polda', sub: 'Call center 110', icon: <Shield className="w-5 h-5 text-[#4C4765]" /> },
+    { nama: "LBH Malang", sub: "Bantuan hukum", icon: <Scale className="w-5 h-5 text-[#4C4765]" /> },
+    { nama: "Psikolog & Konselor", sub: "Penanganan mental", icon: <Brain className="w-5 h-5 text-[#4C4765]" /> },
+    { nama: "KPAI", sub: "021-319-015-32", icon: <Users className="w-5 h-5 text-[#4C4765]" /> },
+    { nama: "Polres / Polda", sub: "Call center 110", icon: <Shield className="w-5 h-5 text-[#4C4765]" /> },
   ];
+
+  const handleSubmitLaporan = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email || !selectedDate || !location || !chronology) {
+      alert("Harap isi semua field");
+      return;
+    }
+    setSubmitting(true);
+    try {
+      const report = await createReport({
+        email,
+        date: selectedDate,
+        location,
+        chronology,
+        images,
+      });
+      router.push(`/tanya-nalar/sukses?ticket=${report.ticket_id}`);
+    } catch (err) {
+      console.error("Gagal mengirim laporan:", err);
+      alert("Gagal mengirim laporan. Silakan coba lagi.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleCekStatus = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!cekEmail || !cekTicket) {
+      setCekError("Harap isi email dan kode laporan");
+      return;
+    }
+    setCeking(true);
+    setCekError("");
+    try {
+      const report = await getReportByTicket(cekTicket);
+      if (report.email !== cekEmail) {
+        setCekError("Email atau kode laporan tidak cocok");
+        return;
+      }
+      router.push(`/tanya-nalar/detail-laporan?ticket=${report.ticket_id}`);
+    } catch {
+      setCekError("Laporan tidak ditemukan. Periksa kembali kode dan email.");
+    } finally {
+      setCeking(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-[#FFFBF3] font-sans antialiased text-gray-800">
-      {/* HEADER */}
       <header className="bg-[#4C4765] text-white p-6 md:p-8 rounded-b-[24px] shadow-sm">
         <div className="max-w-5xl mx-auto">
           <div className="flex items-center gap-3 mb-2">
@@ -58,25 +117,24 @@ export default function TanyaNalarPage() {
         </div>
       </header>
 
-      {/* MAIN */}
       <main className="max-w-5xl mx-auto p-6">
         <div className="inline-flex p-1 bg-[#E5E2F8] rounded-2xl mb-8">
           <button
-            onClick={() => setActiveTab('cek')}
+            onClick={() => setActiveTab("cek")}
             className={`px-6 py-2.5 rounded-xl font-semibold text-sm transition-all ${
-              activeTab === 'cek'
-                ? 'bg-[#736A9C] text-white shadow-sm'
-                : 'text-[#736A9C] hover:bg-[#D7D3F2]'
+              activeTab === "cek"
+                ? "bg-[#736A9C] text-white shadow-sm"
+                : "text-[#736A9C] hover:bg-[#D7D3F2]"
             }`}
           >
             Cek Status Laporan
           </button>
           <button
-            onClick={() => setActiveTab('buat')}
+            onClick={() => setActiveTab("buat")}
             className={`px-6 py-2.5 rounded-xl font-semibold text-sm transition-all ${
-              activeTab === 'buat'
-                ? 'bg-[#736A9C] text-white shadow-sm'
-                : 'text-[#736A9C] hover:bg-[#D7D3F2]'
+              activeTab === "buat"
+                ? "bg-[#736A9C] text-white shadow-sm"
+                : "text-[#736A9C] hover:bg-[#D7D3F2]"
             }`}
           >
             Buat Laporan
@@ -84,12 +142,15 @@ export default function TanyaNalarPage() {
         </div>
 
         <div className="max-w-2xl bg-transparent">
-          {activeTab === 'buat' ? (
-            <form onSubmit={(e) => e.preventDefault()} className="space-y-5">
+          {activeTab === "buat" ? (
+            <form onSubmit={handleSubmitLaporan} className="space-y-5">
               <div>
                 <label className="block text-sm font-semibold text-[#4C4765] mb-2">Alamat Email</label>
                 <input
                   type="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   placeholder="XXXX@example.com"
                   className="w-full p-3 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#736A9C]"
                 />
@@ -104,6 +165,9 @@ export default function TanyaNalarPage() {
                 <label className="block text-sm font-semibold text-[#4C4765] mb-2">Lokasi Kejadian</label>
                 <input
                   type="text"
+                  required
+                  value={location}
+                  onChange={(e) => setLocation(e.target.value)}
                   placeholder="mis. Malang"
                   className="w-full p-3 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#736A9C]"
                 />
@@ -113,6 +177,9 @@ export default function TanyaNalarPage() {
                 <label className="block text-sm font-semibold text-[#4C4765] mb-2">Kronologi Kejadian</label>
                 <textarea
                   rows={4}
+                  required
+                  value={chronology}
+                  onChange={(e) => setChronology(e.target.value)}
                   placeholder="Ceritakan yang terjadi secara runtut. Tidak perlu sempurna, tulis sesuai yang kamu ingat"
                   className="w-full p-3 bg-white border border-gray-200 rounded-xl text-sm resize-none focus:outline-none focus:ring-2 focus:ring-[#736A9C]"
                 />
@@ -126,16 +193,23 @@ export default function TanyaNalarPage() {
                 </div>
               </div>
 
-              <button type="button" onClick={() => router.push('/tanya-nalar/sukses')} className="px-5 py-2 bg-[#4C4765] text-white text-xs font-semibold rounded-lg hover:bg-opacity-90 transition-colors">
-                Kirim Laporan
+              <button
+                type="submit"
+                disabled={submitting}
+                className="px-5 py-2 bg-[#4C4765] text-white text-xs font-semibold rounded-lg hover:bg-opacity-90 transition-colors disabled:opacity-50"
+              >
+                {submitting ? "Mengirim..." : "Kirim Laporan"}
               </button>
             </form>
           ) : (
-            <form onSubmit={(e) => e.preventDefault()} className="space-y-5">
+            <form onSubmit={handleCekStatus} className="space-y-5">
               <div>
                 <label className="block text-sm font-semibold text-[#4C4765] mb-2">Alamat Email</label>
                 <input
                   type="email"
+                  required
+                  value={cekEmail}
+                  onChange={(e) => setCekEmail(e.target.value)}
                   placeholder="XXXX@example.com"
                   className="w-full p-3 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#736A9C]"
                 />
@@ -145,13 +219,24 @@ export default function TanyaNalarPage() {
                 <label className="block text-sm font-semibold text-[#4C4765] mb-2">Kode Laporan</label>
                 <input
                   type="text"
-                  placeholder="Kode laporan sudah dikirim ke emailmu"
+                  required
+                  value={cekTicket}
+                  onChange={(e) => setCekTicket(e.target.value)}
+                  placeholder="Contoh: TN-A8K3M"
                   className="w-full p-3 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#736A9C]"
                 />
               </div>
 
-              <button type="submit" className="px-5 py-2 bg-[#4C4765] text-white text-xs font-semibold rounded-lg hover:bg-opacity-90 transition-colors">
-                Cek Status
+              {cekError && (
+                <p className="text-xs text-red-600 font-medium">{cekError}</p>
+              )}
+
+              <button
+                type="submit"
+                disabled={ceking}
+                className="px-5 py-2 bg-[#4C4765] text-white text-xs font-semibold rounded-lg hover:bg-opacity-90 transition-colors disabled:opacity-50"
+              >
+                {ceking ? "Memeriksa..." : "Cek Status"}
               </button>
             </form>
           )}

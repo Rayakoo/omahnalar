@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-import { Menu, X } from "lucide-react";
+import { Menu, X, LogIn } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 const NAV_LINKS = [
   { label: "Program", href: "/program" },
@@ -15,8 +16,9 @@ const NAV_LINKS = [
   { label: "Produk", href: "/produk" },
 ];
 
-export default function Navbar({ isLoggedIn = true }: { isLoggedIn?: boolean }) {
+export default function Navbar() {
   const pathname = usePathname();
+  const { user, loading, signOut } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
@@ -47,15 +49,42 @@ export default function Navbar({ isLoggedIn = true }: { isLoggedIn?: boolean }) 
       </div>
 
       <div className="flex items-center gap-3">
-        <div className="w-10 h-10 flex items-center justify-center">
-          {isLoggedIn ? (
-            <img
-              src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=150"
-              alt="User Profile"
-              className="w-10 h-10 rounded-full border-2 border-brand-700 object-cover shadow-sm"
-            />
+        <div className="flex items-center gap-3">
+          {loading ? (
+            <div className="w-10 h-10 rounded-full bg-gray-200 animate-pulse" />
+          ) : user ? (
+            <div className="flex items-center gap-3">
+              <span className="hidden lg:block text-sm font-semibold text-brand-900">
+                Hai, {(user.user_metadata?.full_name || user.email).split(" ")[0]}
+              </span>
+              {user.user_metadata?.role === "admin" && (
+                <Link
+                  href="/admin"
+                  className="text-[10px] font-bold bg-[#4D455D] hover:bg-[#3d364a] text-white px-3 py-1.5 rounded-md transition-colors hidden lg:block"
+                >
+                  Admin
+                </Link>
+              )}
+              <img
+                src={user.user_metadata?.avatar_url || "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=150"}
+                alt={user.user_metadata?.full_name || "Profile"}
+                className="w-10 h-10 rounded-full border-2 border-brand-700 object-cover shadow-sm"
+              />
+              <button
+                onClick={signOut}
+                className="text-[10px] font-bold bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 rounded-md transition-colors hidden lg:block"
+              >
+                Logout
+              </button>
+            </div>
           ) : (
-            <div className="w-10 h-10" />
+            <Link
+              href="/login"
+              className="flex items-center gap-1.5 bg-brand-900 text-white px-4 py-2 rounded-full text-xs font-semibold hover:bg-brand-700 transition-all shadow-sm"
+            >
+              <LogIn className="w-3.5 h-3.5" />
+              Masuk
+            </Link>
           )}
         </div>
 
@@ -88,6 +117,33 @@ export default function Navbar({ isLoggedIn = true }: { isLoggedIn?: boolean }) 
                 </Link>
               );
             })}
+            {user ? (
+              <>
+                {user.user_metadata?.role === "admin" && (
+                  <Link
+                    href="/admin"
+                    onClick={() => setMenuOpen(false)}
+                    className="px-4 py-3 rounded-xl text-sm font-medium bg-[#4D455D] text-white text-center"
+                  >
+                    Admin Panel
+                  </Link>
+                )}
+                <button
+                  onClick={() => { signOut(); setMenuOpen(false); }}
+                  className="px-4 py-3 rounded-xl text-sm font-bold bg-red-600 hover:bg-red-700 text-white text-center"
+                >
+                  Logout
+                </button>
+              </>
+            ) : (
+              <Link
+                href="/login"
+                onClick={() => setMenuOpen(false)}
+                className="px-4 py-3 rounded-xl text-sm font-medium bg-brand-900 text-white text-center"
+              >
+                Masuk
+              </Link>
+            )}
           </div>
         </div>
       )}

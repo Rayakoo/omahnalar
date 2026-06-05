@@ -1,20 +1,56 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { PenTool } from "lucide-react";
+import { createStory } from "@/services/stories";
+
+const FIXED_CATEGORIES = [
+  "Puisi",
+  "Pengalaman",
+  "Curhat",
+  "Opini",
+  "Tips",
+  "Inspirasi",
+];
+
+const LAINNYA = "__lainnya__";
 
 export default function StoryForm() {
+  const router = useRouter();
   const [isAnonymous, setIsAnonymous] = useState(false);
+  const [title, setTitle] = useState("");
   const [name, setName] = useState("");
+  const [selectedCat, setSelectedCat] = useState(FIXED_CATEGORIES[0]);
+  const [customCategory, setCustomCategory] = useState("");
   const [story, setStory] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const isLainnya = selectedCat === LAINNYA;
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const payload = {
-      nama: isAnonymous ? "Anonim" : name,
-      cerita: story,
-    };
-    console.log("Data dikirim:", payload);
+    const category = isLainnya ? customCategory.trim() : selectedCat;
+    if (!category) {
+      alert("Pilih atau isi kategori cerita");
+      return;
+    }
+    setLoading(true);
+    try {
+      await createStory({
+        title,
+        name: isAnonymous ? "Anonim" : name,
+        content: story,
+        category,
+        is_anonymous: isAnonymous,
+      });
+      router.push("/omah-cerita/semua-cerita");
+    } catch (err) {
+      console.error("Gagal mengirim cerita:", err);
+      alert("Gagal mengirim cerita. Silakan coba lagi.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -26,6 +62,21 @@ export default function StoryForm() {
         </h1>
       </div>
 
+      <div className="flex flex-col gap-2">
+        <label htmlFor="title-input" className="text-sm font-semibold text-brand-900/80">
+          Judul Cerita
+        </label>
+        <input
+          id="title-input"
+          type="text"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          placeholder="Beri judul yang menarik"
+          className="w-full px-4 py-3 bg-white border border-gray-300 rounded-xl text-sm text-brand-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-700/30 focus:border-brand-700 transition-all shadow-sm"
+          required
+        />
+      </div>
+
       <div
         className={`transition-all duration-300 origin-top flex flex-col gap-2 ${
           isAnonymous
@@ -34,7 +85,7 @@ export default function StoryForm() {
         }`}
       >
         <label htmlFor="nama-input" className="text-sm font-semibold text-brand-900/80">
-          Nama
+          Nama Kamu
         </label>
         <input
           id="nama-input"
@@ -42,9 +93,53 @@ export default function StoryForm() {
           disabled={isAnonymous}
           value={name}
           onChange={(e) => setName(e.target.value)}
-          placeholder="Anda boleh memakai nama samaran"
+          placeholder="Boleh pakai nama samaran"
           className="w-full px-4 py-3 bg-white border border-gray-300 rounded-xl text-sm text-brand-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-700/30 focus:border-brand-700 transition-all shadow-sm"
         />
+      </div>
+
+      <div className="flex flex-col gap-2">
+        <label className="text-sm font-semibold text-brand-900/80">
+          Kategori Cerita
+        </label>
+        <div className="flex flex-wrap gap-2">
+          {FIXED_CATEGORIES.map((cat) => (
+            <button
+              key={cat}
+              type="button"
+              onClick={() => setSelectedCat(cat)}
+              className={`px-4 py-2 rounded-full text-xs font-semibold transition-all border ${
+                selectedCat === cat
+                  ? "bg-brand-900 text-white border-brand-900"
+                  : "bg-white text-brand-900/70 border-gray-300 hover:border-brand-700"
+              }`}
+            >
+              {cat}
+            </button>
+          ))}
+          <button
+            type="button"
+            onClick={() => setSelectedCat(LAINNYA)}
+            className={`px-4 py-2 rounded-full text-xs font-semibold transition-all border ${
+              isLainnya
+                ? "bg-brand-900 text-white border-brand-900"
+                : "bg-white text-brand-900/70 border-gray-300 hover:border-brand-700"
+            }`}
+          >
+            Lainnya
+          </button>
+        </div>
+
+        {isLainnya && (
+          <input
+            type="text"
+            value={customCategory}
+            onChange={(e) => setCustomCategory(e.target.value)}
+            placeholder="Tulis nama kategori kamu"
+            className="mt-2 w-full px-4 py-3 bg-white border border-gray-300 rounded-xl text-sm text-brand-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-700/30 focus:border-brand-700 transition-all shadow-sm"
+            autoFocus
+          />
+        )}
       </div>
 
       <div className="flex items-center gap-3 my-2">
@@ -79,9 +174,10 @@ export default function StoryForm() {
         <div className="flex justify-start">
           <button
             type="submit"
-            className="bg-brand-900 text-white font-medium text-xs px-6 py-2.5 rounded-lg hover:bg-brand-700 transition-all active:scale-95 shadow-md uppercase tracking-wider"
+            disabled={loading}
+            className="bg-brand-900 text-white font-medium text-xs px-6 py-2.5 rounded-lg hover:bg-brand-700 transition-all active:scale-95 shadow-md uppercase tracking-wider disabled:opacity-50"
           >
-            Bagikan
+            {loading ? "Mengirim..." : "Bagikan"}
           </button>
         </div>
       </div>

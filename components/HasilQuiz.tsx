@@ -1,27 +1,37 @@
 "use client";
 
-import React, { useState, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useSearchParams, useParams, useRouter } from "next/navigation";
 import { ChevronLeft, Download, Award, AlertTriangle, RefreshCw } from "lucide-react";
+import { getCourseById } from "@/services/courses";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function HasilQuiz() {
   const router = useRouter();
   const params = useParams();
   const searchParams = useSearchParams();
   const courseId = params["id-course"] as string;
+  const { user } = useAuth();
+
+  const [courseTitle, setCourseTitle] = useState("");
+  const [loadingCourse, setLoadingCourse] = useState(true);
+
+  useEffect(() => {
+    if (!courseId) return;
+    getCourseById(courseId)
+      .then((c) => setCourseTitle(c.title))
+      .catch(() => {})
+      .finally(() => setLoadingCourse(false));
+  }, [courseId]);
 
   const score = parseInt(searchParams.get("score") || "0");
   const total = parseInt(searchParams.get("total") || "1");
   const percentage = Math.round((score / total) * 100);
   const isPassed = percentage >= 75;
 
+  const displayName = user?.user_metadata?.full_name || user?.email?.split("@")[0] || "Kawan Kita";
   const [isDownloading, setIsDownloading] = useState(false);
   const certificateRef = useRef<HTMLDivElement>(null);
-
-  const currentUser = {
-    name: "SANJAY.C",
-    courseTitle: "Hubungan Sehat & Consent Awareness",
-  };
 
   const handleDownloadPDF = async () => {
     if (!certificateRef.current) return;
@@ -32,7 +42,7 @@ export default function HasilQuiz() {
 
       const options = {
         margin: 0,
-        filename: `Sertifikat_${currentUser.name.replace(/\s+/g, "_")}.pdf`,
+        filename: `Sertifikat_${displayName.replace(/\s+/g, "_")}.pdf`,
         image: { type: "jpeg", quality: 0.98 },
         html2canvas: {
           scale: 2,
@@ -48,6 +58,14 @@ export default function HasilQuiz() {
       setIsDownloading(false);
     }
   };
+
+  if (loadingCourse) {
+    return (
+      <div className="min-h-screen bg-page-50 flex items-center justify-center">
+        <div className="w-8 h-8 border-4 border-brand-900 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-page-50 text-brand-900 font-sans antialiased flex flex-col">
@@ -100,18 +118,20 @@ export default function HasilQuiz() {
                 </p>
 
                 <h3 className="text-4xl md:text-5xl font-sans font-black text-brand-700 tracking-wider border-b-2 border-brand-700/30 pb-2 px-8 min-w-[300px]">
-                  {currentUser.name}
+                  {displayName}
                 </h3>
 
                 <p className="text-xs md:text-sm text-gray-600 font-medium max-w-md leading-relaxed mt-8">
                   For successfully completing a free online course <br />
-                  <strong className="text-brand-900 font-bold">{currentUser.courseTitle}</strong>
+                  <strong className="text-brand-900 font-bold">{courseTitle}</strong>
                 </p>
 
                 <div className="mt-12 flex flex-col items-center">
                   <span className="text-[10px] text-gray-400 uppercase tracking-widest">Provided by</span>
                   <span className="font-bold text-sm text-[#4A4763] tracking-wide mt-1">Omah Cerita Academy</span>
-                  <span className="text-[9px] text-gray-400 mt-0.5">Mei 2026</span>
+                  <span className="text-[9px] text-gray-400 mt-0.5">
+                    {new Date().toLocaleDateString("id-ID", { month: "long", year: "numeric" })}
+                  </span>
                 </div>
               </div>
             </div>

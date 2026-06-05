@@ -1,10 +1,32 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-import { Check, Info, ClipboardList, Home } from 'lucide-react';
+import { useSearchParams } from "next/navigation";
+import Link from "next/link";
+import { useState } from "react";
+import { Check, Info, ClipboardList, Home, Copy, CheckCheck } from "lucide-react";
 
 export default function LaporanSukses() {
-  const kodeLaporan = "RPT-2025-7841";
+  const searchParams = useSearchParams();
+  const kodeLaporan = searchParams.get("ticket") || "TN-XXXXX";
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(kodeLaporan);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // fallback: select text
+      const el = document.getElementById("ticket-code");
+      if (el) {
+        const range = document.createRange();
+        range.selectNodeContents(el);
+        const sel = window.getSelection();
+        sel?.removeAllRanges();
+        sel?.addRange(range);
+      }
+    }
+  };
 
   return (
     <div className="min-h-screen bg-[#FFFBF3] font-sans antialiased text-gray-800 flex flex-col">
@@ -30,21 +52,37 @@ export default function LaporanSukses() {
             # KODE LAPORANMU
           </p>
 
-          <h2 className="text-3xl md:text-4xl font-extrabold text-[#3B3654] tracking-wide mb-4 select-all">
-            {kodeLaporan}
-          </h2>
+          <div className="flex items-center justify-center gap-3 mb-4">
+            <h2
+              id="ticket-code"
+              className="text-3xl md:text-4xl font-extrabold text-[#3B3654] tracking-wide select-all"
+            >
+              {kodeLaporan}
+            </h2>
+            <button
+              onClick={handleCopy}
+              className="p-2 rounded-lg bg-[#D7D3F2] hover:bg-[#C5BFE8] transition-colors"
+              title="Salin kode laporan"
+            >
+              {copied ? (
+                <CheckCheck className="w-5 h-5 text-green-700" />
+              ) : (
+                <Copy className="w-5 h-5 text-[#4C4765]" />
+              )}
+            </button>
+          </div>
 
           <div className="flex items-start gap-2 max-w-md mx-auto text-left justify-center bg-transparent">
             <Info className="w-3.5 h-3.5 text-[#736A9C] mt-0.5 shrink-0" />
             <p className="text-[11px] md:text-xs text-gray-600 leading-relaxed">
-              Kode laporan sudah dikirim ke emailmu Kamu akan membutuhkannya untuk memantau status dan perkembangan laporanmu kapan saja.
+              Kode laporan sudah dikirim ke emailmu. Kamu akan membutuhkannya untuk memantau status dan perkembangan laporanmu kapan saja.
             </p>
           </div>
         </div>
 
         <div className="flex flex-col sm:flex-row gap-3 w-full justify-center items-center">
           <Link
-            href="/tanya-nalar/detail-laporan"
+            href={`/tanya-nalar/detail-laporan?ticket=${kodeLaporan}`}
             className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#4C4765] text-white text-xs font-semibold rounded-lg hover:bg-opacity-90 transition-colors shadow-sm w-full sm:w-auto justify-center"
           >
             <ClipboardList className="w-3.5 h-3.5" /> Pantau Status Laporan

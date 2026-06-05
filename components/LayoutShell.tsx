@@ -6,13 +6,13 @@ import Footer from "@/components/Footer";
 
 export default function LayoutShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const hide = pathname === "/omah-cerita/buat-cerita" || pathname === "/omah-cerita/semua-cerita" || pathname.startsWith("/omah-belajar/") || pathname === "/tanya-nalar/detail-laporan" || pathname === "/tanya-nalar/sukses";
+  const hide = pathname === "/omah-cerita/buat-cerita" || pathname === "/omah-cerita/semua-cerita" || pathname.startsWith("/omah-belajar/") || pathname === "/tanya-nalar/detail-laporan" || pathname === "/tanya-nalar/sukses" || pathname === "/login" || pathname === "/register" || pathname.startsWith("/admin");
 
   if (hide) return <>{children}</>;
 
   return (
     <>
-      <Navbar isLoggedIn />
+      <Navbar />
       {children}
       <Footer />
     </>

@@ -4,6 +4,8 @@ import { useState, useEffect, useMemo, useId } from "react";
 import { useInView } from "react-intersection-observer";
 import { useRouter } from "next/navigation";
 import { ChevronLeft, Heart, MessageSquare, Flag } from "lucide-react";
+import { getStoriesPaginated, type Story } from "@/services/stories";
+import { DUMMY_STORIES } from "@/data/dummyStories";
 
 const CARD_THEMES = [
   { bg: "#F07A94", text: "#FFFFFF" },
@@ -13,16 +15,6 @@ const CARD_THEMES = [
   { bg: "#E6E4F9", text: "#4A4763" },
 ];
 
-interface Story {
-  id: string;
-  title: string;
-  date: string;
-  content: string;
-  likes: number;
-  comments: number;
-  theme: { bg: string; text: string };
-}
-
 function seededTheme(seed: number, index: number) {
   const idx = (seed + index * 3) % CARD_THEMES.length;
   const prev = (seed + (index - 1) * 3) % CARD_THEMES.length;
@@ -30,53 +22,92 @@ function seededTheme(seed: number, index: number) {
   return CARD_THEMES[final];
 }
 
-const BASE_TITLE = "Aku akhirnya berani cerita ke sini setelah setahun memendam sendiri";
-const BASE_DATE = "28 Maret 2026";
-const BASE_CONTENT =
-  "setelah berulang kali berpikir, aku akhirnya memutuskan untuk bercerita disini karena sudah tidak kuat menanggung beban ini sendiri. mungkin dengan bercerita sebagai anonim akan dapat membuat perasaanku lebih lega... baca selengkapnya";
+function formatDate(iso: string) {
+  const d = new Date(iso);
+  return d.toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" });
+}
 
-function generateMockStories(startIndex: number, seed: number, limit: number = 9): Story[] {
-  return Array.from({ length: limit }).map((_, index) => {
-    const globalIndex = startIndex + index;
-    return {
-      id: `story-${globalIndex}`,
-      title: BASE_TITLE,
-      date: BASE_DATE,
-      content: BASE_CONTENT,
-      likes: Math.floor(Math.abs(Math.sin(seed + globalIndex)) * 50) + 1,
-      comments: Math.floor(Math.abs(Math.cos(seed + globalIndex * 2)) * 30) + 1,
-      theme: seededTheme(seed, globalIndex),
-    };
-  });
+interface DisplayStory {
+  id: string;
+  title: string;
+  author: string;
+  category: string;
+  date: string;
+  content: string;
+  likes: number;
+  comments: number;
+  theme: { bg: string; text: string };
 }
 
 export default function SemuaCerita() {
   const router = useRouter();
   const id = useId();
-  const seed = id.split("").reduce((acc, c) => acc + c.charCodeAt(0), 0);
+  const seed = useMemo(() => {
+    let h = 0;
+    for (let i = 0; i < id.length; i++) h = ((h << 5) - h) + id.charCodeAt(i), h |= 0;
+    return Math.abs(h) % 1000;
+  }, [id]);
 
-  const [stories, setStories] = useState<Story[]>(() => generateMockStories(0, seed, 9));
-  const [offset, setOffset] = useState(9);
+  const [stories, setStories] = useState<DisplayStory[]>([]);
+  const [offset, setOffset] = useState(0);
   const [hasMore, setHasMore] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [useDummy, setUseDummy] = useState(false);
 
   const { ref, inView } = useInView({ threshold: 0.1 });
 
-  useEffect(() => {
-    if (inView && hasMore) {
-      const timer = setTimeout(() => {
-        const newStories = generateMockStories(offset, seed, 6);
+  const PAGE_SIZE = 9;
 
-        if (offset >= 33) {
-          setHasMore(false);
-        }
+  const loadStories = async (startFrom: number, append: boolean) => {
+    setLoading(true);
+    try {
+      const { data, count } = await getStoriesPaginated(startFrom, startFrom + PAGE_SIZE - 1);
+      const isDummyFallback = (append && useDummy) || (!append && data.length === 0);
+      if (isDummyFallback) setUseDummy(true);
 
-        setStories((prev) => [...prev, ...newStories]);
-        setOffset((prev) => prev + 6);
-      }, 1000);
+      const source = isDummyFallback ? DUMMY_STORIES : data;
 
-      return () => clearTimeout(timer);
+      const mapped = source.slice(startFrom, startFrom + PAGE_SIZE).map((s, i) => ({
+        id: s.id,
+        title: s.title,
+        author: s.is_anonymous ? "Anonim" : s.name,
+        category: s.category || "",
+        date: formatDate(s.created_at),
+        content: s.content,
+        likes: 0,
+        comments: 0,
+        theme: seededTheme(seed, startFrom + i),
+      }));
+
+      if (append) {
+        setStories((prev) => [...prev, ...mapped]);
+      } else {
+        setStories(mapped);
+      }
+
+      const total = isDummyFallback ? DUMMY_STORIES.length : count;
+      if (total !== null && startFrom + PAGE_SIZE >= total) {
+        setHasMore(false);
+      }
+      setOffset(startFrom + mapped.length);
+    } catch {
+      // fail silently
+    } finally {
+      setLoading(false);
     }
-  }, [inView, offset, hasMore, seed]);
+  };
+
+  useEffect(() => {
+    loadStories(0, false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    if (inView && hasMore && !loading) {
+      loadStories(offset, true);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [inView]);
 
   return (
     <div className="min-h-screen bg-page-50 text-brand-900 font-sans antialiased">
@@ -113,57 +144,39 @@ export default function SemuaCerita() {
               }}
             >
               <div>
-                <h3
-                  className="text-base font-bold leading-snug mb-1"
-                  style={{ color: story.theme.text }}
-                >
+                <h3 className="text-base font-bold leading-snug mb-1" style={{ color: story.theme.text }}>
                   {story.title}
                 </h3>
-
-                <p
-                  className="text-[11px] font-medium mb-4"
-                  style={{ color: story.theme.text, opacity: 0.6 }}
-                >
+                <span className="inline-block text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full mb-3" style={{ backgroundColor: `${story.theme.text}22`, color: story.theme.text }}>
+                  {story.category}
+                </span>
+                <p className="text-[10px] font-medium mb-4" style={{ color: story.theme.text, opacity: 0.5 }}>
+                  oleh {story.author}
+                </p>
+                <p className="text-[11px] font-medium mb-4" style={{ color: story.theme.text, opacity: 0.6 }}>
                   {story.date}
                 </p>
-
-                <p
-                  className="text-xs md:text-sm leading-relaxed font-normal mb-6"
-                  style={{ color: story.theme.text, opacity: 0.85 }}
-                >
+                <p className="text-xs md:text-sm leading-relaxed font-normal mb-6" style={{ color: story.theme.text, opacity: 0.85 }}>
                   {story.content}
                 </p>
               </div>
 
               <div
                 className="flex items-center justify-between pt-4 text-xs font-semibold"
-                style={{
-                  borderTop: `1px solid ${story.theme.text}1A`,
-                  color: story.theme.text,
-                  opacity: 0.7,
-                }}
+                style={{ borderTop: `1px solid ${story.theme.text}1A`, color: story.theme.text, opacity: 0.7 }}
               >
                 <div className="flex items-center gap-4">
-                  <button
-                    className="flex items-center gap-1 transition-opacity hover:opacity-100"
-                    style={{ opacity: 0.8 }}
-                  >
+                  <button className="flex items-center gap-1 transition-opacity hover:opacity-100" style={{ opacity: 0.8 }}>
                     <Heart className="w-4 h-4" style={{ fill: story.theme.text, color: story.theme.text }} />
                     <span>{story.likes}</span>
                   </button>
-                  <button
-                    className="flex items-center gap-1 transition-opacity hover:opacity-100"
-                    style={{ opacity: 0.8 }}
-                  >
+                  <button className="flex items-center gap-1 transition-opacity hover:opacity-100" style={{ opacity: 0.8 }}>
                     <MessageSquare className="w-4 h-4" />
                     <span>{story.comments}</span>
                   </button>
                 </div>
 
-                <button
-                  className="flex items-center gap-1 transition-opacity hover:opacity-100"
-                  style={{ opacity: 0.7 }}
-                >
+                <button className="flex items-center gap-1 transition-opacity hover:opacity-100" style={{ opacity: 0.7 }}>
                   <Flag className="w-4 h-4" />
                 </button>
               </div>
@@ -177,11 +190,11 @@ export default function SemuaCerita() {
               <div className="w-5 h-5 border-2 border-brand-700 border-t-transparent rounded-full animate-spin" />
               <span>Memuat cerita lainnya...</span>
             </div>
-          ) : (
+          ) : stories.length > 0 ? (
             <p className="text-sm text-brand-700/40 font-medium tracking-wide">
               Semua cerita telah ditampilkan
             </p>
-          )}
+          ) : null}
         </div>
       </main>
     </div>
