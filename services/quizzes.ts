@@ -11,7 +11,7 @@ export type Quiz = {
 };
 
 export async function getQuizzesByCourse(courseId: string) {
-  const { data, error } = await supabase
+  const { data, error } = await getSupabase()
     .from("quizzes")
     .select("*")
     .eq("course_id", courseId)
@@ -22,7 +22,7 @@ export async function getQuizzesByCourse(courseId: string) {
 }
 
 export async function getQuizById(id: string) {
-  const { data, error } = await supabase
+  const { data, error } = await getSupabase()
     .from("quizzes")
     .select("*")
     .eq("id", id)
@@ -38,7 +38,7 @@ export async function createQuiz(input: {
   description?: string;
   urutan?: number;
 }) {
-  const { data, error } = await supabase
+  const { data, error } = await getSupabase()
     .from("quizzes")
     .insert(input)
     .select()
@@ -52,7 +52,7 @@ export async function updateQuiz(
   id: string,
   updates: Partial<Pick<Quiz, "title" | "description" | "urutan">>
 ) {
-  const { data, error } = await supabase
+  const { data, error } = await getSupabase()
     .from("quizzes")
     .update(updates)
     .eq("id", id)
@@ -80,7 +80,7 @@ export type QuizQuestion = {
 };
 
 export async function getQuizQuestions(quizId: string) {
-  const { data, error } = await supabase
+  const { data, error } = await getSupabase()
     .from("quiz_questions")
     .select("*")
     .eq("quiz_id", quizId)
@@ -97,7 +97,7 @@ export async function createQuizQuestion(input: {
   correct_answer: string;
   urutan?: number;
 }) {
-  const { data, error } = await supabase
+  const { data, error } = await getSupabase()
     .from("quiz_questions")
     .insert(input)
     .select()
@@ -111,7 +111,7 @@ export async function updateQuizQuestion(
   id: string,
   updates: Partial<Pick<QuizQuestion, "question_text" | "options" | "correct_answer" | "urutan">>
 ) {
-  const { data, error } = await supabase
+  const { data, error } = await getSupabase()
     .from("quiz_questions")
     .update(updates)
     .eq("id", id)
@@ -123,7 +123,7 @@ export async function updateQuizQuestion(
 }
 
 export async function deleteQuizQuestion(id: string) {
-  const { error } = await supabase
+  const { error } = await getSupabase()
     .from("quiz_questions")
     .delete()
     .eq("id", id);
@@ -157,7 +157,7 @@ export async function submitQuizResult(input: {
   const total = questions.length;
   const passed = score / total >= 0.75;
 
-  const { data, error } = await supabase
+  const { data, error } = await getSupabase()
     .from("user_quiz_results")
     .insert({
       user_id: input.user_id,
@@ -174,7 +174,7 @@ export async function submitQuizResult(input: {
 }
 
 export async function getUserQuizResults(userId: string, quizId: string) {
-  const { data, error } = await supabase
+  const { data, error } = await getSupabase()
     .from("user_quiz_results")
     .select("*")
     .eq("user_id", userId)

@@ -150,7 +150,7 @@ export async function getUserRole(userId: string) {
 export function onAuthStateChange(callback: (user: User | null) => void) {
   return getSupabase().auth.onAuthStateChange(async (_event, session) => {
     if (session?.user) {
-      const { data: profile } = await supabase
+      const { data: profile } = await getSupabase()
         .from("profiles")
         .select("role")
         .eq("id", session.user.id)

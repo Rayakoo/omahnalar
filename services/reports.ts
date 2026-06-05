@@ -55,7 +55,7 @@ export async function createReport(input: CreateReportInput) {
   let ticket_id = generateTicketId();
 
   // Ensure uniqueness
-  let exists = await supabase
+  let exists = await getSupabase()
     .from("reports")
     .select("ticket_id")
     .eq("ticket_id", ticket_id)
@@ -63,14 +63,14 @@ export async function createReport(input: CreateReportInput) {
 
   while (exists.data) {
     ticket_id = generateTicketId();
-    exists = await supabase
+    exists = await getSupabase()
       .from("reports")
       .select("ticket_id")
       .eq("ticket_id", ticket_id)
       .maybeSingle();
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await getSupabase()
     .from("reports")
     .insert({
       ticket_id,
@@ -88,7 +88,7 @@ export async function createReport(input: CreateReportInput) {
 }
 
 export async function getReportByTicket(ticketId: string) {
-  const { data, error } = await supabase
+  const { data, error } = await getSupabase()
     .from("reports")
     .select("*")
     .eq("ticket_id", ticketId)
@@ -99,7 +99,7 @@ export async function getReportByTicket(ticketId: string) {
 }
 
 export async function getReportById(id: string) {
-  const { data, error } = await supabase
+  const { data, error } = await getSupabase()
     .from("reports")
     .select("*")
     .eq("id", id)
@@ -110,7 +110,7 @@ export async function getReportById(id: string) {
 }
 
 export async function getAllReports() {
-  const { data, error } = await supabase
+  const { data, error } = await getSupabase()
     .from("reports")
     .select("*")
     .order("created_at", { ascending: false });
@@ -123,7 +123,7 @@ export async function updateReport(
   id: string,
   updates: Partial<Pick<Report, "category" | "status">>
 ) {
-  const { data, error } = await supabase
+  const { data, error } = await getSupabase()
     .from("reports")
     .update({ ...updates, updated_at: new Date().toISOString() })
     .eq("id", id)
@@ -146,7 +146,7 @@ export async function addReportLog(input: {
   description?: string;
   created_by: string;
 }) {
-  const { data, error } = await supabase
+  const { data, error } = await getSupabase()
     .from("report_logs")
     .insert({
       report_id: input.report_id,
@@ -162,7 +162,7 @@ export async function addReportLog(input: {
 }
 
 export async function getReportLogs(reportId: string) {
-  const { data, error } = await supabase
+  const { data, error } = await getSupabase()
     .from("report_logs")
     .select("*")
     .eq("report_id", reportId)
@@ -178,7 +178,7 @@ export async function addConversationMessage(input: {
   sender: "user" | "admin";
   message: string;
 }) {
-  const { data, error } = await supabase
+  const { data, error } = await getSupabase()
     .from("report_conversations")
     .insert({
       report_id: input.report_id,
@@ -193,7 +193,7 @@ export async function addConversationMessage(input: {
 }
 
 export async function getConversations(reportId: string) {
-  const { data, error } = await supabase
+  const { data, error } = await getSupabase()
     .from("report_conversations")
     .select("*")
     .eq("report_id", reportId)

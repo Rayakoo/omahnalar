@@ -19,7 +19,7 @@ export type CreateStoryInput = {
 };
 
 export async function getStories() {
-  const { data, error } = await supabase
+  const { data, error } = await getSupabase()
     .from("stories")
     .select("*")
     .order("created_at", { ascending: false });
@@ -32,7 +32,7 @@ export async function getStoriesPaginated(
   from: number,
   to: number
 ): Promise<{ data: Story[]; count: number | null }> {
-  const { data, error, count } = await supabase
+  const { data, error, count } = await getSupabase()
     .from("stories")
     .select("*", { count: "exact" })
     .order("created_at", { ascending: false })
@@ -43,7 +43,7 @@ export async function getStoriesPaginated(
 }
 
 export async function createStory(input: CreateStoryInput) {
-  const { data, error } = await supabase
+  const { data, error } = await getSupabase()
     .from("stories")
     .insert({
       title: input.title,
@@ -63,7 +63,7 @@ export async function updateStory(
   id: string,
   updates: Partial<Pick<Story, "title" | "name" | "content" | "category" | "is_anonymous">>
 ) {
-  const { data, error } = await supabase
+  const { data, error } = await getSupabase()
     .from("stories")
     .update(updates)
     .eq("id", id)
