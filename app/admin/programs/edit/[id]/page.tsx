@@ -22,6 +22,7 @@ export default function EditProgram() {
   const [descriptions, setDescriptions] = useState<string[]>([""]);
   const [target, setTarget] = useState<string[]>([""]);
   const [goals, setGoals] = useState<string[]>([""]);
+  const [videos, setVideos] = useState<string[]>([""]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -44,6 +45,7 @@ export default function EditProgram() {
         setDescriptions(p.descriptions.length > 0 ? p.descriptions : [""]);
         setTarget(p.target.length > 0 ? p.target : [""]);
         setGoals(p.goals.length > 0 ? p.goals : [""]);
+        setVideos(p.video_url?.length > 0 ? p.video_url : [""]);
       })
       .catch((err) => setError(err instanceof Error ? err.message : "Gagal memuat program"))
       .finally(() => setLoading(false));
@@ -67,12 +69,24 @@ export default function EditProgram() {
     setter(next);
   };
 
+  const addVideo = () => setVideos((prev) => [...prev, ""]);
+  const removeVideo = (idx: number) => {
+    if (videos.length <= 1) return;
+    setVideos(videos.filter((_, i) => i !== idx));
+  };
+  const updateVideoUrl = (idx: number, url: string) => {
+    const next = [...videos];
+    next[idx] = url;
+    setVideos(next);
+  };
+
   const doSave = async () => {
     if (savingRef.current) return;
     if (!form.title || !form.tag || !form.tagline || !form.periodStart || !form.periodEnd || !form.location) {
       setError("Judul, tag, tagline, tanggal mulai, tanggal selesai, dan lokasi harus diisi.");
       return;
     }
+    const validVideos = videos.filter((v) => v.trim());
     setError("");
     setSaving(true);
     savingRef.current = true;
@@ -85,6 +99,7 @@ export default function EditProgram() {
         period: `${form.periodStart} - ${form.periodEnd}`,
         location: form.location,
         tagline: form.tagline,
+        video_url: validVideos,
         descriptions: descriptions.filter(Boolean),
         target: target.filter(Boolean),
         goals: goals.filter(Boolean),
@@ -242,6 +257,30 @@ export default function EditProgram() {
                   className="flex-1 px-4 py-3 bg-white border border-[#D9D7EC] rounded-xl focus:outline-none focus:ring-1 focus:ring-purple-500 placeholder-gray-400 text-sm text-gray-900"
                 />
                 <button type="button" onClick={() => removeArrayItem(goals, setGoals, idx)} className="text-red-400 hover:text-red-600">
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            ))}
+          </div>
+
+          {/* VIDEOS */}
+          <div>
+            <div className="flex items-center justify-between mb-1">
+              <label className="block text-sm font-semibold text-gray-700">Video <span className="text-gray-400 font-normal text-xs">(opsional)</span></label>
+              <button type="button" onClick={addVideo} className="text-[#4D455D] hover:text-[#3d364a]">
+                <Plus className="w-4 h-4" />
+              </button>
+            </div>
+            {videos.map((v, idx) => (
+              <div key={idx} className="flex items-start gap-2 mb-2">
+                <input
+                  type="url"
+                  value={v}
+                  onChange={(e) => updateVideoUrl(idx, e.target.value)}
+                  placeholder="https://youtube.com/watch?v=... atau https://drive.google.com/file/d/..."
+                  className="flex-1 px-4 py-3 bg-white border border-[#D9D7EC] rounded-xl focus:outline-none focus:ring-1 focus:ring-purple-500 placeholder-gray-400 text-sm text-gray-900"
+                />
+                <button type="button" onClick={() => removeVideo(idx)} className="text-red-400 hover:text-red-600 mt-3">
                   <X className="w-4 h-4" />
                 </button>
               </div>

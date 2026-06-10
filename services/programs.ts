@@ -10,6 +10,7 @@ export type Program = {
   period: string;
   location: string;
   image_url: ImageUrl[];
+  video_url: string[];
   tagline: string;
   descriptions: string[];
   target: string[];
@@ -24,6 +25,7 @@ export type CreateProgramInput = {
   period: string;
   location: string;
   image_url: ImageUrl[];
+  video_url?: string[];
   tagline: string;
   descriptions?: string[];
   target?: string[];
@@ -62,6 +64,7 @@ export async function createProgram(input: CreateProgramInput) {
     period: input.period,
     location: input.location,
     image_url: input.image_url,
+    video_url: input.video_url ?? [],
     tagline: input.tagline,
     descriptions: input.descriptions ?? [],
     target: input.target ?? [],
@@ -110,7 +113,7 @@ export async function getProgramById(id: string) {
 
 export async function updateProgram(
   id: string,
-  updates: Partial<Pick<Program, "slug" | "title" | "tag" | "period" | "location" | "image_url" | "tagline" | "descriptions" | "target" | "goals">>
+  updates: Partial<Pick<Program, "slug" | "title" | "tag" | "period" | "location" | "image_url" | "video_url" | "tagline" | "descriptions" | "target" | "goals">>
 ) {
   const { url, anonKey } = getSupabaseConfig();
   const token = getAccessToken();

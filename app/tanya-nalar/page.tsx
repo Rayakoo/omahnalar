@@ -10,12 +10,25 @@ export default function TanyaNalarPage() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<"cek" | "buat">("buat");
 
+  const KATEGORI_OPTIONS = [
+    "Kekerasan fisik",
+    "Kekerasan Psikis/emosional",
+    "Kekerasan seksual",
+    "Kekerasan verbal",
+    "KDRT",
+    "Diskriminasi",
+    "Bullying",
+    "Kekerasan digital",
+    "Lainnya",
+  ];
+
   // Form fields
   const [email, setEmail] = useState("");
   const [selectedDate, setSelectedDate] = useState("");
   const [location, setLocation] = useState("");
   const [chronology, setChronology] = useState("");
   const [images, setImages] = useState<string[]>([]);
+  const [category, setCategory] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
   // Cek status
@@ -45,6 +58,7 @@ export default function TanyaNalarPage() {
         location,
         chronology,
         images,
+        category: category || undefined,
       });
       router.push(`/tanya-nalar/sukses?ticket=${report.ticket_id}`);
     } catch (err) {
@@ -183,6 +197,26 @@ export default function TanyaNalarPage() {
                   placeholder="Ceritakan yang terjadi secara runtut. Tidak perlu sempurna, tulis sesuai yang kamu ingat"
                   className="w-full p-3 bg-white border border-gray-200 rounded-xl text-sm resize-none focus:outline-none focus:ring-2 focus:ring-[#736A9C]"
                 />
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-[#4C4765] mb-2">Kategori Laporan</label>
+                <div className="flex flex-wrap gap-2">
+                  {KATEGORI_OPTIONS.map((kat) => (
+                    <button
+                      key={kat}
+                      type="button"
+                      onClick={() => setCategory(category === kat ? "" : kat)}
+                      className={`px-4 py-2 rounded-xl text-xs font-semibold border transition-all ${
+                        category === kat
+                          ? "border-[#4C4765] bg-[#E5E2F8] text-[#3B3654]"
+                          : "border-gray-200 bg-white text-gray-600 hover:border-[#736A9C]"
+                      }`}
+                    >
+                      {kat}
+                    </button>
+                  ))}
+                </div>
               </div>
 
               <div>

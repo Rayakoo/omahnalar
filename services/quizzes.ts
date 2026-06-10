@@ -1,4 +1,4 @@
-import { getSupabase } from "@/lib/supabaseClient";
+import { getSupabase, getAccessToken } from "@/lib/supabaseClient";
 
 // ── Quizzes ──────────────────────────────────────────────────
 export type Quiz = {
@@ -38,34 +38,72 @@ export async function createQuiz(input: {
   description?: string;
   urutan?: number;
 }) {
-  const { data, error } = await getSupabase()
-    .from("quizzes")
-    .insert(input)
-    .select()
-    .single();
-
-  if (error) throw error;
-  return data as Quiz;
+  const token = getAccessToken();
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/quizzes?select=*`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+        Authorization: `Bearer ${token}`,
+        Prefer: "return=representation",
+      },
+      body: JSON.stringify(input),
+    }
+  );
+  if (!res.ok) {
+    const errText = await res.text();
+    throw new Error(`Supabase POST failed: ${res.status} ${errText}`);
+  }
+  const data: Quiz[] = await res.json();
+  if (!data || data.length === 0) throw new Error("No data returned");
+  return data[0];
 }
 
 export async function updateQuiz(
   id: string,
   updates: Partial<Pick<Quiz, "title" | "description" | "urutan">>
 ) {
-  const { data, error } = await getSupabase()
-    .from("quizzes")
-    .update(updates)
-    .eq("id", id)
-    .select()
-    .single();
-
-  if (error) throw error;
-  return data as Quiz;
+  const token = getAccessToken();
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/quizzes?id=eq.${id}&select=*`,
+    {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+        Authorization: `Bearer ${token}`,
+        Prefer: "return=representation",
+      },
+      body: JSON.stringify(updates),
+    }
+  );
+  if (!res.ok) {
+    const errText = await res.text();
+    throw new Error(`Supabase PATCH failed: ${res.status} ${errText}`);
+  }
+  const data: Quiz[] = await res.json();
+  if (!data || data.length === 0) throw new Error("No data returned");
+  return data[0];
 }
 
 export async function deleteQuiz(id: string) {
-  const { error } = await getSupabase().from("quizzes").delete().eq("id", id);
-  if (error) throw error;
+  const token = getAccessToken();
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/quizzes?id=eq.${id}`,
+    {
+      method: "DELETE",
+      headers: {
+        apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+  if (!res.ok) {
+    const errText = await res.text();
+    throw new Error(`Supabase DELETE failed: ${res.status} ${errText}`);
+  }
 }
 
 // ── Quiz Questions ───────────────────────────────────────────
@@ -97,37 +135,72 @@ export async function createQuizQuestion(input: {
   correct_answer: string;
   urutan?: number;
 }) {
-  const { data, error } = await getSupabase()
-    .from("quiz_questions")
-    .insert(input)
-    .select()
-    .single();
-
-  if (error) throw error;
-  return data as QuizQuestion;
+  const token = getAccessToken();
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/quiz_questions?select=*`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+        Authorization: `Bearer ${token}`,
+        Prefer: "return=representation",
+      },
+      body: JSON.stringify(input),
+    }
+  );
+  if (!res.ok) {
+    const errText = await res.text();
+    throw new Error(`Supabase POST failed: ${res.status} ${errText}`);
+  }
+  const data: QuizQuestion[] = await res.json();
+  if (!data || data.length === 0) throw new Error("No data returned");
+  return data[0];
 }
 
 export async function updateQuizQuestion(
   id: string,
   updates: Partial<Pick<QuizQuestion, "question_text" | "options" | "correct_answer" | "urutan">>
 ) {
-  const { data, error } = await getSupabase()
-    .from("quiz_questions")
-    .update(updates)
-    .eq("id", id)
-    .select()
-    .single();
-
-  if (error) throw error;
-  return data as QuizQuestion;
+  const token = getAccessToken();
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/quiz_questions?id=eq.${id}&select=*`,
+    {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+        Authorization: `Bearer ${token}`,
+        Prefer: "return=representation",
+      },
+      body: JSON.stringify(updates),
+    }
+  );
+  if (!res.ok) {
+    const errText = await res.text();
+    throw new Error(`Supabase PATCH failed: ${res.status} ${errText}`);
+  }
+  const data: QuizQuestion[] = await res.json();
+  if (!data || data.length === 0) throw new Error("No data returned");
+  return data[0];
 }
 
 export async function deleteQuizQuestion(id: string) {
-  const { error } = await getSupabase()
-    .from("quiz_questions")
-    .delete()
-    .eq("id", id);
-  if (error) throw error;
+  const token = getAccessToken();
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/quiz_questions?id=eq.${id}`,
+    {
+      method: "DELETE",
+      headers: {
+        apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+  if (!res.ok) {
+    const errText = await res.text();
+    throw new Error(`Supabase DELETE failed: ${res.status} ${errText}`);
+  }
 }
 
 export async function getQuizWithQuestions(quizId: string) {
@@ -143,7 +216,7 @@ export async function getQuizWithQuestions(quizId: string) {
 export async function submitQuizResult(input: {
   user_id: string;
   quiz_id: string;
-  answers: Record<string, string>; // { questionId: selectedAnswer }
+  answers: Record<string, string>;
 }) {
   const questions = await getQuizQuestions(input.quiz_id);
   let score = 0;
@@ -157,20 +230,33 @@ export async function submitQuizResult(input: {
   const total = questions.length;
   const passed = score / total >= 0.75;
 
-  const { data, error } = await getSupabase()
-    .from("user_quiz_results")
-    .insert({
-      user_id: input.user_id,
-      quiz_id: input.quiz_id,
-      score,
-      total,
-      passed,
-    })
-    .select()
-    .single();
-
-  if (error) throw error;
-  return { result: data, score, total, passed };
+  const token = getAccessToken();
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/user_quiz_results?select=*`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+        Authorization: `Bearer ${token}`,
+        Prefer: "return=representation",
+      },
+      body: JSON.stringify({
+        user_id: input.user_id,
+        quiz_id: input.quiz_id,
+        score,
+        total,
+        passed,
+      }),
+    }
+  );
+  if (!res.ok) {
+    const errText = await res.text();
+    throw new Error(`Supabase POST failed: ${res.status} ${errText}`);
+  }
+  const data = await res.json();
+  if (!data || data.length === 0) throw new Error("No data returned");
+  return { result: data[0], score, total, passed };
 }
 
 export async function getUserQuizResults(userId: string, quizId: string) {

@@ -49,6 +49,7 @@ export type CreateReportInput = {
   location: string;
   chronology: string;
   images?: string[];
+  category?: string;
 };
 
 export async function createReport(input: CreateReportInput) {
@@ -79,6 +80,7 @@ export async function createReport(input: CreateReportInput) {
       location: input.location,
       chronology: input.chronology,
       images: input.images ?? [],
+      category: input.category ?? null,
     })
     .select()
     .single();

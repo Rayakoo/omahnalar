@@ -20,7 +20,15 @@ const STATUS_MAP: Record<string, { label: string; color: string }> = {
 };
 
 const CATEGORY_OPTIONS = [
-  "Perundungan", "Kekerasan Seksual", "Pelecehan", "KDRT", "Diskriminasi", "Bullying",
+  "Kekerasan fisik",
+  "Kekerasan Psikis/emosional",
+  "Kekerasan seksual",
+  "Kekerasan verbal",
+  "KDRT",
+  "Diskriminasi",
+  "Bullying",
+  "Kekerasan digital",
+  "Lainnya",
 ];
 
 function formatDate(iso: string) {

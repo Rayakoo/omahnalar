@@ -1,9 +1,65 @@
+"use client";
+
+import { useState, useEffect } from "react";
 import { ArrowRight } from "lucide-react";
+import { getGalleries, type Gallery } from "@/services/galleries";
+import { transformImageUrl } from "@/lib/image";
 
 export default function Hero() {
+  const [galleries, setGalleries] = useState<Gallery[]>([]);
+  const [current, setCurrent] = useState(0);
+
+  useEffect(() => {
+    getGalleries(15).then(setGalleries).catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    if (galleries.length <= 1) return;
+    const interval = setInterval(() => {
+      setCurrent((prev) => (prev + 1) % galleries.length);
+    }, 4000);
+    return () => clearInterval(interval);
+  }, [galleries.length]);
+
   return (
     <header className="bg-brand-900 text-white relative overflow-hidden">
-      <div className="max-w-6xl mx-auto px-6 py-24 md:py-32 flex flex-col items-center text-center gap-6">
+      {/* Background Slider */}
+      {galleries.length > 0 && (
+        <div className="absolute inset-0">
+          {galleries.map((g, idx) => (
+            <div
+              key={g.id}
+              className={`absolute inset-0 transition-opacity duration-1000 ${
+                idx === current ? "opacity-20" : "opacity-0"
+              }`}
+            >
+              <img
+                src={transformImageUrl(g.url)}
+                alt="Dokumentasi Omah Nalar"
+                className="w-full h-full object-cover"
+              />
+            </div>
+          ))}
+          <div className="absolute inset-0 bg-gradient-to-b from-brand-900/60 via-brand-900/80 to-brand-900" />
+        </div>
+      )}
+
+      {/* Dots */}
+      {galleries.length > 1 && (
+        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
+          {galleries.map((_, idx) => (
+            <button
+              key={idx}
+              onClick={() => setCurrent(idx)}
+              className={`w-1.5 h-1.5 rounded-full transition-all ${
+                idx === current ? "bg-secondary-500 w-4" : "bg-white/40 hover:bg-white/60"
+              }`}
+            />
+          ))}
+        </div>
+      )}
+
+      <div className="max-w-6xl mx-auto px-6 py-24 md:py-32 flex flex-col items-center text-center gap-6 relative z-10">
         <div className="max-w-3xl flex flex-col items-center gap-4">
           <span className="bg-secondary-500 text-brand-900 text-xs font-semibold px-4 py-1.5 rounded-full shadow-sm">
             Ruang aman & terpercaya

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useRouter, useParams } from "next/navigation";
-import { ArrowLeft, Save } from "lucide-react";
+import { ArrowLeft, Save, Plus, X } from "lucide-react";
 import { getBeritaById, updateBerita, type Berita } from "@/services/berita";
 
 export default function EditBerita() {
@@ -18,6 +18,7 @@ export default function EditBerita() {
     author: "",
     is_published: false,
   });
+  const [videos, setVideos] = useState<string[]>([""]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -35,6 +36,7 @@ export default function EditBerita() {
           author: b.author,
           is_published: b.is_published,
         });
+        setVideos(b.video_url?.length > 0 ? b.video_url : [""]);
       })
       .catch((err) => setError(err instanceof Error ? err.message : "Gagal memuat berita"))
       .finally(() => setLoading(false));
@@ -47,12 +49,24 @@ export default function EditBerita() {
     update("slug", title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, ""));
   };
 
+  const addVideo = () => setVideos((prev) => [...prev, ""]);
+  const removeVideo = (idx: number) => {
+    if (videos.length <= 1) return;
+    setVideos(videos.filter((_, i) => i !== idx));
+  };
+  const updateVideoUrl = (idx: number, url: string) => {
+    const next = [...videos];
+    next[idx] = url;
+    setVideos(next);
+  };
+
   const handleSubmit = async (publish: boolean) => {
     if (savingRef.current) return;
     if (!form.title || !form.content) {
       setError("Judul dan konten harus diisi.");
       return;
     }
+    const validVideos = videos.filter((v) => v.trim());
     setError("");
     setSaving(true);
     savingRef.current = true;
@@ -63,6 +77,7 @@ export default function EditBerita() {
         slug: form.slug,
         content: form.content,
         excerpt: form.excerpt || undefined,
+        video_url: validVideos,
         author: form.author,
         is_published: publish,
         published_at: publish && !form.is_published ? new Date().toISOString() : undefined,
@@ -123,6 +138,30 @@ export default function EditBerita() {
               onChange={(e) => update("excerpt", e.target.value)}
               className="w-full px-4 py-3 bg-white border border-[#D9D7EC] rounded-xl focus:outline-none focus:ring-1 focus:ring-purple-500 text-sm text-gray-900 resize-none"
             />
+          </div>
+
+          {/* VIDEOS */}
+          <div>
+            <div className="flex items-center justify-between mb-1">
+              <label className="block text-sm font-semibold text-gray-700">Video <span className="text-gray-400 font-normal text-xs">(opsional)</span></label>
+              <button type="button" onClick={addVideo} className="text-[#4D455D] hover:text-[#3d364a]">
+                <Plus className="w-4 h-4" />
+              </button>
+            </div>
+            {videos.map((v, idx) => (
+              <div key={idx} className="flex items-start gap-2 mb-2">
+                <input
+                  type="url"
+                  value={v}
+                  onChange={(e) => updateVideoUrl(idx, e.target.value)}
+                  placeholder="https://youtube.com/watch?v=... atau https://drive.google.com/file/d/..."
+                  className="flex-1 px-4 py-3 bg-white border border-[#D9D7EC] rounded-xl focus:outline-none focus:ring-1 focus:ring-purple-500 placeholder-gray-400 text-sm text-gray-900"
+                />
+                <button type="button" onClick={() => removeVideo(idx)} className="text-red-400 hover:text-red-600 mt-3">
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            ))}
           </div>
 
           <div>

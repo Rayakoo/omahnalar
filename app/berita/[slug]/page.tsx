@@ -4,6 +4,8 @@ import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft, Calendar, User } from "lucide-react";
 import { getBeritaBySlug, type Berita, type ImageUrl } from "@/services/berita";
+import { transformImageUrl } from "@/lib/image";
+import { getVideoEmbedUrl } from "@/lib/video";
 
 function formatDate(dateStr: string | null): string {
   if (!dateStr) return "";
@@ -85,7 +87,7 @@ export default function BeritaDetail() {
         {images.length > 0 && (
           <div className="rounded-2xl overflow-hidden bg-gray-100 mb-8 aspect-video">
             <img
-              src={images[0].url}
+              src={transformImageUrl(images[0].url)}
               alt={berita.title}
               className="w-full h-full object-cover"
               onError={(e) => {
@@ -96,6 +98,27 @@ export default function BeritaDetail() {
                 }
               }}
             />
+          </div>
+        )}
+
+        {/* Videos */}
+        {berita.video_url?.filter((v) => v.trim()).length > 0 && (
+          <div className="mb-8 space-y-4">
+            {berita.video_url.filter((v) => v.trim()).map((v, idx) => {
+              const embedUrl = getVideoEmbedUrl(v);
+              if (!embedUrl) return null;
+              return (
+                <div key={idx} className="rounded-2xl overflow-hidden bg-gray-100 aspect-video shadow-sm">
+                  <iframe
+                    src={embedUrl}
+                    title={`Video ${idx + 1}`}
+                    className="w-full h-full"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                  />
+                </div>
+              );
+            })}
           </div>
         )}
 
@@ -112,7 +135,7 @@ export default function BeritaDetail() {
               {images.slice(1).map((img, idx) => (
                 <div key={idx} className="rounded-xl overflow-hidden bg-gray-100 aspect-video">
                   <img
-                    src={img.url}
+                    src={transformImageUrl(img.url)}
                     alt={`${berita.title} ${idx + 2}`}
                     className="w-full h-full object-cover"
                     onError={(e) => {

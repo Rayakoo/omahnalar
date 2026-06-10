@@ -87,7 +87,7 @@ export default function CoursePage() {
   const filteredCourses = useMemo(() => {
     let result = courses;
     if (activeTab) {
-      result = result.filter((c) => c.category.name === activeTab);
+      result = result.filter((c) => c.category?.name === activeTab);
     }
     if (search.trim()) {
       const q = search.toLowerCase();
@@ -205,7 +205,7 @@ export default function CoursePage() {
                       <div>
                         <h4 className="text-sm font-bold text-brand-900 leading-snug mb-1">{course.title}</h4>
                         <p className="text-[11px] text-brand-700/60 font-semibold mb-3">
-                          {course.category.name} • {course.education_level.name}
+                          {course.category?.name ?? 'Unknown'} • {course.education_level?.name ?? 'Unknown'}
                         </p>
                         {course.description && (
                           <p className="text-xs text-brand-700/80 leading-relaxed mb-4 line-clamp-2">{course.description}</p>
@@ -288,7 +288,7 @@ function SchoolCarousel({ level, courses, seed }: { level: EducationLevel; cours
               <div className="p-4 flex flex-col justify-between flex-1 gap-4">
                 <div>
                   <h4 className="text-sm font-bold text-brand-900 leading-snug mb-1">{course.title}</h4>
-                  <p className="text-[11px] text-brand-700/60 font-semibold">{course.category.name}</p>
+                  <p className="text-[11px] text-brand-700/60 font-semibold">{course.category?.name ?? 'Unknown'}</p>
                 </div>
                 <span className="bg-brand-700 text-white text-[10px] font-bold px-2.5 py-1.5 rounded-lg w-fit shadow-sm">
                   Mulai

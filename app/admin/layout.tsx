@@ -9,6 +9,8 @@ const NAV_ITEMS = [
   { label: "Kelola Course", href: "/admin/courses" },
   { label: "Kelola Program", href: "/admin/programs" },
   { label: "Kelola Berita", href: "/admin/berita" },
+  { label: "Kelola Produk", href: "/admin/produk" },
+  { label: "Dokumentasi", href: "/admin/galleries" },
   { label: "Kelola Admin", href: "/admin/users" },
 ];
 

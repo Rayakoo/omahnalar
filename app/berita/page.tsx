@@ -4,10 +4,12 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Calendar, User, ArrowRight } from "lucide-react";
 import { getBerita, type Berita, type ImageUrl } from "@/services/berita";
+import { transformImageUrl } from "@/lib/image";
 
 function getThumbnail(image_url: ImageUrl[]): string | null {
   const thumb = image_url.find((img) => img.is_thumbnail);
-  return thumb?.url || image_url[0]?.url || null;
+  const url = thumb?.url || image_url[0]?.url || null;
+  return url ? transformImageUrl(url) : null;
 }
 
 function formatDate(dateStr: string | null): string {

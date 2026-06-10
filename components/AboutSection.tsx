@@ -1,12 +1,68 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { ArrowRight } from "lucide-react";
+import { getGalleries, type Gallery } from "@/services/galleries";
+import { transformImageUrl } from "@/lib/image";
 
 export default function AboutSection() {
+  const [galleries, setGalleries] = useState<Gallery[]>([]);
+  const [current, setCurrent] = useState(0);
+
+  useEffect(() => {
+    getGalleries(15).then(setGalleries).catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    if (galleries.length <= 1) return;
+    const interval = setInterval(() => {
+      setCurrent((prev) => (prev + 1) % galleries.length);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [galleries.length]);
+
   return (
     <section className="bg-page-50 py-20">
       <div className="max-w-6xl mx-auto px-6 flex flex-col lg:flex-row items-center gap-12">
         <div className="w-full lg:w-1/2">
-          <div className="bg-brand-100 rounded-3xl h-80 flex items-center justify-center text-brand-700/40">
-            <span className="text-lg">Gambar Omah Nalar</span>
+          <div className="relative bg-brand-100 rounded-3xl h-80 overflow-hidden">
+            {galleries.length === 0 ? (
+              <div className="w-full h-full flex items-center justify-center text-brand-700/40 text-lg">
+                Gambar Omah Nalar
+              </div>
+            ) : (
+              <AnimatePresence mode="wait">
+                <motion.img
+                  key={galleries[current].id}
+                  src={transformImageUrl(galleries[current].url)}
+                  alt="Dokumentasi Omah Nalar"
+                  className="w-full h-full object-cover"
+                  initial={{ opacity: 0, x: 50 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -50 }}
+                  transition={{ duration: 0.5 }}
+                  onError={(e) => {
+                    (e.currentTarget as HTMLImageElement).style.display = "none";
+                  }}
+                />
+              </AnimatePresence>
+            )}
+
+            {/* Dots */}
+            {galleries.length > 1 && (
+              <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
+                {galleries.map((_, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => setCurrent(idx)}
+                    className={`w-1.5 h-1.5 rounded-full transition-all ${
+                      idx === current ? "bg-secondary-500 w-4" : "bg-white/60 hover:bg-white/80"
+                    }`}
+                  />
+                ))}
+              </div>
+            )}
           </div>
         </div>
         <div className="w-full lg:w-1/2">

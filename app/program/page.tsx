@@ -4,10 +4,12 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Calendar, MapPin, ArrowRight } from "lucide-react";
 import { getPrograms, type Program, type ImageUrl } from "@/services/programs";
+import { transformImageUrl } from "@/lib/image";
 
 function getThumbnail(image_url: ImageUrl[]): string | null {
   const thumb = image_url.find((img) => img.is_thumbnail);
-  return thumb?.url || image_url[0]?.url || null;
+  const url = thumb?.url || image_url[0]?.url || null;
+  return url ? transformImageUrl(url) : null;
 }
 
 const THEMES: Record<string, { from: string; to: string; badge: string }> = {
@@ -80,13 +82,13 @@ export default function ProgramPage() {
                       <img
                         src={imgUrl}
                         alt={prog.title}
-                        className="w-full h-full object-cover mix-blend-overlay opacity-60 group-hover:scale-105 transition-transform duration-500"
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                         onError={(e) => {
                           (e.currentTarget as HTMLImageElement).style.display = "none";
                         }}
                       />
                     ) : null}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
                     <div className="absolute top-3 left-3">
                       <span className={`inline-block ${theme.badge} text-[9px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider shadow-sm`}>
                         {prog.tag}

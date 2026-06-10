@@ -6,6 +6,8 @@ import { MapPin, Target, BookOpen, Heart, MessageSquare, Shield, Award, External
 import Link from "next/link";
 import dynamic from "next/dynamic";
 import { getPrograms, type Program, type ImageUrl } from "@/services/programs";
+import { getGalleries, type Gallery } from "@/services/galleries";
+import { transformImageUrl } from "@/lib/image";
 
 const PetaMitraJaringan = dynamic(() => import("@/components/PetaMitraJaringan"), {
   ssr: false,
@@ -36,21 +38,6 @@ const anggota = [
   { name: "Randy Gustawan", role: "Sie Acara", img: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&q=80&w=200" },
 ];
 
-const partners = [
-  { name: "MI Nurul Huda 2", city: "Malang" },
-  { name: "MTS Dzunnuroin", city: "Malang" },
-  { name: "MTS Taufiqiyah", city: "Kab. Malang" },
-  { name: "BEM FK UM", city: "Malang" },
-  { name: "HMD IKM UM", city: "Malang" },
-  { name: "FIK UM", city: "Malang" },
-  { name: "Intrans", city: "Malang" },
-  { name: "Lensa", city: "Malang" },
-  { name: "SD Mojorejo 2", city: "Malang" },
-  { name: "SMP Negeri 3 Singosari", city: "Singosari" },
-  { name: "Pusat Kajian Perempuan Solo", city: "Solo" },
-  { name: "YPK Bali", city: "Bali" },
-];
-
 const features = [
   { icon: MessageSquare, title: "Berbagi Cerita", desc: "Curhat anonim di komunitas yang aman dan saling mendukung." },
   { icon: Shield, title: "Buat Laporan", desc: "Aduan kekerasan & pelecehan dengan pendampingan penuh empati." },
@@ -60,7 +47,8 @@ const features = [
 
 function getThumbnail(image_url: ImageUrl[]): string | null {
   const thumb = image_url.find((img) => img.is_thumbnail);
-  return thumb?.url || image_url[0]?.url || null;
+  const url = thumb?.url || image_url[0]?.url || null;
+  return url ? transformImageUrl(url) : null;
 }
 
 const THEMES: Record<string, string> = {
@@ -78,10 +66,12 @@ function getTheme(slug: string): string {
 
 export default function TentangPage() {
   const [programs, setPrograms] = useState<Program[]>([]);
+  const [galleries, setGalleries] = useState<Gallery[]>([]);
   const [flippedId, setFlippedId] = useState<string | null>(null);
 
   useEffect(() => {
     getPrograms().then(setPrograms).catch(() => {});
+    getGalleries(15).then(setGalleries).catch(() => {});
   }, []);
 
   return (
@@ -448,13 +438,13 @@ export default function TentangPage() {
                       <img
                         src={imgUrl}
                         alt={prog.title}
-                        className="w-full h-full object-cover mix-blend-overlay opacity-60 group-hover:scale-105 transition-transform duration-500"
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                         onError={(e) => {
                           (e.currentTarget as HTMLImageElement).style.display = "none";
                         }}
                       />
                     ) : null}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
                     <div className="absolute top-3 left-3">
                       <span className="inline-block bg-white/90 text-brand-900 text-[9px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider shadow-sm">
                         {prog.tag}
@@ -504,25 +494,7 @@ export default function TentangPage() {
             <PetaMitraJaringan />
           </div>
 
-          {/* Partner List */}
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 max-w-4xl mx-auto">
-            {partners.map((p, idx) => (
-              <motion.div
-                key={idx}
-                initial={{ opacity: 0, y: 10 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: idx * 0.03 }}
-                className="flex items-center gap-2 bg-brand-100/40 rounded-xl p-3 border border-brand-100/50 hover:bg-brand-100/70 transition-all"
-              >
-                <MapPin className="w-3.5 h-3.5 text-brand-700 shrink-0" />
-                <div>
-                  <p className="text-xs font-bold text-brand-900 leading-tight">{p.name}</p>
-                  <p className="text-[9px] text-brand-700/50">{p.city}</p>
-                </div>
-              </motion.div>
-            ))}
-          </div>
+
         </div>
       </section>
 
@@ -535,22 +507,41 @@ export default function TentangPage() {
         </motion.div>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 max-w-5xl mx-auto">
-          {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
-            <motion.div
-              key={i}
-              initial={{ opacity: 0, scale: 0.9 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              viewport={{ once: true }}
-              transition={{ delay: i * 0.05 }}
-              className={`rounded-2xl bg-gradient-to-br from-brand-100/60 to-brand-700/10 border border-gray-100 flex items-center justify-center text-brand-700/30 hover:from-brand-100 hover:to-brand-700/20 hover:text-brand-700/50 transition-all cursor-pointer ${
-                i === 1 ? "col-span-2 row-span-2 aspect-square" : "aspect-[4/3]"
-              }`}
-            >
-              <svg className="w-8 h-8 md:w-10 md:h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-              </svg>
-            </motion.div>
-          ))}
+          {galleries.length === 0 ? (
+            <>
+              {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+                <div key={i} className={`rounded-2xl bg-gradient-to-br from-brand-100/60 to-brand-700/10 border border-gray-100 flex items-center justify-center text-brand-700/30 ${
+                  i === 1 ? "col-span-2 row-span-2 aspect-square" : "aspect-[4/3]"
+                }`}>
+                  <svg className="w-8 h-8 md:w-10 md:h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                </div>
+              ))}
+            </>
+          ) : (
+            galleries.map((g, idx) => (
+              <motion.div
+                key={g.id}
+                initial={{ opacity: 0, scale: 0.9 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ delay: idx * 0.05 }}
+                className={`rounded-2xl overflow-hidden border border-gray-100 shadow-sm group cursor-pointer ${
+                  idx === 0 ? "col-span-2 row-span-2 aspect-square" : "aspect-[4/3]"
+                }`}
+              >
+                <img
+                  src={transformImageUrl(g.url)}
+                  alt="Dokumentasi Omah Nalar"
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  onError={(e) => {
+                    (e.currentTarget as HTMLImageElement).style.display = "none";
+                  }}
+                />
+              </motion.div>
+            ))
+          )}
         </div>
 
         <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} className="text-center mt-10">

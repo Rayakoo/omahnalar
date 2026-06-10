@@ -23,6 +23,7 @@ export default function TambahProgram() {
   const [target, setTarget] = useState<string[]>([""]);
   const [goals, setGoals] = useState<string[]>([""]);
   const [images, setImages] = useState<ImageInput[]>([{ url: "", is_thumbnail: true }]);
+  const [videos, setVideos] = useState<string[]>([""]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const savingRef = useRef(false);
@@ -62,6 +63,17 @@ export default function TambahProgram() {
     setImages(next);
   };
 
+  const addVideo = () => setVideos((prev) => [...prev, ""]);
+  const removeVideo = (idx: number) => {
+    if (videos.length <= 1) return;
+    setVideos(videos.filter((_, i) => i !== idx));
+  };
+  const updateVideoUrl = (idx: number, url: string) => {
+    const next = [...videos];
+    next[idx] = url;
+    setVideos(next);
+  };
+
   const doSave = async () => {
     if (savingRef.current) return;
     if (!form.title || !form.tag || !form.tagline || !form.periodStart || !form.periodEnd || !form.location) {
@@ -69,6 +81,7 @@ export default function TambahProgram() {
       return;
     }
     const validImages = images.filter((i) => i.url.trim());
+    const validVideos = videos.filter((v) => v.trim());
     console.log("[TambahProgram] validImages:", JSON.stringify(validImages, null, 2));
     setError("");
     setSaving(true);
@@ -83,6 +96,7 @@ export default function TambahProgram() {
         period: `${form.periodStart} - ${form.periodEnd}`,
         location: form.location,
         image_url: validImages,
+        video_url: validVideos,
         tagline: form.tagline,
         descriptions: descriptions.filter(Boolean),
         target: target.filter(Boolean),
@@ -207,6 +221,30 @@ export default function TambahProgram() {
               </div>
             ))}
             <p className="text-[10px] text-gray-400 mt-1">Gambar pertama akan otomatis jadi thumbnail.</p>
+          </div>
+
+          {/* VIDEOS */}
+          <div>
+            <div className="flex items-center justify-between mb-1">
+              <label className="block text-sm font-semibold text-gray-700">Video <span className="text-gray-400 font-normal text-xs">(opsional)</span></label>
+              <button type="button" onClick={addVideo} className="text-[#4D455D] hover:text-[#3d364a]">
+                <Plus className="w-4 h-4" />
+              </button>
+            </div>
+            {videos.map((v, idx) => (
+              <div key={idx} className="flex items-start gap-2 mb-2">
+                <input
+                  type="url"
+                  value={v}
+                  onChange={(e) => updateVideoUrl(idx, e.target.value)}
+                  placeholder="https://youtube.com/watch?v=... atau https://drive.google.com/file/d/..."
+                  className="flex-1 px-4 py-3 bg-white border border-[#D9D7EC] rounded-xl focus:outline-none focus:ring-1 focus:ring-purple-500 placeholder-gray-400 text-sm text-gray-900"
+                />
+                <button type="button" onClick={() => removeVideo(idx)} className="text-red-400 hover:text-red-600 mt-3">
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            ))}
           </div>
 
           {/* DESCRIPTIONS */}
