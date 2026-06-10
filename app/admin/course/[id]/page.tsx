@@ -22,6 +22,7 @@ import {
   getCourseMaterials,
   type Category,
   type EducationLevel,
+  type CreateCourseInput,
   type CourseWithRelations,
   type CourseVideo,
   type CourseMaterial,
@@ -94,7 +95,7 @@ export default function EditCoursePage() {
     }
     setSaving(true);
     try {
-      const payload: Record<string, unknown> = {
+      const payload: CreateCourseInput = {
         title,
         description: description || undefined,
         category_id: selectedRole,
