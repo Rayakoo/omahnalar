@@ -4,6 +4,8 @@ import { useState, useEffect, useRef } from "react";
 import { useSearchParams, useParams, useRouter } from "next/navigation";
 import { ChevronLeft, Download, Award, AlertTriangle, RefreshCw } from "lucide-react";
 import { getCourseById } from "@/services/courses";
+import { areAllQuizzesPassed, getQuizIdsByCourse } from "@/services/quizzes";
+import { completeCourse } from "@/services/userCourses";
 import { useAuth } from "@/contexts/AuthContext";
 
 export default function HasilQuiz() {
@@ -14,15 +16,28 @@ export default function HasilQuiz() {
   const { user } = useAuth();
 
   const [courseTitle, setCourseTitle] = useState("");
+  const [allPassed, setAllPassed] = useState(false);
   const [loadingCourse, setLoadingCourse] = useState(true);
 
   useEffect(() => {
-    if (!courseId) return;
-    getCourseById(courseId)
-      .then((c) => setCourseTitle(c.title))
-      .catch(() => {})
-      .finally(() => setLoadingCourse(false));
-  }, [courseId]);
+    if (!courseId || !user) return;
+    const init = async () => {
+      try {
+        const c = await getCourseById(courseId);
+        setCourseTitle(c.title);
+
+        if (isPassed) {
+          const allDone = await areAllQuizzesPassed(user.id, courseId);
+          setAllPassed(allDone);
+          if (allDone) {
+            await completeCourse(user.id, courseId);
+          }
+        }
+      } catch {}
+      setLoadingCourse(false);
+    };
+    init();
+  }, [courseId, user]);
 
   const score = parseInt(searchParams.get("score") || "0");
   const total = parseInt(searchParams.get("total") || "1");
@@ -83,7 +98,7 @@ export default function HasilQuiz() {
         </button>
       </nav>
 
-      {isPassed ? (
+      {isPassed && allPassed ? (
         <div className="flex-1 flex flex-col">
           <div className="bg-[#4A4763] text-white text-center py-12 px-6 shadow-inner">
             <span className="bg-amber-400/20 text-amber-300 border border-amber-400/30 text-xs font-bold px-4 py-1.5 rounded-full uppercase tracking-wider">
@@ -155,6 +170,30 @@ export default function HasilQuiz() {
             </button>
           </main>
         </div>
+      ) : isPassed ? (
+        <main className="flex-1 flex items-center justify-center p-6">
+          <div className="w-full max-w-md bg-emerald-50 border-2 border-emerald-200 rounded-3xl p-8 text-center shadow-lg flex flex-col items-center gap-4">
+            <div className="w-14 h-14 bg-emerald-100 rounded-2xl flex items-center justify-center text-emerald-600 shadow-sm">
+              <Award className="w-7 h-7 stroke-[2]" />
+            </div>
+            <h2 className="text-lg font-black text-emerald-700 tracking-wide">
+              Kuis Lulus!
+            </h2>
+            <p className="text-xs md:text-sm text-emerald-900/80 font-semibold leading-relaxed max-w-xs">
+              Skor kamu: {score}/{total} ({percentage}%) — Selamat! Kamu lulus kuis ini.
+            </p>
+            <p className="text-[11px] text-emerald-700/60">
+              Selesaikan semua kuis di course ini untuk mendapatkan sertifikat.
+            </p>
+            <div className="w-full h-[1px] bg-emerald-200/60 my-2" />
+            <button
+              onClick={() => router.push(`/omah-belajar/${courseId}`)}
+              className="flex items-center gap-1 bg-emerald-600 text-white px-6 py-2.5 rounded-xl text-sm font-bold hover:bg-emerald-700 transition-all shadow-sm"
+            >
+              Lanjut ke Materi Berikutnya
+            </button>
+          </div>
+        </main>
       ) : (
         <main className="flex-1 flex items-center justify-center p-6">
           <div className="w-full max-w-md bg-rose-50 border-2 border-rose-200 rounded-3xl p-8 text-center shadow-lg flex flex-col items-center gap-4">

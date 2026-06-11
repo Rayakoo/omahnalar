@@ -14,6 +14,7 @@ const NAV_LINKS = [
   { label: "Omah Belajar", href: "/omah-belajar" },
   { label: "Tanya Nalar", href: "/tanya-nalar" },
   { label: "Produk", href: "/produk" },
+  { label: "Minigames", href: "/minigames" },
 ];
 
 export default function Navbar() {

@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, Loader2, AlertTriangle } from "lucide-react";
-import { getQuizWithQuestions, type QuizQuestion } from "@/services/quizzes";
+import { getQuizWithQuestions, upsertQuizResult, type QuizQuestion } from "@/services/quizzes";
 import { useAuth } from "@/contexts/AuthContext";
 import QuizResultModal from "./QuizResultModal";
 
@@ -65,15 +65,24 @@ export default function QuizPage() {
     }, 800);
   }, [currentIdx, selectedAnswers, quizProgress, isLastQuestion, questions]);
 
-  const handleModalNext = useCallback(() => {
+  const handleModalNext = useCallback(async () => {
     setModalOpen(false);
     if (isLastQuestion) {
+      if (user) {
+        try {
+          await upsertQuizResult({
+            user_id: user.id,
+            quiz_id: quizId,
+            answers: selectedAnswers,
+          });
+        } catch {}
+      }
       const score = Object.values(quizProgress).filter((v) => v === "correct").length;
       router.push(`/omah-belajar/${courseId}/${quizId}/hasil?score=${score}&total=${questions.length}`);
     } else {
       setCurrentIdx((p) => p + 1);
     }
-  }, [isLastQuestion, router, courseId, quizId, quizProgress, questions.length]);
+  }, [isLastQuestion, user, quizId, selectedAnswers, router, courseId, quizProgress, questions.length]);
 
   const getBoxStyle = (qId: string, index: number) => {
     const isCurrent = currentIdx === index;

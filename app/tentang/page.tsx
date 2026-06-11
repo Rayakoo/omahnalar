@@ -2,12 +2,13 @@
 
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { MapPin, Target, BookOpen, Heart, MessageSquare, Shield, Award, ExternalLink, Calendar, ArrowRight } from "lucide-react";
+import { MapPin, BookOpen, Heart, MessageSquare, Shield, ExternalLink, Calendar, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import dynamic from "next/dynamic";
 import { getPrograms, type Program, type ImageUrl } from "@/services/programs";
 import { getGalleries, type Gallery } from "@/services/galleries";
 import { transformImageUrl } from "@/lib/image";
+import StrukturOrganisasi from "@/components/StrukturOrganisasi";
 
 const PetaMitraJaringan = dynamic(() => import("@/components/PetaMitraJaringan"), {
   ssr: false,
@@ -23,19 +24,6 @@ const timeline = [
   { year: "2023", title: "Pembentukan Komunitas", desc: "Omah Nalar mulai dibangun sebagai komunitas yang mendorong budaya berpikir kritis dan bernalar. Nama 'Omah Nalar' dipilih — Omah berarti rumah, Nalar berarti kemampuan berpikir kritis — menjadi 'rumah untuk belajar bernalar'.", img: "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&q=80&w=800" },
   { year: "2024", title: "Program Perdana", desc: "Program-program edukasi pertama mulai berjalan, termasuk seminar parenting, workshop anti bullying, dan pelatihan penulisan. Kolaborasi dengan sekolah-sekolah mitra dimulai.", img: "https://images.unsplash.com/photo-1559223607-a43c990c692c?auto=format&fit=crop&q=80&w=800" },
   { year: "2025", title: "Pengembangan & Dampak", desc: "Omah Nalar terus berkembang dengan lebih banyak program, mitra, dan anggota. Fokus pada pendidikan dan kesehatan reproduksi seksual sebagai pilar utama kontribusi.", img: "https://images.unsplash.com/photo-1559027615-cd4628902d4a?auto=format&fit=crop&q=80&w=800" },
-];
-
-const founders = [
-  { name: "Tri Nurdiyanso, S.Pd", role: "Founder", text: "Pendiri Omah Nalar", img: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=200" },
-  { name: "Paramytha M. S. Putri, S.K.M., M.Kes.", role: "Co Founder", text: "Rumah untuk belajar bernalar", img: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=200" },
-];
-
-const anggota = [
-  { name: "Charelle Amira Jeihan S", role: "Hubungan Masyarakat", img: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&q=80&w=200" },
-  { name: "Qhairema Abrysa S", role: "Sie PDD", img: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=200" },
-  { name: "Deastri Yustinas Sari", role: "Sie PDD", img: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=200" },
-  { name: "Alifia Meida Indrayati", role: "Sie Acara", img: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=200" },
-  { name: "Randy Gustawan", role: "Sie Acara", img: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&q=80&w=200" },
 ];
 
 const features = [
@@ -67,7 +55,6 @@ function getTheme(slug: string): string {
 export default function TentangPage() {
   const [programs, setPrograms] = useState<Program[]>([]);
   const [galleries, setGalleries] = useState<Gallery[]>([]);
-  const [flippedId, setFlippedId] = useState<string | null>(null);
 
   useEffect(() => {
     getPrograms().then(setPrograms).catch(() => {});
@@ -166,221 +153,87 @@ export default function TentangPage() {
         </div>
       </section>
 
-      {/* ============ VISI MISI ============ */}
-      <section className="bg-white py-20 relative overflow-hidden">
-        {/* Decorative background */}
-        <div className="absolute -top-40 -right-40 w-[600px] h-[600px] rounded-full bg-brand-100/20 blur-3xl pointer-events-none" />
-        <div className="absolute -bottom-40 -left-40 w-[500px] h-[500px] rounded-full bg-secondary-500/10 blur-3xl pointer-events-none" />
+      {/* ============ VISI ============ */}
+      <section className="relative overflow-hidden">
+        {/* Full-width dark section */}
+        <div className="bg-brand-900 py-24 md:py-32 relative">
+          {/* Decorative blobs */}
+          <div className="absolute -top-40 -right-40 w-[600px] h-[600px] rounded-full bg-secondary-500/8 blur-3xl pointer-events-none" />
+          <div className="absolute -bottom-40 -left-40 w-[500px] h-[500px] rounded-full bg-brand-100/8 blur-3xl pointer-events-none" />
+          <div className="absolute top-1/2 left-1/3 w-64 h-64 rounded-full bg-brand-700/10 blur-3xl pointer-events-none" />
 
-        <div className="max-w-6xl mx-auto px-6 relative">
-          <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} className="text-center mb-14">
-            <span className="text-sm font-semibold text-secondary-600 uppercase tracking-wider">Arah & Tujuan</span>
-            <h2 className="text-2xl md:text-3xl font-bold text-brand-900 mt-2">Visi & Misi</h2>
-          </motion.div>
+          {/* Abstract decorative dots */}
+          <div className="absolute top-16 left-8 md:left-16 w-2 h-2 rounded-full bg-secondary-500/30" />
+          <div className="absolute top-32 right-12 md:right-24 w-3 h-3 rounded-full bg-secondary-500/20" />
+          <div className="absolute bottom-24 left-1/4 w-1.5 h-1.5 rounded-full bg-brand-100/30" />
+          <div className="absolute bottom-32 right-16 md:right-32 w-2 h-2 rounded-full bg-brand-100/20" />
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-10 max-w-5xl mx-auto">
-            {/* VISI */}
+          <div className="max-w-4xl mx-auto px-6 relative">
             <motion.div
-              initial={{ opacity: 0, x: -40 }}
-              whileInView={{ opacity: 1, x: 0 }}
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              className="group relative bg-white rounded-3xl border border-brand-100 shadow-sm overflow-hidden"
+              className="text-center"
             >
-              {/* Colored header */}
-              <div className="relative h-28 bg-gradient-to-br from-brand-700 to-brand-900 flex items-center justify-center overflow-hidden">
-                <div className="absolute -top-6 -right-6 w-32 h-32 rounded-full bg-white/5 blur-xl" />
-                <div className="absolute -bottom-6 -left-6 w-24 h-24 rounded-full bg-white/5 blur-xl" />
-                <div className="relative flex flex-col items-center gap-1">
-                  <div className="w-14 h-14 rounded-2xl bg-white/15 flex items-center justify-center backdrop-blur-sm ring-1 ring-white/20">
-                    <Target className="w-7 h-7 text-secondary-500" />
-                  </div>
-                  <span className="text-white/60 text-[9px] font-bold uppercase tracking-[0.15em]">Tujuan Utama</span>
-                </div>
+              {/* Label */}
+              <div className="flex items-center justify-center gap-3 mb-6">
+                <div className="h-px w-8 bg-secondary-500/60" />
+                <span className="text-secondary-500 text-[11px] font-bold uppercase tracking-[0.25em]">Visi</span>
+                <div className="h-px w-8 bg-secondary-500/60" />
               </div>
-              {/* Content */}
-              <div className="p-6 md:p-8">
-                <h3 className="text-lg font-bold text-brand-900 mb-1">Visi</h3>
-                <div className="w-8 h-0.5 bg-secondary-500 rounded-full mb-4" />
-                <p className="text-sm text-brand-700/80 leading-relaxed">
-                  Menjadi ruang belajar bernalar yang inklusif dan berdampak, serta menjadi bagian dari solusi dalam menghadapi berbagai isu sosial, khususnya di bidang pendidikan dan kesehatan reproduksi seksual di Indonesia.
-                </p>
-              </div>
-            </motion.div>
 
-            {/* MISI */}
-            <motion.div
-              initial={{ opacity: 0, x: 40 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.15 }}
-              className="group relative bg-white rounded-3xl border border-brand-100 shadow-sm overflow-hidden"
-            >
-              {/* Colored header */}
-              <div className="relative h-28 bg-gradient-to-br from-secondary-500 to-secondary-600 flex items-center justify-center overflow-hidden">
-                <div className="absolute -top-6 -right-6 w-32 h-32 rounded-full bg-white/5 blur-xl" />
-                <div className="absolute -bottom-6 -left-6 w-24 h-24 rounded-full bg-white/5 blur-xl" />
-                <div className="relative flex flex-col items-center gap-1">
-                  <div className="w-14 h-14 rounded-2xl bg-white/15 flex items-center justify-center backdrop-blur-sm ring-1 ring-white/20">
-                    <Award className="w-7 h-7 text-white" />
-                  </div>
-                  <span className="text-white/60 text-[9px] font-bold uppercase tracking-[0.15em]">Langkah Nyata</span>
-                </div>
+              {/* Large opening mark */}
+              <div className="text-secondary-500/30 text-7xl md:text-8xl font-serif leading-none mb-2 select-none">
+                &rdquo;
               </div>
-              {/* Content */}
-              <div className="p-6 md:p-8">
-                <h3 className="text-lg font-bold text-brand-900 mb-1">Misi</h3>
-                <div className="w-8 h-0.5 bg-secondary-500 rounded-full mb-4" />
-                <ul className="space-y-3">
-                  <li className="flex items-start gap-3 text-sm text-brand-700/80">
-                    <span className="w-5 h-5 rounded-full bg-brand-100 flex items-center justify-center shrink-0 mt-0.5">
-                      <span className="w-1.5 h-1.5 rounded-full bg-brand-700" />
-                    </span>
-                    Menyediakan ruang diskusi dan edukasi yang aman dan inklusif
-                  </li>
-                  <li className="flex items-start gap-3 text-sm text-brand-700/80">
-                    <span className="w-5 h-5 rounded-full bg-brand-100 flex items-center justify-center shrink-0 mt-0.5">
-                      <span className="w-1.5 h-1.5 rounded-full bg-brand-700" />
-                    </span>
-                    Meningkatkan kesadaran tentang kesehatan reproduksi seksual
-                  </li>
-                  <li className="flex items-start gap-3 text-sm text-brand-700/80">
-                    <span className="w-5 h-5 rounded-full bg-brand-100 flex items-center justify-center shrink-0 mt-0.5">
-                      <span className="w-1.5 h-1.5 rounded-full bg-brand-700" />
-                    </span>
-                    Membangun kolaborasi dengan berbagai mitra dan komunitas
-                  </li>
-                  <li className="flex items-start gap-3 text-sm text-brand-700/80">
-                    <span className="w-5 h-5 rounded-full bg-brand-100 flex items-center justify-center shrink-0 mt-0.5">
-                      <span className="w-1.5 h-1.5 rounded-full bg-brand-700" />
-                    </span>
-                    Memberdayakan individu melalui pendidikan dan pelatihan
-                  </li>
-                </ul>
+
+              {/* Vision text */}
+              <p className="text-page-50/95 text-lg md:text-2xl leading-relaxed md:leading-relaxed font-light max-w-3xl mx-auto tracking-wide">
+                Nalar memiliki visi menjadi sebuah <span className="text-secondary-500 font-semibold">komunitas yang berkontribusi</span> pada ranah pendidikan dan kesehatan reproduksi seksual.
+              </p>
+
+              {/* Spacer with decorative line */}
+              <div className="flex items-center justify-center gap-3 my-6">
+                <div className="h-px flex-1 max-w-[120px] bg-gradient-to-r from-transparent via-brand-100/20 to-transparent" />
+                <div className="w-2 h-2 rotate-45 bg-secondary-500/50" />
+                <div className="h-px flex-1 max-w-[120px] bg-gradient-to-r from-transparent via-brand-100/20 to-transparent" />
+              </div>
+
+              <p className="text-page-50/85 text-base md:text-lg leading-relaxed max-w-2xl mx-auto font-light">
+                Area ini menjadi esensial bagi Nalar. Nalar memandang sudah saatnya{' '}
+                <span className="text-secondary-500 font-medium">bergerak untuk menjadi bagian dari solusi</span>{' '}
+                dalam mengurai urgensi.
+              </p>
+
+              {/* Bottom decorative mark */}
+              <div className="text-secondary-500/20 text-5xl md:text-6xl font-serif leading-none mt-4 select-none rotate-180">
+                &rdquo;
+              </div>
+
+              {/* Decorative line at bottom */}
+              <div className="mt-10 flex justify-center">
+                <div className="flex items-center gap-1.5">
+                  <span className="w-4 h-0.5 rounded-full bg-secondary-500/40" />
+                  <span className="w-6 h-0.5 rounded-full bg-secondary-500/60" />
+                  <span className="w-4 h-0.5 rounded-full bg-secondary-500/40" />
+                </div>
               </div>
             </motion.div>
           </div>
         </div>
+
+        {/* Curved transition to next section */}
+        <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-page-50 to-transparent pointer-events-none" />
       </section>
 
-      {/* ============ STRUKTUR TIM ============ */}
+      {/* ============ STRUKTUR ORGANISASI ============ */}
       <section className="max-w-6xl mx-auto px-6 py-20">
         <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} className="text-center mb-14">
           <span className="text-sm font-semibold text-secondary-600 uppercase tracking-wider">Tim</span>
           <h2 className="text-2xl md:text-3xl font-bold text-brand-900 mt-2">Kawan Nalar</h2>
           <p className="text-sm text-brand-700/60 mt-2">Anggota komunitas yang memiliki semangat untuk belajar dan bertumbuh bersama</p>
         </motion.div>
-
-        {/* Pendiri */}
-        <div className="max-w-3xl mx-auto mb-14">
-          <div className="text-center mb-8">
-            <span className="text-[10px] font-bold text-secondary-600 uppercase tracking-[0.2em]">Pendiri</span>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-8">
-            {founders.map((member, idx) => (
-              <motion.div
-                key={idx}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: idx * 0.15 }}
-                className="relative [perspective:600px] h-64 md:h-72 cursor-pointer group"
-                onMouseEnter={() => setFlippedId("f" + idx)}
-                onMouseLeave={() => setFlippedId(null)}
-                onClick={() => setFlippedId(flippedId === "f" + idx ? null : "f" + idx)}
-              >
-                <motion.div
-                  animate={{ rotateY: flippedId === "f" + idx ? 180 : 0 }}
-                  transition={{ duration: 0.6, ease: [0.25, 1, 0.5, 1] }}
-                  style={{ transformStyle: "preserve-3d" }}
-                  className="w-full h-full rounded-2xl"
-                >
-                  {/* Front */}
-                  <div
-                    className="absolute inset-0 bg-gradient-to-br from-brand-900 to-brand-700 rounded-2xl p-6 md:p-8 flex flex-col items-center justify-center text-center border border-brand-100/20 shadow-lg"
-                    style={{ backfaceVisibility: "hidden" }}
-                  >
-                    <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-white/15 flex items-center justify-center text-white font-bold text-xl md:text-2xl mb-4 ring-2 ring-white/30">
-                      {member.name.split(" ")[0][0]}
-                    </div>
-                    <h4 className="text-sm md:text-base font-bold text-page-50 leading-snug">{member.name}</h4>
-                    <span className="inline-block mt-2 bg-secondary-500 text-brand-900 text-[9px] font-bold px-3 py-0.5 rounded-full uppercase tracking-wider">
-                      {member.role}
-                    </span>
-                    <p className="text-[10px] text-brand-100/60 mt-2 italic">{member.text}</p>
-                    <div className="absolute bottom-4 right-4 text-brand-100/20">
-                      <svg className="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={0.5}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
-                      </svg>
-                    </div>
-                  </div>
-
-                  {/* Back: Photo */}
-                  <div
-                    className="absolute inset-0 rounded-2xl overflow-hidden border border-brand-100/20 shadow-lg"
-                    style={{ backfaceVisibility: "hidden", transform: "rotateY(180deg)" }}
-                  >
-                    <img src={member.img} alt={member.name} className="w-full h-full object-cover" />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-                    <div className="absolute bottom-0 left-0 right-0 p-5 md:p-6 text-white">
-                      <h4 className="text-sm md:text-base font-bold leading-snug">{member.name}</h4>
-                      <span className="inline-block mt-1.5 bg-secondary-500 text-brand-900 text-[9px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider">
-                        {member.role}
-                      </span>
-                    </div>
-                  </div>
-                </motion.div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-
-        {/* Anggota Lainnya */}
-        <div className="max-w-5xl mx-auto">
-          <div className="text-center mb-8">
-            <span className="text-[10px] font-bold text-brand-700/50 uppercase tracking-[0.2em]">Anggota Lainnya</span>
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-5">
-            {anggota.map((member, idx) => (
-              <motion.div
-                key={idx}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: idx * 0.08 }}
-                className="relative [perspective:600px] h-48 md:h-52 cursor-pointer group"
-                onMouseEnter={() => setFlippedId("a" + idx)}
-                onMouseLeave={() => setFlippedId(null)}
-                onClick={() => setFlippedId(flippedId === "a" + idx ? null : "a" + idx)}
-              >
-                <motion.div
-                  animate={{ rotateY: flippedId === "a" + idx ? 180 : 0 }}
-                  transition={{ duration: 0.5, ease: [0.25, 1, 0.5, 1] }}
-                  style={{ transformStyle: "preserve-3d" }}
-                  className="w-full h-full rounded-2xl"
-                >
-                  {/* Front */}
-                  <div className="absolute inset-0 bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex flex-col items-center justify-center text-center" style={{ backfaceVisibility: "hidden" }}>
-                    <div className="w-11 h-11 rounded-full bg-brand-100 flex items-center justify-center text-brand-700 font-bold text-base mb-3">
-                      {member.name.split(" ")[0][0]}
-                    </div>
-                    <h4 className="text-[11px] md:text-xs font-bold text-brand-900 leading-snug">{member.name}</h4>
-                    <p className="text-[9px] text-brand-700/60 mt-1 font-medium">{member.role}</p>
-                  </div>
-
-                  {/* Back: Photo */}
-                  <div className="absolute inset-0 rounded-2xl overflow-hidden border border-gray-100 shadow-sm" style={{ backfaceVisibility: "hidden", transform: "rotateY(180deg)" }}>
-                    <img src={member.img} alt={member.name} className="w-full h-full object-cover" />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-                    <div className="absolute bottom-0 left-0 right-0 p-3 text-white">
-                      <h4 className="text-[11px] font-bold leading-snug">{member.name}</h4>
-                      <p className="text-[9px] text-white/70 mt-0.5">{member.role}</p>
-                    </div>
-                  </div>
-                </motion.div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
+        <StrukturOrganisasi />
       </section>
 
       {/* ============ FITUR ============ */}

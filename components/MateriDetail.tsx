@@ -1,10 +1,13 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { ChevronLeft, Play, FileText, HelpCircle, CheckCircle2, Clock, BookOpen, BarChart } from "lucide-react";
 import { getCourseById, getCourseSections, type CourseWithRelations, type CourseSection } from "@/services/courses";
-import { getQuizById } from "@/services/quizzes";
+import { getQuizById, getQuizIdsByCourse, getUserQuizResults } from "@/services/quizzes";
+import { getUserCourse, enrollCourse, updateProgress } from "@/services/userCourses";
+import { useAuth } from "@/contexts/AuthContext";
+import { getVideoEmbedUrl } from "@/lib/video";
 
 function sectionIcon(type: string) {
   switch (type) {
@@ -18,6 +21,7 @@ function sectionIcon(type: string) {
 export default function MateriDetail() {
   const router = useRouter();
   const params = useParams();
+  const { user } = useAuth();
   const courseId = params["id-course"] as string;
 
   const [course, setCourse] = useState<CourseWithRelations | null>(null);
@@ -26,6 +30,7 @@ export default function MateriDetail() {
   const [activeTab, setActiveTab] = useState<"overview" | "notes">("overview");
   const [completedIds, setCompletedIds] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
+  const userUrutan = useRef(0);
 
   useEffect(() => {
     if (!courseId) return;
@@ -37,6 +42,35 @@ export default function MateriDetail() {
         ]);
         setCourse(c);
         setSections(secs);
+
+        // Restore user progress
+        if (user) {
+          const [uc, quizIds] = await Promise.all([
+            getUserCourse(user.id, courseId),
+            getQuizIdsByCourse(courseId).catch(() => [] as string[]),
+          ]);
+          if (uc) {
+            userUrutan.current = uc.current_urutan;
+            if (uc.current_urutan > 0) {
+              const idx = secs.findIndex((s) => s.data.urutan === uc.current_urutan);
+              if (idx >= 0) setActiveIdx(idx);
+            }
+          } else {
+            await enrollCourse(user.id, courseId);
+          }
+
+          // Mark passed quizzes
+          if (quizIds.length > 0) {
+            const passedIds: string[] = [];
+            for (const qid of quizIds) {
+              const results = await getUserQuizResults(user.id, qid);
+              if (results?.some((r) => r.passed)) {
+                passedIds.push(qid);
+              }
+            }
+            setCompletedIds(passedIds);
+          }
+        }
       } catch {
         // silently fail
       } finally {
@@ -44,13 +78,25 @@ export default function MateriDetail() {
       }
     };
     fetchData();
-  }, [courseId]);
+  }, [courseId, user]);
 
   const activeSection = sections[activeIdx];
   const courseTitle = course?.title || "";
 
   const handleSectionClick = async (idx: number) => {
     const sec = sections[idx];
+    if (user) {
+      try {
+        const dbUc = await getUserCourse(user.id, courseId);
+        const dbUrutan = dbUc?.current_urutan ?? 0;
+        if (sec.data.urutan > dbUrutan) {
+          await updateProgress(user.id, courseId, sec.data.urutan);
+          userUrutan.current = sec.data.urutan;
+        }
+      } catch (e) {
+        console.error("Gagal update progress:", e);
+      }
+    }
     if (sec.type === "quiz") {
       const quiz = await getQuizById(sec.data.id);
       router.push(`/omah-belajar/${courseId}/${quiz.id}`);
@@ -94,7 +140,11 @@ export default function MateriDetail() {
             ) : activeSection.type === "video" ? (
               <iframe
                 className="w-full h-full"
-                src={`https://www.youtube.com/embed/${activeSection.data.video_url}?autoplay=1`}
+                src={(() => {
+                  const embed = getVideoEmbedUrl(activeSection.data.video_url);
+                  const base = embed || `https://www.youtube.com/embed/${activeSection.data.video_url}`;
+                  return base.includes("youtube.com/embed") ? `${base}?autoplay=1` : base;
+                })()}
                 title={activeSection.data.title}
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                 allowFullScreen

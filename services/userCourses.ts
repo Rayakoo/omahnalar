@@ -1,6 +1,5 @@
-import { getSupabase } from "@/lib/supabaseClient";
+import { getAccessToken } from "@/lib/supabaseClient";
 
-// ── User Course Progress ─────────────────────────────────────
 export type UserCourse = {
   id: string;
   user_id: string;
@@ -12,73 +11,6 @@ export type UserCourse = {
   updated_at: string;
 };
 
-export async function getUserCourse(userId: string, courseId: string) {
-  const { data, error } = await getSupabase()
-    .from("user_courses")
-    .select("*")
-    .eq("user_id", userId)
-    .eq("course_id", courseId)
-    .maybeSingle();
-
-  if (error) throw error;
-  return data as UserCourse | null;
-}
-
-export async function enrollCourse(userId: string, courseId: string) {
-  const { data, error } = await getSupabase()
-    .from("user_courses")
-    .insert({ user_id: userId, course_id: courseId })
-    .select()
-    .single();
-
-  if (error) throw error;
-  return data as UserCourse;
-}
-
-export async function updateProgress(
-  userId: string,
-  courseId: string,
-  urutan: number
-) {
-  const { data, error } = await getSupabase()
-    .from("user_courses")
-    .update({ current_urutan: urutan })
-    .eq("user_id", userId)
-    .eq("course_id", courseId)
-    .select()
-    .single();
-
-  if (error) throw error;
-  return data as UserCourse;
-}
-
-export async function completeCourse(userId: string, courseId: string) {
-  const { data, error } = await getSupabase()
-    .from("user_courses")
-    .update({
-      is_completed: true,
-      completed_at: new Date().toISOString(),
-    })
-    .eq("user_id", userId)
-    .eq("course_id", courseId)
-    .select()
-    .single();
-
-  if (error) throw error;
-  return data as UserCourse;
-}
-
-export async function getUserCourses(userId: string) {
-  const { data, error } = await getSupabase()
-    .from("user_courses")
-    .select("*, course:courses(*)")
-    .eq("user_id", userId);
-
-  if (error) throw error;
-  return data;
-}
-
-// ── User Quiz Results ────────────────────────────────────────
 export type UserQuizResult = {
   id: string;
   user_id: string;
@@ -89,28 +21,107 @@ export type UserQuizResult = {
   created_at: string;
 };
 
-export async function getUserQuizResults(userId: string, quizId: string) {
-  const { data, error } = await getSupabase()
-    .from("user_quiz_results")
-    .select("*")
-    .eq("user_id", userId)
-    .eq("quiz_id", quizId)
-    .order("created_at", { ascending: false });
+function getSupabaseConfig() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  if (!url || !anonKey) throw new Error("Supabase env vars not set");
+  return { url, anonKey };
+}
 
-  if (error) throw error;
-  return data as UserQuizResult[];
+function authHeaders(): Record<string, string> {
+  const { anonKey } = getSupabaseConfig();
+  const headers: Record<string, string> = { apikey: anonKey };
+  try { headers.Authorization = `Bearer ${getAccessToken()}`; } catch {}
+  return headers;
+}
+
+async function supabaseGet<T>(path: string): Promise<T> {
+  const { url } = getSupabaseConfig();
+  const res = await fetch(`${url}${path}`, { headers: authHeaders() });
+  if (!res.ok) {
+    const errText = await res.text();
+    throw new Error(`Supabase GET failed: ${res.status} ${errText}`);
+  }
+  return res.json();
+}
+
+async function supabasePost<T>(path: string, body: unknown): Promise<T> {
+  const { url } = getSupabaseConfig();
+  const headers = { ...authHeaders(), "Content-Type": "application/json", Prefer: "return=representation" };
+  const res = await fetch(`${url}${path}`, { method: "POST", headers, body: JSON.stringify(body) });
+  if (!res.ok) {
+    const errText = await res.text();
+    throw new Error(`Supabase POST failed: ${res.status} ${errText}`);
+  }
+  const data: T[] = await res.json();
+  if (!data || data.length === 0) throw new Error("No data returned");
+  return data[0];
+}
+
+async function supabasePatch<T>(path: string, body: unknown): Promise<T> {
+  const { url } = getSupabaseConfig();
+  const headers = { ...authHeaders(), "Content-Type": "application/json", Prefer: "return=representation" };
+  const res = await fetch(`${url}${path}`, { method: "PATCH", headers, body: JSON.stringify(body) });
+  if (!res.ok) {
+    const errText = await res.text();
+    throw new Error(`Supabase PATCH failed: ${res.status} ${errText}`);
+  }
+  const data: T[] = await res.json();
+  if (!data || data.length === 0) throw new Error("No data returned");
+  return data[0];
+}
+
+export async function getUserCourse(userId: string, courseId: string) {
+  try {
+    const data = await supabaseGet<UserCourse[]>(
+      `/rest/v1/user_courses?select=*&user_id=eq.${encodeURIComponent(userId)}&course_id=eq.${encodeURIComponent(courseId)}`
+    );
+    return data?.[0] || null;
+  } catch {
+    return null;
+  }
+}
+
+export async function enrollCourse(userId: string, courseId: string) {
+  return supabasePost<UserCourse>(
+    `/rest/v1/user_courses?select=*`,
+    { user_id: userId, course_id: courseId, current_urutan: 0, is_completed: false }
+  );
+}
+
+export async function updateProgress(userId: string, courseId: string, urutan: number) {
+  return supabasePatch<UserCourse>(
+    `/rest/v1/user_courses?select=*&user_id=eq.${encodeURIComponent(userId)}&course_id=eq.${encodeURIComponent(courseId)}`,
+    { current_urutan: urutan, updated_at: new Date().toISOString() }
+  );
+}
+
+export async function completeCourse(userId: string, courseId: string) {
+  return supabasePatch<UserCourse>(
+    `/rest/v1/user_courses?select=*&user_id=eq.${encodeURIComponent(userId)}&course_id=eq.${encodeURIComponent(courseId)}`,
+    { is_completed: true, completed_at: new Date().toISOString(), updated_at: new Date().toISOString() }
+  );
+}
+
+export async function getUserCourses(userId: string) {
+  return supabaseGet<unknown[]>(
+    `/rest/v1/user_courses?select=*,course:courses(*)&user_id=eq.${encodeURIComponent(userId)}`
+  );
+}
+
+export async function getUserQuizResults(userId: string, quizId: string) {
+  return supabaseGet<UserQuizResult[]>(
+    `/rest/v1/user_quiz_results?select=*&user_id=eq.${encodeURIComponent(userId)}&quiz_id=eq.${encodeURIComponent(quizId)}&order=created_at.desc`
+  );
 }
 
 export async function getLatestQuizResult(userId: string, quizId: string) {
-  const { data, error } = await getSupabase()
-    .from("user_quiz_results")
-    .select("*")
-    .eq("user_id", userId)
-    .eq("quiz_id", quizId)
-    .order("created_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
-
-  if (error) throw error;
-  return data as UserQuizResult | null;
+  try {
+    const data = await supabaseGet<UserQuizResult[]>(
+      `/rest/v1/user_quiz_results?select=*&user_id=eq.${encodeURIComponent(userId)}&quiz_id=eq.${encodeURIComponent(quizId)}&order=created_at.desc&limit=1`
+    );
+    return data?.[0] || null;
+  } catch {
+    return null;
+  }
 }

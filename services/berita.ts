@@ -38,8 +38,10 @@ function getSupabaseConfig() {
 
 async function supabaseGet<T>(path: string): Promise<T> {
   const { url, anonKey } = getSupabaseConfig();
-  const headers: Record<string, string> = { apikey: anonKey };
-  try { headers.Authorization = `Bearer ${getAccessToken()}`; } catch {}
+  const headers: Record<string, string> = {
+    apikey: anonKey,
+    Authorization: `Bearer ${anonKey}`,
+  };
   const res = await fetch(`${url}${path}`, { headers });
   if (!res.ok) {
     const errText = await res.text();

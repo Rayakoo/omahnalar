@@ -1,17 +1,18 @@
 "use client";
 
 import { useState, useEffect, useMemo, useRef } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Search, CheckCircle2, AlertCircle, Flame, ChevronLeft, ChevronRight,
-  BookOpen, Award, BarChart3, Clock,
+  BookOpen, Award, BarChart3, Clock, TrendingUp,
 } from "lucide-react";
 import {
   getCourses, getCategories, getEducationLevels,
   type CourseWithRelations, type Category, type EducationLevel,
 } from "@/services/courses";
-import { getUserCourses, type UserCourse } from "@/services/userCourses";
+import { getUserCourse, getUserCourses, enrollCourse, type UserCourse } from "@/services/userCourses";
 import { useAuth } from "@/contexts/AuthContext";
 
 function seededColor(seed: number, i: number) {
@@ -26,6 +27,7 @@ interface UserStats {
 }
 
 export default function CoursePage() {
+  const router = useRouter();
   const { user } = useAuth();
 
   const [courses, setCourses] = useState<CourseWithRelations[]>([]);
@@ -37,6 +39,7 @@ export default function CoursePage() {
   const [categories, setCategories] = useState<Category[]>(defaultCats);
   const [levels, setLevels] = useState<EducationLevel[]>([]);
   const [userStats, setUserStats] = useState<UserStats>({ total: 0, completed: 0, inProgress: 0 });
+  const [userCourseList, setUserCourseList] = useState<(UserCourse & { course: CourseWithRelations })[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<string>("Orang Tua");
   const [search, setSearch] = useState("");
@@ -70,6 +73,7 @@ export default function CoursePage() {
     getUserCourses(user.id)
       .then((ucs) => {
         const list = ucs as unknown as (UserCourse & { course: CourseWithRelations })[];
+        setUserCourseList(list);
         setUserStats({
           total: list.length,
           completed: list.filter((uc) => uc.is_completed).length,
@@ -78,6 +82,20 @@ export default function CoursePage() {
       })
       .catch(() => {});
   }, [user]);
+
+  const inProgressCourses = useMemo(
+    () => userCourseList.filter((uc) => !uc.is_completed),
+    [userCourseList]
+  );
+
+  const completedCourses = useMemo(
+    () => userCourseList.filter((uc) => uc.is_completed),
+    [userCourseList]
+  );
+
+  const progressPercent = userStats.total > 0
+    ? Math.round((userStats.completed / userStats.total) * 100)
+    : 0;
 
   const courseCats = useMemo(() => {
     const storyCatNames = new Set(["Puisi", "Pengalaman", "Curhat", "Opini", "Tips", "Inspirasi"]);
@@ -108,6 +126,21 @@ export default function CoursePage() {
 
   const seed = 42;
 
+  const handleStartCourse = async (courseId: string, e: React.MouseEvent) => {
+    e.preventDefault();
+    if (!user) {
+      router.push("/login");
+      return;
+    }
+    try {
+      const existing = await getUserCourse(user.id, courseId);
+      if (!existing) {
+        await enrollCourse(user.id, courseId);
+      }
+    } catch {}
+    router.push(`/omah-belajar/${courseId}`);
+  };
+
   const statCards = [
     { label: "Total Course", value: userStats.total, icon: BookOpen, color: "bg-brand-100 text-brand-700" },
     { label: "Sedang Berjalan", value: userStats.inProgress, icon: Clock, color: "bg-amber-100 text-amber-600" },
@@ -126,18 +159,136 @@ export default function CoursePage() {
     <div className="min-h-screen bg-page-50 text-brand-900 font-sans pb-20">
       <main className="max-w-6xl mx-auto px-6 mt-24">
         {user && (
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10">
-            {statCards.map((s) => (
-              <div key={s.label} className="bg-white rounded-2xl p-5 flex items-center gap-4 shadow-sm border border-gray-100">
-                <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${s.color}`}>
-                  <s.icon className="w-6 h-6" />
+          <>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+              {statCards.map((s) => (
+                <div key={s.label} className="bg-white rounded-2xl p-5 flex items-center gap-4 shadow-sm border border-gray-100">
+                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${s.color}`}>
+                    <s.icon className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-semibold text-brand-700/60 uppercase tracking-wider">{s.label}</p>
+                    <p className="text-2xl font-black text-brand-900">{s.value}</p>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-xs font-semibold text-brand-700/60 uppercase tracking-wider">{s.label}</p>
-                  <p className="text-2xl font-black text-brand-900">{s.value}</p>
+              ))}
+            </div>
+
+            {userStats.total > 0 && (
+              <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 mb-8">
+                <div className="flex items-center justify-between mb-3">
+                  <p className="text-sm font-bold text-brand-900">Progress Belajar</p>
+                  <p className="text-xs font-semibold text-brand-700/60">{progressPercent}% selesai</p>
                 </div>
+                <div className="w-full h-3 bg-brand-100 rounded-full overflow-hidden">
+                  <motion.div
+                    className="h-full bg-gradient-to-r from-brand-700 to-brand-900 rounded-full"
+                    initial={{ width: 0 }}
+                    animate={{ width: `${progressPercent}%` }}
+                    transition={{ duration: 0.8, ease: "easeOut" }}
+                  />
+                </div>
+                <p className="text-[11px] text-brand-700/50 mt-2">
+                  {userStats.completed} dari {userStats.total} course telah diselesaikan
+                </p>
               </div>
-            ))}
+            )}
+          </>
+        )}
+
+        {inProgressCourses.length > 0 && (
+          <div className="mb-12">
+            <div className="flex items-center gap-2 mb-5">
+              <div className="w-8 h-8 bg-amber-100 rounded-lg flex items-center justify-center">
+                <TrendingUp className="w-4 h-4 text-amber-600" />
+              </div>
+              <h2 className="text-lg font-black text-brand-900">Lanjutkan Belajarmu</h2>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+              {inProgressCourses.map((uc) => {
+                const course = uc.course;
+                const progress = course.jumlah_isi > 0
+                  ? Math.round((uc.current_urutan / course.jumlah_isi) * 100)
+                  : 0;
+                return (
+                  <div
+                    key={uc.id}
+                    onClick={(e) => handleStartCourse(course.id, e)}
+                    className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all border border-gray-100 cursor-pointer group"
+                  >
+                    <div
+                      className="w-full h-28 flex items-center justify-center text-white font-bold text-lg relative"
+                      style={{ backgroundColor: seededColor(seed, parseInt(course.id.slice(0, 8), 36) || 0) }}
+                    >
+                      {course.title.charAt(0)}
+                      <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/30">
+                        <div
+                          className="h-full bg-white/70 transition-all"
+                          style={{ width: `${Math.min(progress, 100)}%` }}
+                        />
+                      </div>
+                    </div>
+                    <div className="p-4">
+                      <h4 className="text-sm font-bold text-brand-900 leading-snug mb-1">{course.title}</h4>
+                      <p className="text-[11px] text-brand-700/60 font-semibold mb-3">
+                        {course.category?.name ?? 'Unknown'}
+                      </p>
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] font-semibold text-amber-600 bg-amber-50 px-2 py-1 rounded-md">
+                          {Math.min(progress, 100)}%
+                        </span>
+                        <span className="text-brand-700 text-[10px] font-bold group-hover:underline">
+                          Lanjutkan &rarr;
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {completedCourses.length > 0 && (
+          <div className="mb-12">
+            <div className="flex items-center gap-2 mb-5">
+              <div className="w-8 h-8 bg-emerald-100 rounded-lg flex items-center justify-center">
+                <Award className="w-4 h-4 text-emerald-600" />
+              </div>
+              <h2 className="text-lg font-black text-brand-900">Course Selesai</h2>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+              {completedCourses.map((uc) => {
+                const course = uc.course;
+                return (
+                  <div
+                    key={uc.id}
+                    onClick={(e) => handleStartCourse(course.id, e)}
+                    className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all border border-emerald-100 cursor-pointer group"
+                  >
+                    <div
+                      className="w-full h-28 flex items-center justify-center text-white font-bold text-lg relative"
+                      style={{ backgroundColor: seededColor(seed, parseInt(course.id.slice(0, 8), 36) || 0) }}
+                    >
+                      {course.title.charAt(0)}
+                      <div className="absolute top-2 right-2 bg-emerald-500 text-white text-[9px] font-bold px-2 py-0.5 rounded-full">
+                        Selesai
+                      </div>
+                    </div>
+                    <div className="p-4">
+                      <h4 className="text-sm font-bold text-brand-900 leading-snug mb-1">{course.title}</h4>
+                      <p className="text-[11px] text-brand-700/60 font-semibold mb-3">
+                        {course.category?.name ?? 'Unknown'}
+                      </p>
+                      <div className="flex items-center gap-1 text-emerald-600 text-[10px] font-bold">
+                        <CheckCircle2 className="w-3 h-3" />
+                        Sertifikat tersedia
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         )}
 
@@ -190,10 +341,10 @@ export default function CoursePage() {
               <h2 className="text-base font-bold text-brand-900/80 mb-4">Course tersedia</h2>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {filteredCourses.map((course) => (
-                  <Link
+                  <div
                     key={course.id}
-                    href={`/omah-belajar/${course.id}`}
-                    className="bg-brand-100 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow flex flex-col"
+                    onClick={(e) => handleStartCourse(course.id, e)}
+                    className="bg-brand-100 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow flex flex-col cursor-pointer"
                   >
                     <div
                       className="w-full h-36 flex items-center justify-center text-white font-bold text-lg"
@@ -215,7 +366,7 @@ export default function CoursePage() {
                         Mulai Belajar
                       </span>
                     </div>
-                  </Link>
+                  </div>
                 ))}
               </div>
             </div>
@@ -223,7 +374,7 @@ export default function CoursePage() {
             {levels.map((level) => {
               const levelCourses = coursesByLevel[level.name];
               if (!levelCourses || levelCourses.length === 0) return null;
-              return <SchoolCarousel key={level.id} level={level} courses={levelCourses} seed={seed} />;
+              return <SchoolCarousel key={level.id} level={level} courses={levelCourses} seed={seed} onStartCourse={handleStartCourse} />;
             })}
           </>
         ) : (
@@ -238,7 +389,7 @@ export default function CoursePage() {
   );
 }
 
-function SchoolCarousel({ level, courses, seed }: { level: EducationLevel; courses: CourseWithRelations[]; seed: number }) {
+function SchoolCarousel({ level, courses, seed, onStartCourse }: { level: EducationLevel; courses: CourseWithRelations[]; seed: number; onStartCourse: (courseId: string, e: React.MouseEvent) => void; }) {
   const [index, setIndex] = useState(0);
   const cardWidth = 320;
   const gap = 24;
@@ -274,10 +425,10 @@ function SchoolCarousel({ level, courses, seed }: { level: EducationLevel; cours
           style={{ transform: `translateX(-${index * (cardWidth + gap)}px)`, gap }}
         >
           {courses.map((course, i) => (
-            <Link
+            <div
               key={course.id}
-              href={`/omah-belajar/${course.id}`}
-              className="min-w-[280px] md:min-w-[320px] max-w-[320px] bg-brand-100 rounded-2xl overflow-hidden shadow-sm hover:-translate-y-1 transition-transform duration-200 flex flex-col shrink-0"
+              onClick={(e) => onStartCourse(course.id, e)}
+              className="min-w-[280px] md:min-w-[320px] max-w-[320px] bg-brand-100 rounded-2xl overflow-hidden shadow-sm hover:-translate-y-1 transition-transform duration-200 flex flex-col shrink-0 cursor-pointer"
             >
               <div
                 className="w-full h-36 flex items-center justify-center text-white font-bold text-lg"
@@ -294,7 +445,7 @@ function SchoolCarousel({ level, courses, seed }: { level: EducationLevel; cours
                   Mulai
                 </span>
               </div>
-            </Link>
+            </div>
           ))}
         </div>
       </div>
