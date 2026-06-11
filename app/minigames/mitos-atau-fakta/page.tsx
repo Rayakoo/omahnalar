@@ -161,7 +161,7 @@ export default function MitosAtauFaktaPage() {
 
   if (phase === "finished") {
     const allAnswers = [...answers];
-    allAnswers[currentIndex] = selected;
+    if (selected !== null) allAnswers[currentIndex] = selected;
     const finalScore = allAnswers.reduce((acc, a, i) => {
       if (a === questions[i]?.answer) return acc + 1;
       return acc;
