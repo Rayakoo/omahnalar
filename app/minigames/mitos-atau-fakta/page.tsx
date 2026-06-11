@@ -96,6 +96,7 @@ export default function MitosAtauFaktaPage() {
   }, [revealed, currentQuestion]);
 
   const handleNext = useCallback(() => {
+    if (selected === null) return;
     const newAnswers = [...answers];
     newAnswers[currentIndex] = selected;
     const correctCount = newAnswers.reduce((acc, a, i) => {
