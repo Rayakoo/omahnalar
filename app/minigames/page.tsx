@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { Gamepad2, ArrowRight, Sparkles } from "lucide-react";
 import { MINIGAMES } from "@/data/minigames";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { id, en } from "@/data/translations";
 
 const BG_PATTERNS = [
   "radial-gradient(circle at 30% 40%, rgba(250,199,117,0.12) 0%, transparent 60%), radial-gradient(circle at 70% 80%, rgba(250,199,117,0.06) 0%, transparent 40%)",
@@ -10,6 +12,9 @@ const BG_PATTERNS = [
 ];
 
 export default function MinigamesPage() {
+  const { locale } = useLanguage();
+  const t = locale === "id" ? id.minigames : en.minigames;
+  const common = locale === "id" ? id.common : en.common;
   return (
     <div className="min-h-screen bg-page-50 font-sans antialiased text-brand-900 flex flex-col">
       {/* Hero */}
@@ -21,13 +26,13 @@ export default function MinigamesPage() {
         </div>
         <div className="max-w-4xl mx-auto text-center relative z-10">
           <span className="inline-flex items-center gap-2 bg-secondary-500 text-brand-900 text-[10px] font-bold px-4 py-1.5 rounded-full uppercase tracking-wider mb-5">
-            <Gamepad2 className="w-3.5 h-3.5" /> Minigames
+            <Gamepad2 className="w-3.5 h-3.5" /> {t.badge}
           </span>
           <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight text-secondary-500">
-            Main Sambil Belajar
+            {t.title}
           </h1>
           <p className="text-sm md:text-base text-brand-100/70 mt-4 max-w-2xl mx-auto leading-relaxed">
-            Asah pengetahuanmu tentang kesehatan reproduksi melalui berbagai permainan seru dan interaktif.
+            {t.desc}
           </p>
         </div>
       </div>
@@ -55,17 +60,17 @@ export default function MinigamesPage() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <h3 className="text-xl md:text-2xl font-bold text-brand-900 mb-2 group-hover:text-brand-700 transition-colors">
-                    {game.title}
+                    {locale === "id" ? game.title : game.titleEn}
                   </h3>
                   <p className="text-sm text-brand-700/60 leading-relaxed">
-                    {game.description}
+                    {locale === "id" ? game.description : game.descriptionEn}
                   </p>
                 </div>
               </div>
 
               <div className="flex items-center justify-between pt-6 border-t border-brand-900/10 mt-auto">
                 <span className="text-sm font-bold text-brand-700 flex items-center gap-2 group-hover:gap-3 transition-all">
-                  Mainkan <ArrowRight className="w-4 h-4" />
+                  {common.play} <ArrowRight className="w-4 h-4" />
                 </span>
                 <span
                   className="w-10 h-10 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform"

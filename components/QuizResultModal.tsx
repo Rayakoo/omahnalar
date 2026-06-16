@@ -3,6 +3,8 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { CheckCircle2, XCircle, Zap } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { id, en } from "@/data/translations";
 
 interface QuizResultModalProps {
   isOpen: boolean;
@@ -12,6 +14,10 @@ interface QuizResultModalProps {
 }
 
 export default function QuizResultModal({ isOpen, status, onNext, isLast }: QuizResultModalProps) {
+  const { locale } = useLanguage();
+  const t = locale === "id" ? id.omahBelajar : en.omahBelajar;
+  const common = locale === "id" ? id.common : en.common;
+
   if (!isOpen) return null;
 
   const isCorrect = status === "correct";
@@ -40,30 +46,24 @@ export default function QuizResultModal({ isOpen, status, onNext, isLast }: Quiz
         <h3 className={`text-xl font-black tracking-wide mb-3 ${
           isCorrect ? "text-emerald-600" : "text-rose-500"
         }`}>
-          {isCorrect ? "Kamu Benar!" : "Kurang Tepat"}
+          {isCorrect ? t.kamuBenar : t.kurangTepat}
         </h3>
 
         <p className="text-xs md:text-sm text-brand-900/80 font-medium leading-relaxed mb-6 max-w-[320px]">
-          {isCorrect
-            ? "Tubuhmu adalah otoritasmu sendiri. Tidak peduli siapa mereka, sentuhan tanpa persetujuan adalah pelanggaran batasan."
-            : "Pilihanmu menunjukkan keraguan. Ingat, rasa tidak nyaman adalah sinyal valid dari tubuhmu. Kamu berhak berkata 'Tidak'."
-          }
+          {isCorrect ? t.pesanBenar : t.pesanSalah}
         </p>
 
         <div className="w-full bg-[#FFF9EE] border border-[#FCE5BF] rounded-2xl p-4 text-left flex flex-col gap-1.5 mb-6 shadow-inner">
           <div className="flex items-center gap-1.5 text-amber-600 font-extrabold text-[10px] md:text-xs uppercase tracking-wider">
             <Zap className="w-3.5 h-3.5 fill-amber-500 text-amber-500 stroke-[2.5]" />
-            <span>Pelajaran Penting</span>
+            <span>{t.pelajaranPenting}</span>
           </div>
           <p className="text-[10px] md:text-xs text-brand-700/80 leading-relaxed font-normal">
-            {isCorrect
-              ? "Konsep 'Consent' atau persetujuan bersifat aktif dan bisa ditarik kapan saja, bahkan dalam hubungan dekat sekalipun."
-              : "Psikolog menyebut ini sebagai Personal Space Awareness. Mengenali sinyal tubuh membantu kita membangun pertahanan mental yang lebih kuat."
-            }
+            {isCorrect ? t.kontenBenar : t.kontenSalah}
           </p>
           {!isCorrect && (
             <p className="text-[9px] md:text-[10px] text-rose-500/70 font-semibold mt-1">
-              Statistik: 70% orang merasa sulit menolak teman dekat.
+              {t.statistik}
             </p>
           )}
         </div>
@@ -76,7 +76,7 @@ export default function QuizResultModal({ isOpen, status, onNext, isLast }: Quiz
               : "bg-brand-900 text-white hover:bg-brand-700"
           }`}
         >
-          {isLast ? "Selesai" : "Selanjutnya"}
+          {isLast ? t.selesaiBtn : t.selanjutnya}
         </button>
       </motion.div>
     </div>

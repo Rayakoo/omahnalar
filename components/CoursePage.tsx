@@ -12,8 +12,11 @@ import {
   getCourses, getCategories, getEducationLevels,
   type CourseWithRelations, type Category, type EducationLevel,
 } from "@/services/courses";
+import { transformImageUrl } from "@/lib/image";
 import { getUserCourse, getUserCourses, enrollCourse, type UserCourse } from "@/services/userCourses";
 import { useAuth } from "@/contexts/AuthContext";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { id, en } from "@/data/translations";
 
 function seededColor(seed: number, i: number) {
   const colors = ["#F07A94", "#7C78A8", "#6BBF8A", "#FAC775", "#E6E4F9"];
@@ -29,6 +32,9 @@ interface UserStats {
 export default function CoursePage() {
   const router = useRouter();
   const { user } = useAuth();
+  const { locale } = useLanguage();
+  const t = locale === "id" ? id.omahBelajar : en.omahBelajar;
+  const common = locale === "id" ? id.common : en.common;
 
   const [courses, setCourses] = useState<CourseWithRelations[]>([]);
   const defaultCats: Category[] = [
@@ -142,9 +148,9 @@ export default function CoursePage() {
   };
 
   const statCards = [
-    { label: "Total Course", value: userStats.total, icon: BookOpen, color: "bg-brand-100 text-brand-700" },
-    { label: "Sedang Berjalan", value: userStats.inProgress, icon: Clock, color: "bg-amber-100 text-amber-600" },
-    { label: "Selesai", value: userStats.completed, icon: Award, color: "bg-emerald-100 text-emerald-600" },
+    { label: t.statsTotal, value: userStats.total, icon: BookOpen, color: "bg-brand-100 text-brand-700" },
+    { label: t.statsProgress, value: userStats.inProgress, icon: Clock, color: "bg-amber-100 text-amber-600" },
+    { label: t.statsDone, value: userStats.completed, icon: Award, color: "bg-emerald-100 text-emerald-600" },
   ];
 
   if (loading) {
@@ -177,8 +183,8 @@ export default function CoursePage() {
             {userStats.total > 0 && (
               <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 mb-8">
                 <div className="flex items-center justify-between mb-3">
-                  <p className="text-sm font-bold text-brand-900">Progress Belajar</p>
-                  <p className="text-xs font-semibold text-brand-700/60">{progressPercent}% selesai</p>
+                  <p className="text-sm font-bold text-brand-900">{t.progressTitle}</p>
+                  <p className="text-xs font-semibold text-brand-700/60">{progressPercent}{t.progressPercent}</p>
                 </div>
                 <div className="w-full h-3 bg-brand-100 rounded-full overflow-hidden">
                   <motion.div
@@ -189,7 +195,7 @@ export default function CoursePage() {
                   />
                 </div>
                 <p className="text-[11px] text-brand-700/50 mt-2">
-                  {userStats.completed} dari {userStats.total} course telah diselesaikan
+                  {t.progressOf.replace("{completed}", String(userStats.completed)).replace("{total}", String(userStats.total))}
                 </p>
               </div>
             )}
@@ -202,7 +208,7 @@ export default function CoursePage() {
               <div className="w-8 h-8 bg-amber-100 rounded-lg flex items-center justify-center">
                 <TrendingUp className="w-4 h-4 text-amber-600" />
               </div>
-              <h2 className="text-lg font-black text-brand-900">Lanjutkan Belajarmu</h2>
+              <h2 className="text-lg font-black text-brand-900">{t.lanjutkanTitle}</h2>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
               {inProgressCourses.map((uc) => {
@@ -216,11 +222,21 @@ export default function CoursePage() {
                     onClick={(e) => handleStartCourse(course.id, e)}
                     className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all border border-gray-100 cursor-pointer group"
                   >
-                    <div
-                      className="w-full h-28 flex items-center justify-center text-white font-bold text-lg relative"
-                      style={{ backgroundColor: seededColor(seed, parseInt(course.id.slice(0, 8), 36) || 0) }}
-                    >
-                      {course.title.charAt(0)}
+                    <div className="w-full h-28 relative overflow-hidden bg-brand-100">
+                      {course.thumbnail_url ? (
+                        <img
+                          src={transformImageUrl(course.thumbnail_url)}
+                          alt={course.title}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div
+                          className="w-full h-full flex items-center justify-center text-white font-bold text-lg"
+                          style={{ backgroundColor: seededColor(seed, parseInt(course.id.slice(0, 8), 36) || 0) }}
+                        >
+                          {course.title.charAt(0)}
+                        </div>
+                      )}
                       <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/30">
                         <div
                           className="h-full bg-white/70 transition-all"
@@ -238,7 +254,7 @@ export default function CoursePage() {
                           {Math.min(progress, 100)}%
                         </span>
                         <span className="text-brand-700 text-[10px] font-bold group-hover:underline">
-                          Lanjutkan &rarr;
+                          {t.lanjutkanBtn} &rarr;
                         </span>
                       </div>
                     </div>
@@ -255,7 +271,7 @@ export default function CoursePage() {
               <div className="w-8 h-8 bg-emerald-100 rounded-lg flex items-center justify-center">
                 <Award className="w-4 h-4 text-emerald-600" />
               </div>
-              <h2 className="text-lg font-black text-brand-900">Course Selesai</h2>
+              <h2 className="text-lg font-black text-brand-900">{t.selesaiTitle}</h2>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
               {completedCourses.map((uc) => {
@@ -266,13 +282,23 @@ export default function CoursePage() {
                     onClick={(e) => handleStartCourse(course.id, e)}
                     className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all border border-emerald-100 cursor-pointer group"
                   >
-                    <div
-                      className="w-full h-28 flex items-center justify-center text-white font-bold text-lg relative"
-                      style={{ backgroundColor: seededColor(seed, parseInt(course.id.slice(0, 8), 36) || 0) }}
-                    >
-                      {course.title.charAt(0)}
+                    <div className="w-full h-28 relative overflow-hidden bg-brand-100">
+                      {course.thumbnail_url ? (
+                        <img
+                          src={transformImageUrl(course.thumbnail_url)}
+                          alt={course.title}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div
+                          className="w-full h-full flex items-center justify-center text-white font-bold text-lg"
+                          style={{ backgroundColor: seededColor(seed, parseInt(course.id.slice(0, 8), 36) || 0) }}
+                        >
+                          {course.title.charAt(0)}
+                        </div>
+                      )}
                       <div className="absolute top-2 right-2 bg-emerald-500 text-white text-[9px] font-bold px-2 py-0.5 rounded-full">
-                        Selesai
+                        {t.selesaiBadge}
                       </div>
                     </div>
                     <div className="p-4">
@@ -282,7 +308,7 @@ export default function CoursePage() {
                       </p>
                       <div className="flex items-center gap-1 text-emerald-600 text-[10px] font-bold">
                         <CheckCircle2 className="w-3 h-3" />
-                        Sertifikat tersedia
+                        {t.sertifikatTersedia}
                       </div>
                     </div>
                   </div>
@@ -295,7 +321,7 @@ export default function CoursePage() {
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-10">
           <div className="flex items-center gap-3 p-1.5 bg-white rounded-2xl shadow-inner border border-gray-100 flex-wrap">
             {courseCats.length === 0 ? (
-              <span className="px-4 py-2 text-sm text-brand-700/50 font-semibold">Tidak ada kategori</span>
+              <span className="px-4 py-2 text-sm text-brand-700/50 font-semibold">{t.noCategory}</span>
             ) : (
               courseCats.map((cat) => {
                 const isSelected = activeTab === cat.name;
@@ -328,7 +354,7 @@ export default function CoursePage() {
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Cari Course..."
+              placeholder={t.searchPlaceholder}
               className="w-full pl-4 pr-10 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-700/20 focus:border-brand-700 shadow-sm"
             />
             <Search className="absolute right-3 top-3 w-4 h-4 text-gray-400" />
@@ -338,7 +364,7 @@ export default function CoursePage() {
         {filteredCourses.length > 0 ? (
           <>
             <div className="mb-12">
-              <h2 className="text-base font-bold text-brand-900/80 mb-4">Course tersedia</h2>
+              <h2 className="text-base font-bold text-brand-900/80 mb-4">{t.tersediaTitle}</h2>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {filteredCourses.map((course) => (
                   <div
@@ -346,11 +372,21 @@ export default function CoursePage() {
                     onClick={(e) => handleStartCourse(course.id, e)}
                     className="bg-brand-100 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow flex flex-col cursor-pointer"
                   >
-                    <div
-                      className="w-full h-36 flex items-center justify-center text-white font-bold text-lg"
-                      style={{ backgroundColor: seededColor(seed, parseInt(course.id.slice(0, 8), 36) || 0) }}
-                    >
-                      {course.title.charAt(0)}
+                    <div className="w-full h-36 relative overflow-hidden bg-brand-100">
+                      {course.thumbnail_url ? (
+                        <img
+                          src={transformImageUrl(course.thumbnail_url)}
+                          alt={course.title}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div
+                          className="w-full h-full flex items-center justify-center text-white font-bold text-lg"
+                          style={{ backgroundColor: seededColor(seed, parseInt(course.id.slice(0, 8), 36) || 0) }}
+                        >
+                          {course.title.charAt(0)}
+                        </div>
+                      )}
                     </div>
                     <div className="p-5 flex flex-col justify-between flex-1">
                       <div>
@@ -363,7 +399,7 @@ export default function CoursePage() {
                         )}
                       </div>
                       <span className="bg-brand-900 text-white text-[10px] font-bold px-3 py-1.5 rounded-lg w-fit shadow-sm">
-                        Mulai Belajar
+                        {t.mulaiBelajar}
                       </span>
                     </div>
                   </div>
@@ -380,8 +416,8 @@ export default function CoursePage() {
         ) : (
           <div className="text-center py-20">
             <BookOpen className="w-16 h-16 mx-auto text-brand-700/20 mb-4" />
-            <h3 className="text-lg font-bold text-brand-700/60">Belum ada course tersedia</h3>
-            <p className="text-sm text-brand-700/40 mt-1">Course akan muncul setelah ditambahkan oleh admin.</p>
+            <h3 className="text-lg font-bold text-brand-700/60">{t.emptyTitle}</h3>
+            <p className="text-sm text-brand-700/40 mt-1">{t.emptyDesc}</p>
           </div>
         )}
       </main>
@@ -390,6 +426,8 @@ export default function CoursePage() {
 }
 
 function SchoolCarousel({ level, courses, seed, onStartCourse }: { level: EducationLevel; courses: CourseWithRelations[]; seed: number; onStartCourse: (courseId: string, e: React.MouseEvent) => void; }) {
+  const { locale } = useLanguage();
+  const t = locale === "id" ? id.omahBelajar : en.omahBelajar;
   const [index, setIndex] = useState(0);
   const cardWidth = 320;
   const gap = 24;
@@ -399,7 +437,7 @@ function SchoolCarousel({ level, courses, seed, onStartCourse }: { level: Educat
     <section className="mb-12">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-base font-bold text-brand-900/80">
-          Kategori Course: Tingkat {level.name}
+          {t.kategoriCourse.replace("{name}", level.name)}
         </h2>
         <div className="flex items-center gap-2">
           <button
@@ -430,11 +468,21 @@ function SchoolCarousel({ level, courses, seed, onStartCourse }: { level: Educat
               onClick={(e) => onStartCourse(course.id, e)}
               className="min-w-[280px] md:min-w-[320px] max-w-[320px] bg-brand-100 rounded-2xl overflow-hidden shadow-sm hover:-translate-y-1 transition-transform duration-200 flex flex-col shrink-0 cursor-pointer"
             >
-              <div
-                className="w-full h-36 flex items-center justify-center text-white font-bold text-lg"
-                style={{ backgroundColor: seededColor(seed, i) }}
-              >
-                {course.title.charAt(0)}
+              <div className="w-full h-36 relative overflow-hidden bg-brand-100">
+                {course.thumbnail_url ? (
+                  <img
+                    src={transformImageUrl(course.thumbnail_url)}
+                    alt={course.title}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div
+                    className="w-full h-full flex items-center justify-center text-white font-bold text-lg"
+                    style={{ backgroundColor: seededColor(seed, i) }}
+                  >
+                    {course.title.charAt(0)}
+                  </div>
+                )}
               </div>
               <div className="p-4 flex flex-col justify-between flex-1 gap-4">
                 <div>
@@ -442,7 +490,7 @@ function SchoolCarousel({ level, courses, seed, onStartCourse }: { level: Educat
                   <p className="text-[11px] text-brand-700/60 font-semibold">{course.category?.name ?? 'Unknown'}</p>
                 </div>
                 <span className="bg-brand-700 text-white text-[10px] font-bold px-2.5 py-1.5 rounded-lg w-fit shadow-sm">
-                  Mulai
+                  {t.mulaiBtn}
                 </span>
               </div>
             </div>

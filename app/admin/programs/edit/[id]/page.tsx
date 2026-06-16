@@ -5,6 +5,8 @@ import { useRouter, useParams } from "next/navigation";
 import { ArrowLeft, Save, Plus, X } from "lucide-react";
 import { getProgramById, updateProgram, type Program } from "@/services/programs";
 
+type ImageInput = { url: string; is_thumbnail: boolean };
+
 export default function EditProgram() {
   const router = useRouter();
   const params = useParams();
@@ -19,6 +21,7 @@ export default function EditProgram() {
     location: "",
     tagline: "",
   });
+  const [images, setImages] = useState<ImageInput[]>([{ url: "", is_thumbnail: true }]);
   const [descriptions, setDescriptions] = useState<string[]>([""]);
   const [target, setTarget] = useState<string[]>([""]);
   const [goals, setGoals] = useState<string[]>([""]);
@@ -42,6 +45,7 @@ export default function EditProgram() {
           location: p.location,
           tagline: p.tagline,
         });
+        setImages(p.image_url?.length > 0 ? p.image_url : [{ url: "", is_thumbnail: true }]);
         setDescriptions(p.descriptions.length > 0 ? p.descriptions : [""]);
         setTarget(p.target.length > 0 ? p.target : [""]);
         setGoals(p.goals.length > 0 ? p.goals : [""]);
@@ -69,6 +73,23 @@ export default function EditProgram() {
     setter(next);
   };
 
+  const addImage = () => setImages((prev) => [...prev, { url: "", is_thumbnail: false }]);
+  const removeImage = (idx: number) => {
+    if (images.length <= 1) return;
+    const next = images.filter((_, i) => i !== idx);
+    if (images[idx].is_thumbnail && next.length > 0) next[0].is_thumbnail = true;
+    setImages(next);
+  };
+  const updateImageUrl = (idx: number, url: string) => {
+    const next = [...images];
+    next[idx].url = url;
+    setImages(next);
+  };
+  const setImageAsThumbnail = (idx: number) => {
+    const next = images.map((img, i) => ({ ...img, is_thumbnail: i === idx }));
+    setImages(next);
+  };
+
   const addVideo = () => setVideos((prev) => [...prev, ""]);
   const removeVideo = (idx: number) => {
     if (videos.length <= 1) return;
@@ -86,7 +107,8 @@ export default function EditProgram() {
       setError("Judul, tag, tagline, tanggal mulai, tanggal selesai, dan lokasi harus diisi.");
       return;
     }
-    const validVideos = videos.filter((v) => v.trim());
+    const validVideos = videos.map((v) => v.replace(/["']/g, "").trim()).filter(Boolean);
+    const validImages = images.filter((img) => img.url.trim());
     setError("");
     setSaving(true);
     savingRef.current = true;
@@ -99,6 +121,7 @@ export default function EditProgram() {
         period: `${form.periodStart} - ${form.periodEnd}`,
         location: form.location,
         tagline: form.tagline,
+        image_url: validImages,
         video_url: validVideos,
         descriptions: descriptions.filter(Boolean),
         target: target.filter(Boolean),
@@ -261,6 +284,41 @@ export default function EditProgram() {
                 </button>
               </div>
             ))}
+          </div>
+
+          {/* IMAGES */}
+          <div>
+            <div className="flex items-center justify-between mb-1">
+              <label className="block text-sm font-semibold text-gray-700">Gambar</label>
+              <button type="button" onClick={addImage} className="text-[#4D455D] hover:text-[#3d364a]">
+                <Plus className="w-4 h-4" />
+              </button>
+            </div>
+            {images.map((img, idx) => (
+              <div key={idx} className="flex items-start gap-2 mb-2">
+                <input
+                  type="url"
+                  value={img.url}
+                  onChange={(e) => updateImageUrl(idx, e.target.value)}
+                  placeholder="https://example.com/gambar.jpg"
+                  className="flex-1 px-4 py-3 bg-white border border-[#D9D7EC] rounded-xl focus:outline-none focus:ring-1 focus:ring-purple-500 placeholder-gray-400 text-sm text-gray-900"
+                />
+                <button
+                  type="button"
+                  onClick={() => setImageAsThumbnail(idx)}
+                  className={`shrink-0 px-2.5 py-3 rounded-xl text-xs font-bold transition-colors ${
+                    img.is_thumbnail ? "bg-[#4D455D] text-white" : "bg-white border border-[#D9D7EC] text-gray-500 hover:border-[#4D455D]"
+                  }`}
+                  title="Jadikan thumbnail"
+                >
+                  {img.is_thumbnail ? "Thumbnail" : "Thumbnail?"}
+                </button>
+                <button type="button" onClick={() => removeImage(idx)} className="text-red-400 hover:text-red-600 mt-3">
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            ))}
+            <p className="text-[10px] text-gray-400 mt-1">Gambar pertama akan otomatis jadi thumbnail.</p>
           </div>
 
           {/* VIDEOS */}

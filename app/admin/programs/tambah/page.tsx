@@ -81,7 +81,7 @@ export default function TambahProgram() {
       return;
     }
     const validImages = images.filter((i) => i.url.trim());
-    const validVideos = videos.filter((v) => v.trim());
+    const validVideos = videos.map((v) => v.replace(/["']/g, "").trim()).filter(Boolean);
     console.log("[TambahProgram] validImages:", JSON.stringify(validImages, null, 2));
     setError("");
     setSaving(true);

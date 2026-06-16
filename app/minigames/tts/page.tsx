@@ -1,9 +1,11 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
-import { Gamepad2, ArrowLeft, ChevronRight } from "lucide-react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
+import { Gamepad2, ArrowLeft, ChevronRight, Clock } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { CROSSWORD_CLUES, GRID_ROWS, GRID_COLS, buildGrid, type Clue } from "@/data/crosswordData";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { id, en } from "@/data/translations";
 
 type GamePhase = "welcome" | "playing" | "finished";
 
@@ -27,6 +29,30 @@ function getCellsForClue(clue: Clue): { row: number; col: number }[] {
     }
   }
   return cells;
+}
+
+function mergeLockedCells(answers: string[][] | null): string[][] {
+  const grid = buildGrid();
+  const merged = grid.map((row) => row.map(() => ""));
+  if (answers) {
+    for (let r = 0; r < Math.min(answers.length, merged.length); r++) {
+      for (let c = 0; c < Math.min(answers[r].length, merged[r].length); c++) {
+        merged[r][c] = answers[r][c];
+      }
+    }
+  }
+  for (const clue of CROSSWORD_CLUES) {
+    const cells = getCellsForClue(clue);
+    if (cells.length > 0) merged[cells[0].row][cells[0].col] = clue.answer[0];
+  }
+  return merged;
+}
+
+function formatTime(ms: number): string {
+  const totalSec = Math.floor(ms / 1000);
+  const min = Math.floor(totalSec / 60);
+  const sec = totalSec % 60;
+  return `${String(min).padStart(2, "0")}:${String(sec).padStart(2, "0")}`;
 }
 
 function loadProgress(): string[][] | null {
@@ -53,15 +79,24 @@ function clearProgress() {
 
 export default function TTSPage() {
   const router = useRouter();
+  const { locale } = useLanguage();
+  const t = locale === "id" ? id.tts : en.tts;
+  const common = locale === "id" ? id.common : en.common;
   const [phase, setPhase] = useState<GamePhase>("welcome");
   const [countdown, setCountdown] = useState<number | null>(null);
   const [countdownKey, setCountdownKey] = useState(0);
   const [grid] = useState<CrosswordCell[][]>(buildGrid);
-  const [userAnswers, setUserAnswers] = useState<string[][]>(() => loadProgress() || buildGrid().map((row) => row.map(() => "")));
+  const initAnswers = useCallback(() => {
+    return mergeLockedCells(loadProgress());
+  }, []);
+  const [userAnswers, setUserAnswers] = useState<string[][]>(initAnswers);
   const [activeClue, setActiveClue] = useState<Clue | null>(null);
   const [focusCell, setFocusCell] = useState<{ row: number; col: number } | null>(null);
   const [completedClues, setCompletedClues] = useState<Set<number>>(new Set());
   const [showCompletion, setShowCompletion] = useState(false);
+  const [elapsedMs, setElapsedMs] = useState(0);
+  const [finalTimeMs, setFinalTimeMs] = useState(0);
+  const startTimeRef = useRef<number | null>(null);
   const inputRefs = useRef<(HTMLInputElement | null)[][]>([]);
   const activeClueRef = useRef(activeClue);
 
@@ -70,6 +105,15 @@ export default function TTSPage() {
   const acrossClues = CROSSWORD_CLUES.filter((c) => c.direction === "across");
   const downClues = CROSSWORD_CLUES.filter((c) => c.direction === "down");
   const totalClues = CROSSWORD_CLUES.length;
+
+  const lockedCells = useMemo(() => {
+    const locked = new Set<string>();
+    for (const clue of CROSSWORD_CLUES) {
+      const cells = getCellsForClue(clue);
+      if (cells.length > 0) locked.add(`${cells[0].row},${cells[0].col}`);
+    }
+    return locked;
+  }, []);
 
   useEffect(() => {
     inputRefs.current = Array.from({ length: GRID_ROWS }, () =>
@@ -153,6 +197,9 @@ export default function TTSPage() {
 
       if (completed.size === totalClues) {
         clearProgress();
+        if (startTimeRef.current !== null) {
+          setFinalTimeMs(Date.now() - startTimeRef.current);
+        }
         setTimeout(() => setShowCompletion(true), 600);
         return;
       }
@@ -179,15 +226,23 @@ export default function TTSPage() {
 
   const handleCellKeyDown = useCallback(
     (e: React.KeyboardEvent, row: number, col: number, clue: Clue) => {
-      if (e.key === "Backspace" && !userAnswers[row][col]) {
-        const prev = getPrevCell(row, col, clue);
-        if (prev) {
-          const newAnswers = userAnswers.map((r) => [...r]);
-          newAnswers[prev.row][prev.col] = "";
-          setUserAnswers(newAnswers);
-          saveProgress(newAnswers);
-          setCompletedClues(checkAllClues(newAnswers));
-          setFocusCell(prev);
+      if (e.key === "Backspace") {
+        if (!userAnswers[row][col]) {
+          const cells = getCellsForClue(clue);
+          const idx = cells.findIndex((c) => c.row === row && c.col === col);
+          let prevIdx = idx - 1;
+          while (prevIdx >= 0 && lockedCells.has(`${cells[prevIdx].row},${cells[prevIdx].col}`)) {
+            prevIdx--;
+          }
+          if (prevIdx >= 0) {
+            const prev = cells[prevIdx];
+            const newAnswers = userAnswers.map((r) => [...r]);
+            newAnswers[prev.row][prev.col] = "";
+            setUserAnswers(newAnswers);
+            saveProgress(newAnswers);
+            setCompletedClues(checkAllClues(newAnswers));
+            setFocusCell(prev);
+          }
         }
         return;
       }
@@ -204,7 +259,7 @@ export default function TTSPage() {
         }
       }
     },
-    [userAnswers, getPrevCell, checkAllClues, grid]
+    [userAnswers, getCellsForClue, lockedCells, checkAllClues, grid]
   );
 
   const handleCellFocus = useCallback((row: number, col: number) => {
@@ -240,10 +295,13 @@ export default function TTSPage() {
     if (countdown < 0) {
       setCountdown(null);
       setPhase("playing");
+      startTimeRef.current = Date.now();
+      setElapsedMs(0);
+      setFinalTimeMs(0);
       const saved = loadProgress();
       if (saved) {
-        setUserAnswers(saved);
-        const completed = checkAllClues(saved);
+        setUserAnswers(mergeLockedCells(saved));
+        const completed = checkAllClues(mergeLockedCells(saved));
         setCompletedClues(completed);
       }
       setTimeout(() => {
@@ -261,16 +319,28 @@ export default function TTSPage() {
   useEffect(() => {
     const saved = loadProgress();
     if (saved) {
-      setUserAnswers(saved);
-      const completed = checkAllClues(saved);
+      setUserAnswers(mergeLockedCells(saved));
+      const completed = checkAllClues(mergeLockedCells(saved));
       setCompletedClues(completed);
     }
   }, [checkAllClues]);
+
+  useEffect(() => {
+    if (phase !== "playing" || startTimeRef.current === null) return;
+    const id = setInterval(() => {
+      setElapsedMs(Date.now() - startTimeRef.current!);
+    }, 200);
+    return () => clearInterval(id);
+  }, [phase]);
 
   const handleReset = useCallback(() => {
     const empty = Array.from({ length: GRID_ROWS }, () =>
       Array.from({ length: GRID_COLS }, () => "")
     );
+    for (const clue of CROSSWORD_CLUES) {
+      const cells = getCellsForClue(clue);
+      if (cells.length > 0) empty[cells[0].row][cells[0].col] = clue.answer[0];
+    }
     setUserAnswers(empty);
     setCompletedClues(new Set());
     setActiveClue(CROSSWORD_CLUES[0]);
@@ -331,11 +401,17 @@ export default function TTSPage() {
               onClick={() => router.push("/minigames")}
               className="flex items-center gap-1 text-sm text-brand-700 hover:text-brand-900 transition-colors"
             >
-              <ArrowLeft className="w-4 h-4" /> Kembali
+              <ArrowLeft className="w-4 h-4" /> {common.back}
             </button>
-            <span className="text-xs text-brand-700/60 font-medium">
-              {completedClues.size}/{totalClues} soal terjawab
-            </span>
+            <div className="flex items-center gap-3">
+              <span className="text-xs text-brand-700/60 font-medium flex items-center gap-1">
+                <Clock className="w-3 h-3" />
+                {formatTime(elapsedMs)}
+              </span>
+              <span className="text-xs text-brand-700/60 font-medium">
+                {completedClues.size}/{totalClues} {t.soalTerjawab}
+              </span>
+            </div>
           </div>
         </div>
       </div>
@@ -361,6 +437,7 @@ export default function TTSPage() {
                     const userChar = userAnswers[r]?.[c] || "";
                     const isCorrectLetter = isActive && userChar.toUpperCase() === cell.answer;
                     const isInCompletedClue = completedCells.has(`${r},${c}`);
+                    const isLocked = lockedCells.has(`${r},${c}`);
 
                     const hasGreen = isInCompletedClue || (userChar && isCorrectLetter);
 
@@ -369,7 +446,11 @@ export default function TTSPage() {
                     let cellRing = "";
                     let cellText = "text-brand-900";
 
-                    if (isFocused) {
+                    if (isLocked) {
+                      cellBg = "bg-amber-100";
+                      cellBorder = "border border-amber-300";
+                      cellText = "text-amber-800";
+                    } else if (isFocused) {
                       cellBg = "bg-amber-200";
                       cellBorder = "border border-amber-400";
                       cellRing = "ring-2 ring-amber-400/60";
@@ -396,6 +477,7 @@ export default function TTSPage() {
                             type="text"
                             maxLength={1}
                             value={userChar}
+                            readOnly={isLocked}
                             onChange={(e) => handleCellChange(r, c, e.target.value, activeClue)}
                             onKeyDown={(e) => handleCellKeyDown(e, r, c, activeClue)}
                             onFocus={() => handleCellFocus(r, c)}
@@ -428,13 +510,13 @@ export default function TTSPage() {
                 </span>
                 <div className="flex-1 min-w-0">
                   <span className="text-[10px] font-bold uppercase tracking-wider text-brand-700/60">
-                    {activeClue.direction === "across" ? "Mendatar" : "Menurun"}
+                    {activeClue.direction === "across" ? t.mendatar : t.menurun}
                   </span>
                   <p className="text-sm font-semibold text-brand-900 mt-0.5 leading-relaxed">
                     {activeClue.question}
                   </p>
                   <p className="text-xs text-brand-700/50 mt-0.5">
-                    {activeClue.answer.length} huruf
+                    {activeClue.answer.length} {t.huruf}
                   </p>
                 </div>
               </div>
@@ -445,7 +527,7 @@ export default function TTSPage() {
               <div>
                 <h3 className="text-[11px] font-bold uppercase tracking-wider text-brand-700/80 mb-2 flex items-center gap-1.5">
                   <svg className="w-3 h-3" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd" /></svg>
-                  Mendatar
+                  {t.mendatar}
                 </h3>
                 <div className="space-y-0.5">
                   {acrossClues.map((clue) => {
@@ -485,7 +567,7 @@ export default function TTSPage() {
               <div>
                 <h3 className="text-[11px] font-bold uppercase tracking-wider text-brand-700/80 mb-2 flex items-center gap-1.5">
                   <svg className="w-3 h-3" viewBox="0 0 20 20" fill="currentColor"><path d="M5 3a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2H5zm0 8a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2v-2a2 2 0 00-2-2H5zm6-6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V5zm0 8a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>
-                  Menurun
+                  {t.menurun}
                 </h3>
                 <div className="space-y-0.5">
                   {downClues.map((clue) => {
@@ -529,10 +611,13 @@ export default function TTSPage() {
                 onClick={handleReset}
                 className="text-xs text-brand-700/50 hover:text-brand-700 transition-colors px-3 py-1.5 rounded-lg hover:bg-brand-100/30"
               >
-                Reset Jawaban
+                {t.resetJawaban}
               </button>
               <button
                 onClick={() => {
+                  if (startTimeRef.current !== null) {
+                    setFinalTimeMs(Date.now() - startTimeRef.current);
+                  }
                   setPhase("finished");
                   setTimeout(() => setShowCompletion(false), 100);
                 }}
@@ -540,7 +625,7 @@ export default function TTSPage() {
                 style={{ background: "linear-gradient(135deg, #7C78A8, #4A4763)" }}
               >
                 <span className="relative z-10 flex items-center gap-1.5">
-                  Selesai <ChevronRight className="w-3 h-3" />
+                  {t.selesai} <ChevronRight className="w-3 h-3" />
                 </span>
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
               </button>
@@ -558,10 +643,14 @@ export default function TTSPage() {
             style={{ animation: "fade-in 0.4s ease-out" }}
           >
             <div className="text-5xl mb-4">🎉</div>
-            <h2 className="text-2xl font-bold text-brand-900 mb-2">Selamat!</h2>
-            <p className="text-sm text-brand-700/70 mb-6 leading-relaxed">
-              Semua soal terjawab dengan benar!<br />Kamu telah menyelesaikan Teka Teki Silang.
+            <h2 className="text-2xl font-bold text-brand-900 mb-2">{t.selamat}</h2>
+            <p className="text-sm text-brand-700/70 mb-2 leading-relaxed">
+              {t.allComplete}<br />{t.completed}
             </p>
+            <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-brand-100 text-brand-700 text-xs font-medium mb-6">
+              <Clock className="w-3 h-3" />
+              {t.waktuPengerjaan}: {formatTime(finalTimeMs)}
+            </div>
             <div className="flex flex-col gap-2">
               <button
                 onClick={() => {
@@ -571,13 +660,13 @@ export default function TTSPage() {
                 className="w-full py-3 rounded-xl font-bold text-sm text-white transition-all duration-200 hover:scale-[1.01] active:scale-[0.99]"
                 style={{ background: "linear-gradient(135deg, #7C78A8, #4A4763)" }}
               >
-                Lihat Hasil
+                {t.lihatHasil}
               </button>
               <button
                 onClick={() => setShowCompletion(false)}
                 className="w-full py-2.5 rounded-xl text-sm font-medium text-brand-700/70 hover:text-brand-900 hover:bg-brand-100/50 transition-colors"
               >
-                Lanjutkan Mengisi
+                {t.lanjutkan}
               </button>
             </div>
           </div>
@@ -591,6 +680,7 @@ export default function TTSPage() {
           totalLetters={finishLetterTotal}
           totalClues={totalClues}
           completedClues={completedClues.size}
+          finalTimeMs={finalTimeMs}
           onRestart={() => { clearProgress(); router.refresh(); }}
           onBack={() => router.push("/minigames")}
         />
@@ -600,6 +690,8 @@ export default function TTSPage() {
 }
 
 function CountdownOverlay({ value }: { value: number }) {
+  const { locale } = useLanguage();
+  const t = locale === "id" ? id.tts : en.tts;
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-brand-900">
       <div className="text-center">
@@ -616,7 +708,7 @@ function CountdownOverlay({ value }: { value: number }) {
             className="text-8xl md:text-9xl font-extrabold text-secondary-500 drop-shadow-lg inline-block"
             style={{ animation: "fade-in 0.4s ease-out" }}
           >
-            Go!
+            {t.go}
           </span>
         )}
       </div>
@@ -631,12 +723,16 @@ function WelcomeScreen({
   onStart: () => void;
   onBack: () => void;
 }) {
+  const { locale } = useLanguage();
+  const t = locale === "id" ? id.tts : en.tts;
+  const common = locale === "id" ? id.common : en.common;
+  const min = locale === "id" ? id.minigames : en.minigames;
   return (
     <div className="min-h-screen bg-page-50 font-sans antialiased text-brand-900 flex flex-col">
       <div className="bg-brand-900 text-white py-16 md:py-24 px-6 mt-16 relative overflow-hidden">
         <button onClick={onBack} className="absolute top-4 left-4 md:top-6 md:left-6 flex items-center gap-1 text-sm text-white/70 hover:text-white transition-colors z-20">
           <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clipRule="evenodd" /></svg>
-          Kembali
+          {common.back}
         </button>
         <div className="absolute inset-0 overflow-hidden">
           <div className="absolute -top-20 -right-20 w-80 h-80 rounded-full bg-secondary-500/10 blur-3xl" />
@@ -644,14 +740,14 @@ function WelcomeScreen({
         </div>
         <div className="max-w-4xl mx-auto text-center relative z-10">
           <span className="inline-flex items-center gap-2 bg-secondary-500 text-brand-900 text-[10px] font-bold px-4 py-1.5 rounded-full uppercase tracking-wider mb-5">
-            <Gamepad2 className="w-3.5 h-3.5" /> Minigames
+            <Gamepad2 className="w-3.5 h-3.5" /> {min.badge}
           </span>
           <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight">
             <span className="text-secondary-500">Teka Teki</span>{" "}
             <span className="text-brand-100/60">Silang</span>
           </h1>
           <p className="text-sm md:text-base text-brand-100/70 mt-4 max-w-2xl mx-auto leading-relaxed">
-            Isi kotak-kotak kosong dengan jawaban yang tepat berdasarkan petunjuk yang diberikan
+            {locale === "id" ? "Isi kotak-kotak kosong dengan jawaban yang tepat berdasarkan petunjuk yang diberikan" : "Fill in the blanks with the correct answers based on the clues provided"}
           </p>
         </div>
       </div>
@@ -660,9 +756,9 @@ function WelcomeScreen({
         <div className="bg-white rounded-2xl border border-brand-100 shadow-sm p-6 md:p-8">
           <div className="grid grid-cols-3 gap-3 mb-6">
             {[
-              { icon: "📋", label: `${CROSSWORD_CLUES.length} Soal`, sub: "teka-teki" },
-              { icon: "✏️", label: "Ketik Jawaban", sub: "input huruf" },
-              { icon: "📖", label: "Edukatif", sub: "penjelasan lengkap" },
+              { icon: "📋", label: `${CROSSWORD_CLUES.length} ${locale === "id" ? "Soal" : "Questions"}`, sub: t.tekaTeki },
+              { icon: "✏️", label: t.ketikJawaban, sub: t.inputHuruf },
+              { icon: "📖", label: t.edukatif, sub: t.penjelasanLengkap },
             ].map((item, i) => (
               <div key={i} className="bg-brand-100/50 rounded-xl p-3 text-center border border-brand-100">
                 <div className="text-2xl mb-1">{item.icon}</div>
@@ -676,8 +772,7 @@ function WelcomeScreen({
             <div className="flex gap-3">
               <span className="text-lg flex-shrink-0">💡</span>
               <p className="text-sm text-amber-800/80 leading-relaxed">
-                Klik petunjuk untuk memilih soal, lalu ketik huruf pada kotak yang tersedia.
-                Kotak akan otomatis berpindah ke kotak berikutnya. Progres disimpan secara otomatis.
+                {t.tooltip}
               </p>
             </div>
           </div>
@@ -690,7 +785,7 @@ function WelcomeScreen({
             }}
           >
             <span className="relative z-10 flex items-center justify-center gap-2">
-              Mulai TTS
+              {t.mulai}
               <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
                 <path d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" />
               </svg>
@@ -708,6 +803,7 @@ function ResultScreen({
   totalLetters,
   totalClues,
   completedClues,
+  finalTimeMs,
   onRestart,
   onBack,
 }: {
@@ -715,9 +811,13 @@ function ResultScreen({
   totalLetters: number;
   totalClues: number;
   completedClues: number;
+  finalTimeMs: number;
   onRestart: () => void;
   onBack: () => void;
 }) {
+  const { locale } = useLanguage();
+  const t = locale === "id" ? id.tts : en.tts;
+  const common = locale === "id" ? id.common : en.common;
   const [animScore, setAnimScore] = useState(0);
   const [showItems, setShowItems] = useState(false);
 
@@ -762,21 +862,28 @@ function ResultScreen({
             <div className="absolute inset-0 flex flex-col items-center justify-center">
               <span className="text-3xl">{allComplete ? "🎉" : pct >= 60 ? "👍" : "💪"}</span>
               <span className="font-bold text-3xl text-brand-900 leading-none">{animScore}</span>
-              <span className="text-brand-700/60 text-xs">dari {totalLetters}</span>
+              <span className="text-brand-700/60 text-xs">{t.dari} {totalLetters}</span>
             </div>
           </div>
           <h2 className="text-2xl font-bold text-brand-900 mb-1">
-            {allComplete ? "Lengkap!" : pct >= 60 ? "Bagus!" : "Terus Belajar!"}
+            {allComplete ? t.lengkap : pct >= 60 ? t.bagus : t.terusBelajar}
           </h2>
           <p className="text-sm text-brand-700/60">
             {allComplete
-              ? "Semua soal terjawab dengan benar!"
-              : `${completedClues} dari ${totalClues} soal terjawab benar`}
+              ? t.allComplete
+              : `${completedClues} ${t.dari} ${totalClues} ${t.soalBenar}`}
           </p>
           <div className="inline-flex items-center gap-2 mt-3 px-4 py-2 rounded-full bg-brand-100 border border-brand-200">
             <span className="font-bold text-brand-700 text-lg">{pct}%</span>
-            <span className="text-brand-700/60 text-sm">soal benar</span>
+            <span className="text-brand-700/60 text-sm">{t.persenBenar}</span>
           </div>
+          {finalTimeMs > 0 && (
+            <div className="inline-flex items-center gap-1.5 mt-2 px-4 py-2 rounded-full bg-brand-100 border border-brand-200">
+              <Clock className="w-3.5 h-3.5 text-brand-700/60" />
+              <span className="text-brand-700/60 text-sm">{t.waktuPengerjaan}:</span>
+              <span className="font-bold text-brand-700 text-sm">{formatTime(finalTimeMs)}</span>
+            </div>
+          )}
         </div>
 
         <div
@@ -792,7 +899,7 @@ function ResultScreen({
             style={{ background: "linear-gradient(135deg, #7C78A8, #4A4763)" }}
           >
             <span className="relative z-10 flex items-center justify-center gap-2">
-              🔄 Ulangi TTS
+              🔄 {t.ulangi}
             </span>
             <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
           </button>
@@ -800,7 +907,7 @@ function ResultScreen({
             onClick={onBack}
             className="w-full py-2.5 mt-2 rounded-xl text-sm font-medium text-brand-700/70 hover:text-brand-900 hover:bg-brand-100/50 transition-colors"
           >
-            Kembali ke Minigames
+            {t.kembaliMinigames}
           </button>
         </div>
       </div>

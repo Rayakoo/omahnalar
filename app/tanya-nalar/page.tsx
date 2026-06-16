@@ -5,9 +5,13 @@ import { useRouter } from "next/navigation";
 import { ShieldCheck, Phone, Scale, Brain, Users, Shield, UploadCloud, ArrowUpRight } from "lucide-react";
 import CustomDatePicker from "@/components/CustomDatePicker";
 import { createReport, getReportByTicket } from "@/services/reports";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { id, en } from "@/data/translations";
 
 export default function TanyaNalarPage() {
   const router = useRouter();
+  const { locale } = useLanguage();
+  const t = locale === "id" ? id.tanyaNalar : en.tanyaNalar;
   const [activeTab, setActiveTab] = useState<"cek" | "buat">("buat");
 
   const KATEGORI_OPTIONS = [
@@ -47,7 +51,7 @@ export default function TanyaNalarPage() {
   const handleSubmitLaporan = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !selectedDate || !location || !chronology) {
-      alert("Harap isi semua field");
+      alert(t.isiSemua);
       return;
     }
     setSubmitting(true);
@@ -63,7 +67,7 @@ export default function TanyaNalarPage() {
       router.push(`/tanya-nalar/sukses?ticket=${report.ticket_id}`);
     } catch (err) {
       console.error("Gagal mengirim laporan:", err);
-      alert("Gagal mengirim laporan. Silakan coba lagi.");
+      alert(t.gagalKirim);
     } finally {
       setSubmitting(false);
     }
@@ -72,7 +76,7 @@ export default function TanyaNalarPage() {
   const handleCekStatus = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!cekEmail || !cekTicket) {
-      setCekError("Harap isi email dan kode laporan");
+      setCekError(t.isiEmailKode);
       return;
     }
     setCeking(true);
@@ -80,12 +84,12 @@ export default function TanyaNalarPage() {
     try {
       const report = await getReportByTicket(cekTicket);
       if (report.email !== cekEmail) {
-        setCekError("Email atau kode laporan tidak cocok");
+        setCekError(t.emailKodeTidakCocok);
         return;
       }
       router.push(`/tanya-nalar/detail-laporan?ticket=${report.ticket_id}`);
     } catch {
-      setCekError("Laporan tidak ditemukan. Periksa kembali kode dan email.");
+      setCekError(t.laporanTidakDitemukan);
     } finally {
       setCeking(false);
     }
@@ -97,15 +101,15 @@ export default function TanyaNalarPage() {
         <div className="max-w-5xl mx-auto">
           <div className="flex items-center gap-3 mb-2">
             <ShieldCheck className="w-8 h-8 text-[#F4C46B]" />
-            <h1 className="text-2xl font-bold text-[#F4C46B]">Pusat Aduan</h1>
+            <h1 className="text-2xl font-bold text-[#F4C46B]">{t.title}</h1>
           </div>
           <p className="text-sm text-gray-300 mb-6">
-            Ruang aman untuk melapor, memantau, dan mendapatkan bantuan
+            {t.desc}
           </p>
 
           <div className="ml-0">
             <p className="text-xs font-semibold text-gray-300 mb-3 flex items-center gap-2">
-              <Phone className="w-3.5 h-3.5" /> Direktori bantuan
+              <Phone className="w-3.5 h-3.5" /> {t.direktori}
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
               {direktoriBantuan.map((item, index) => (
@@ -141,7 +145,7 @@ export default function TanyaNalarPage() {
                 : "text-[#736A9C] hover:bg-[#D7D3F2]"
             }`}
           >
-            Cek Status Laporan
+            {t.cekStatus}
           </button>
           <button
             onClick={() => setActiveTab("buat")}
@@ -151,7 +155,7 @@ export default function TanyaNalarPage() {
                 : "text-[#736A9C] hover:bg-[#D7D3F2]"
             }`}
           >
-            Buat Laporan
+            {t.buatLaporan}
           </button>
         </div>
 
@@ -159,48 +163,48 @@ export default function TanyaNalarPage() {
           {activeTab === "buat" ? (
             <form onSubmit={handleSubmitLaporan} className="space-y-5">
               <div>
-                <label className="block text-sm font-semibold text-[#4C4765] mb-2">Alamat Email</label>
+                <label className="block text-sm font-semibold text-[#4C4765] mb-2">{t.emailLabel}</label>
                 <input
                   type="email"
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="XXXX@example.com"
+                  placeholder={t.emailPlaceholder}
                   className="w-full p-3 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#736A9C]"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-[#4C4765] mb-2">Tanggal Kejadian</label>
+                <label className="block text-sm font-semibold text-[#4C4765] mb-2">{t.tanggalKejadian}</label>
                 <CustomDatePicker onDateSelect={(date) => setSelectedDate(date)} />
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-[#4C4765] mb-2">Lokasi Kejadian</label>
+                <label className="block text-sm font-semibold text-[#4C4765] mb-2">{t.lokasiKejadian}</label>
                 <input
                   type="text"
                   required
                   value={location}
                   onChange={(e) => setLocation(e.target.value)}
-                  placeholder="mis. Malang"
+                  placeholder={t.lokasiPlaceholder}
                   className="w-full p-3 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#736A9C]"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-[#4C4765] mb-2">Kronologi Kejadian</label>
+                <label className="block text-sm font-semibold text-[#4C4765] mb-2">{t.kronologi}</label>
                 <textarea
                   rows={4}
                   required
                   value={chronology}
                   onChange={(e) => setChronology(e.target.value)}
-                  placeholder="Ceritakan yang terjadi secara runtut. Tidak perlu sempurna, tulis sesuai yang kamu ingat"
+                  placeholder={t.kronologiPlaceholder}
                   className="w-full p-3 bg-white border border-gray-200 rounded-xl text-sm resize-none focus:outline-none focus:ring-2 focus:ring-[#736A9C]"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-[#4C4765] mb-2">Kategori Laporan</label>
+                <label className="block text-sm font-semibold text-[#4C4765] mb-2">{t.kategori}</label>
                 <div className="flex flex-wrap gap-2">
                   {KATEGORI_OPTIONS.map((kat) => (
                     <button
@@ -222,8 +226,8 @@ export default function TanyaNalarPage() {
               <div>
                 <div className="border-2 border-dashed border-gray-200 rounded-2xl bg-[#FFFDF9] p-8 text-center flex flex-col items-center justify-center cursor-pointer hover:border-[#736A9C] transition-colors">
                   <UploadCloud className="w-10 h-10 mb-2 text-gray-500" />
-                  <p className="text-xs font-medium text-gray-700">Seret file ke sini atau pilih dari perangkat</p>
-                  <p className="text-[10px] text-gray-400 mt-1">Foto, dokumen, tangkapan layar - Maks. 10MB per file</p>
+                  <p className="text-xs font-medium text-gray-700">{t.uploadArea}</p>
+                  <p className="text-[10px] text-gray-400 mt-1">{t.uploadHint}</p>
                 </div>
               </div>
 
@@ -232,31 +236,31 @@ export default function TanyaNalarPage() {
                 disabled={submitting}
                 className="px-5 py-2 bg-[#4C4765] text-white text-xs font-semibold rounded-lg hover:bg-opacity-90 transition-colors disabled:opacity-50"
               >
-                {submitting ? "Mengirim..." : "Kirim Laporan"}
+                {submitting ? t.mengirim : t.kirimLaporan}
               </button>
             </form>
           ) : (
             <form onSubmit={handleCekStatus} className="space-y-5">
               <div>
-                <label className="block text-sm font-semibold text-[#4C4765] mb-2">Alamat Email</label>
+                <label className="block text-sm font-semibold text-[#4C4765] mb-2">{t.emailLabel}</label>
                 <input
                   type="email"
                   required
                   value={cekEmail}
                   onChange={(e) => setCekEmail(e.target.value)}
-                  placeholder="XXXX@example.com"
+                  placeholder={t.cekEmailPlaceholder}
                   className="w-full p-3 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#736A9C]"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-[#4C4765] mb-2">Kode Laporan</label>
+                <label className="block text-sm font-semibold text-[#4C4765] mb-2">{t.kodeLaporan}</label>
                 <input
                   type="text"
                   required
                   value={cekTicket}
                   onChange={(e) => setCekTicket(e.target.value)}
-                  placeholder="Contoh: TN-A8K3M"
+                  placeholder={t.kodePlaceholder}
                   className="w-full p-3 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#736A9C]"
                 />
               </div>
@@ -270,7 +274,7 @@ export default function TanyaNalarPage() {
                 disabled={ceking}
                 className="px-5 py-2 bg-[#4C4765] text-white text-xs font-semibold rounded-lg hover:bg-opacity-90 transition-colors disabled:opacity-50"
               >
-                {ceking ? "Memeriksa..." : "Cek Status"}
+                {ceking ? t.memeriksa : t.cekStatusBtn}
               </button>
             </form>
           )}

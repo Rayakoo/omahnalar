@@ -4,6 +4,8 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { Gamepad2, ArrowLeft, Sparkles, Clock, AlertTriangle } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { MITOS_FAKTA_QUESTIONS, type MitosFaktaQuestion } from "@/data/mitosFaktaQuestions";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { id, en } from "@/data/translations";
 
 type AnswerType = "MITOS" | "FAKTA";
 type GamePhase = "welcome" | "playing" | "finished";
@@ -19,16 +21,20 @@ const CATEGORY_ICONS: Record<string, string> = {
   "Bentuk Kekerasan Seksual": "\u{1F4D6}",
 };
 
-function getScoreMessage(pct: number) {
-  if (pct === 100) return { emoji: "\u{1F31F}", title: "Sempurna!", sub: "Kamu memahami semua topik dengan sangat baik." };
-  if (pct >= 80) return { emoji: "\u{1F389}", title: "Luar Biasa!", sub: "Pemahaman kamu tentang pelaporan digital sangat baik." };
-  if (pct >= 60) return { emoji: "\u{1F44D}", title: "Bagus!", sub: "Terus tingkatkan pemahamanmu tentang hak korban." };
-  if (pct >= 40) return { emoji: "\u{1F4DA}", title: "Terus Belajar!", sub: "Baca kembali penjelasan untuk memperdalam pemahaman." };
-  return { emoji: "\u{1F4AA}", title: "Jangan Menyerah!", sub: "Setiap langkah belajar adalah kemajuan yang berarti." };
+function getScoreMessage(pct: number, t: any) {
+  if (pct === 100) return { emoji: "\u{1F31F}", title: t.sempurna, sub: "Kamu memahami semua topik dengan sangat baik." };
+  if (pct >= 80) return { emoji: "\u{1F389}", title: t.luarBiasa, sub: "Pemahaman kamu tentang pelaporan digital sangat baik." };
+  if (pct >= 60) return { emoji: "\u{1F44D}", title: t.bagus, sub: "Terus tingkatkan pemahamanmu tentang hak korban." };
+  if (pct >= 40) return { emoji: "\u{1F4DA}", title: t.terusBelajar, sub: "Baca kembali penjelasan untuk memperdalam pemahaman." };
+  return { emoji: "\u{1F4AA}", title: t.janganMenyerah, sub: "Setiap langkah belajar adalah kemajuan yang berarti." };
 }
 
 export default function MitosAtauFaktaPage() {
   const router = useRouter();
+  const { locale } = useLanguage();
+  const t = locale === "id" ? id.mitosFakta : en.mitosFakta;
+  const common = locale === "id" ? id.common : en.common;
+  const min = locale === "id" ? id.minigames : en.minigames;
   const [phase, setPhase] = useState<GamePhase>("welcome");
   const [countdown, setCountdown] = useState<number | null>(null);
   const [countdownKey, setCountdownKey] = useState(0);
@@ -200,10 +206,10 @@ export default function MitosAtauFaktaPage() {
         <div className="max-w-3xl mx-auto px-4 py-3">
           <div className="flex items-center justify-between mb-2">
             <button onClick={() => router.back()} className="flex items-center gap-1 text-sm text-brand-700 hover:text-brand-900 transition-colors">
-              <ArrowLeft className="w-4 h-4" /> Kembali
+              <ArrowLeft className="w-4 h-4" /> {common.back}
             </button>
             <span className="text-xs text-brand-700/60 font-medium">
-              Soal {currentIndex + 1} / {totalQuestions}
+              {t.soal} {currentIndex + 1} / {totalQuestions}
             </span>
           </div>
 
@@ -306,7 +312,7 @@ export default function MitosAtauFaktaPage() {
             {/* Timer urgency indicator */}
             {timerPct <= 0.25 && !revealed && (
               <div className="absolute top-3 right-3 flex items-center gap-1 text-rose-500 text-[10px] font-bold animate-[pulse_1s_ease-in-out_infinite]">
-                <AlertTriangle className="w-3 h-3" /> CEPAT!
+                <AlertTriangle className="w-3 h-3" /> {t.cepat}
               </div>
             )}
           </div>
@@ -373,7 +379,7 @@ export default function MitosAtauFaktaPage() {
                   <span className={`relative z-10 transition-all duration-300 ${
                     revealed ? "text-xs" : "text-3xl font-extrabold"
                   }`}>
-                    {revealed && isRevealedCorrect ? "✓ Benar" : choice}
+                    {revealed && isRevealedCorrect ? "\u2714\uFE0F " + t.benar : choice}
                   </span>
                   {isTimeout && !revealed && (
                     <div className="absolute inset-0 flex items-center justify-center text-rose-500/20">
@@ -419,10 +425,10 @@ export default function MitosAtauFaktaPage() {
                     : "bg-rose-100 text-rose-700"
               }`}>
                 {isTimeout
-                  ? "\u23F3 Waktu habis!"
+                  ? "\u23F3 " + t.waktuHabis
                   : isCorrect
-                    ? "\u{1F389} Benar!"
-                    : `\u{1F4CC} Jawabannya adalah ${currentQuestion.answer}`}
+                    ? "\u{1F389} " + t.benar
+                    : "\u{1F4CC} " + t.jawabannya + " " + currentQuestion.answer}
               </div>
 
               <p className="text-sm text-brand-700/80 leading-relaxed mb-4">
@@ -434,7 +440,7 @@ export default function MitosAtauFaktaPage() {
                   <span className="text-brand-700 text-sm flex-shrink-0 mt-0.5">💡</span>
                   <div>
                     <div className="text-brand-700 text-xs font-bold uppercase tracking-wider mb-1">
-                      Pesan Kunci
+                      {t.pesanKunci}
                     </div>
                     <p className="text-sm text-brand-900/80 leading-relaxed">
                       {currentQuestion.keyMessage}
@@ -455,7 +461,7 @@ export default function MitosAtauFaktaPage() {
               }}
             >
               <span className="relative z-10 flex items-center justify-center gap-2">
-                {currentIndex === totalQuestions - 1 ? "\u{1F3C6} Lihat Hasil" : "Lanjut \u2192"}
+                {currentIndex === totalQuestions - 1 ? "\u{1F3C6} " + t.lihatHasil : t.lanjut + " \u2192"}
               </span>
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
             </button>
@@ -475,13 +481,17 @@ function WelcomeScreen({
   onStart: () => void;
   onBack: () => void;
 }) {
+  const { locale } = useLanguage();
+  const t = locale === "id" ? id.mitosFakta : en.mitosFakta;
+  const common = locale === "id" ? id.common : en.common;
+  const min = locale === "id" ? id.minigames : en.minigames;
   return (
     <div className="min-h-screen bg-page-50 font-sans antialiased text-brand-900 flex flex-col">
       {/* Hero */}
       <div className="bg-brand-900 text-white py-16 md:py-24 px-6 mt-16 relative overflow-hidden">
         <button onClick={onBack} className="absolute top-4 left-4 md:top-6 md:left-6 flex items-center gap-1 text-sm text-white/70 hover:text-white transition-colors z-20">
           <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clipRule="evenodd" /></svg>
-          Kembali
+          {common.back}
         </button>
         <div className="absolute inset-0 overflow-hidden">
           <div className="absolute -top-20 -right-20 w-80 h-80 rounded-full bg-secondary-500/10 blur-3xl" />
@@ -489,16 +499,16 @@ function WelcomeScreen({
         </div>
         <div className="max-w-4xl mx-auto text-center relative z-10">
           <span className="inline-flex items-center gap-2 bg-secondary-500 text-brand-900 text-[10px] font-bold px-4 py-1.5 rounded-full uppercase tracking-wider mb-5">
-            <Gamepad2 className="w-3.5 h-3.5" /> Minigames
+            <Gamepad2 className="w-3.5 h-3.5" /> {min.badge}
           </span>
           <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight">
-            <span className="text-rose-300">Mitos</span>{" "}
+            <span className="text-rose-300">{t.mitos}</span>{" "}
             <span className="text-brand-100/60">atau</span>{" "}
-            <span className="text-emerald-300">Fakta</span>
+            <span className="text-emerald-300">{t.fakta}</span>
             <span className="text-secondary-500">?</span>
           </h1>
           <p className="text-sm md:text-base text-brand-100/70 mt-4 max-w-2xl mx-auto leading-relaxed">
-            Pelaporan Kekerasan Seksual Berbasis Digital
+            {t.desc}
           </p>
         </div>
       </div>
@@ -509,9 +519,9 @@ function WelcomeScreen({
           {/* Info cards */}
           <div className="grid grid-cols-3 gap-3 mb-6">
             {[
-              { icon: "\u{1F4CB}", label: `${questions.length} Soal`, sub: "pertanyaan" },
-              { icon: "\u{1F3AF}", label: "Mitos/Fakta", sub: "tipe jawaban" },
-              { icon: "\u{1F4DA}", label: "Edukatif", sub: "penjelasan lengkap" },
+              { icon: "\u{1F4CB}", label: `${questions.length} ${t.soal}`, sub: t.pertanyaan },
+              { icon: "\u{1F3AF}", label: t.tipeJawaban, sub: t.tipeJawabanSub },
+              { icon: "\u{1F4DA}", label: t.edukatif, sub: t.penjelasanLengkap },
             ].map((item, i) => (
               <div key={i} className="bg-brand-100/50 rounded-xl p-3 text-center border border-brand-100">
                 <div className="text-2xl mb-1">{item.icon}</div>
@@ -526,8 +536,7 @@ function WelcomeScreen({
             <div className="flex gap-3">
               <span className="text-lg flex-shrink-0">💜</span>
               <p className="text-sm text-brand-700/80 leading-relaxed">
-                Kuis ini bersifat <strong className="text-brand-900">edukatif</strong>, bukan menggali
-                pengalaman pribadi. Setiap soal dilengkapi penjelasan rinci untuk membangun pemahaman bersama.
+                {t.notice}
               </p>
             </div>
           </div>
@@ -535,7 +544,7 @@ function WelcomeScreen({
           {/* Timer info */}
           <div className="flex items-center gap-2 mb-6 text-xs text-brand-700/60 justify-center">
             <Clock className="w-3.5 h-3.5" />
-            <span>Setiap soal punya batas waktu <strong className="text-brand-900">{TIME_LIMIT} detik</strong></span>
+            <span>{t.timerInfo} <strong className="text-brand-900">{TIME_LIMIT} {t.detik}</strong></span>
           </div>
 
           {/* Start button */}
@@ -547,7 +556,7 @@ function WelcomeScreen({
             }}
           >
             <span className="relative z-10 flex items-center justify-center gap-2">
-              Mulai Kuis
+              {t.mulaiKuis}
               <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
                 <path d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" />
               </svg>
@@ -556,7 +565,7 @@ function WelcomeScreen({
           </button>
 
           <p className="text-center text-brand-700/40 text-xs mt-4">
-            Bacaan setelah menjawab, bukan penilaian
+            {t.footerNote}
           </p>
         </div>
       </div>
@@ -579,13 +588,17 @@ function ResultScreen({
   onRestart: () => void;
   onBack: () => void;
 }) {
+  const { locale } = useLanguage();
+  const t = locale === "id" ? id.mitosFakta : en.mitosFakta;
+  const common = locale === "id" ? id.common : en.common;
+  const min = locale === "id" ? id.minigames : en.minigames;
   const [animScore, setAnimScore] = useState(0);
   const [showItems, setShowItems] = useState(false);
   const [expandedId, setExpandedId] = useState<number | null>(null);
 
   const total = questions.length;
   const pct = Math.round((score / total) * 100);
-  const msg = getScoreMessage(pct);
+  const msg = getScoreMessage(pct, t);
 
   useEffect(() => {
     const t1 = setTimeout(() => {
@@ -623,7 +636,7 @@ function ResultScreen({
       <div className="bg-white/80 backdrop-blur-md border-b border-brand-100 sticky top-16 z-30 relative">
         <div className="max-w-3xl mx-auto px-4 py-3">
           <button onClick={onBack} className="flex items-center gap-1 text-sm text-brand-700 hover:text-brand-900 transition-colors">
-            <ArrowLeft className="w-4 h-4" /> Kembali ke Minigames
+            <ArrowLeft className="w-4 h-4" /> {common.back} ke {min.badge}
           </button>
         </div>
       </div>
@@ -655,7 +668,7 @@ function ResultScreen({
           <p className="text-sm text-brand-700/60 max-w-xs mx-auto">{msg.sub}</p>
           <div className="inline-flex items-center gap-2 mt-3 px-4 py-2 rounded-full bg-brand-100 border border-brand-200">
             <span className="font-bold text-brand-700 text-lg">{pct}%</span>
-            <span className="text-brand-700/60 text-sm">jawaban benar</span>
+            <span className="text-brand-700/60 text-sm">{t.jawabanBenar}</span>
           </div>
         </div>
 
@@ -669,7 +682,7 @@ function ResultScreen({
           }}
         >
           <h3 className="font-semibold text-brand-900 mb-4 text-sm uppercase tracking-wider">
-            {"\u{1F4CA}"} Performa per Kategori
+            {"\u{1F4CA}"} {t.performaKategori}
           </h3>
           <div className="space-y-3">
             {Object.entries(categoryStats).map(([cat, stat]) => {
@@ -705,7 +718,7 @@ function ResultScreen({
           }}
         >
           <h3 className="font-semibold text-brand-900 mb-3 text-sm uppercase tracking-wider px-1">
-            {"\u{1F4CB}"} Review Semua Soal
+            {"\u{1F4CB}"} {t.reviewSemua}
           </h3>
           <div className="space-y-2 mb-8">
             {questions.map((q, i) => {
@@ -767,12 +780,12 @@ function ResultScreen({
             style={{ background: "linear-gradient(135deg, #7C78A8, #4A4763)" }}
           >
             <span className="relative z-10 flex items-center justify-center gap-2">
-              {"\u{1F504}"} Ulangi Kuis
+              {"\u{1F504}"} {t.ulangiKuis}
             </span>
             <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
           </button>
           <p className="text-center text-brand-700/40 text-xs mt-4">
-            Bagikan pengetahuan ini kepada orang-orang di sekitarmu 💜
+            {t.bagikan}
           </p>
         </div>
       </div>
@@ -781,6 +794,8 @@ function ResultScreen({
 }
 
 function CountdownOverlay({ value }: { value: number }) {
+  const { locale } = useLanguage();
+  const t = locale === "id" ? id.mitosFakta : en.mitosFakta;
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-brand-900">
       <div className="text-center">
@@ -797,7 +812,7 @@ function CountdownOverlay({ value }: { value: number }) {
             className="text-8xl md:text-9xl font-extrabold text-secondary-500 drop-shadow-lg inline-block"
             style={{ animation: "fade-in 0.4s ease-out" }}
           >
-            Go!
+            {t.go}
           </span>
         )}
       </div>

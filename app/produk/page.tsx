@@ -5,6 +5,8 @@ import Link from "next/link";
 import { ShoppingCart } from "lucide-react";
 import { getProducts, type Product, type ProductImage } from "@/services/products";
 import { transformImageUrl } from "@/lib/image";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { id, en } from "@/data/translations";
 
 function getThumbnail(image_url: ProductImage[]): string | null {
   const thumb = image_url.find((img) => img.is_thumbnail);
@@ -13,6 +15,8 @@ function getThumbnail(image_url: ProductImage[]): string | null {
 }
 
 export default function ProdukPage() {
+  const { locale } = useLanguage();
+  const t = locale === "id" ? id.produk : en.produk;
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -34,13 +38,13 @@ export default function ProdukPage() {
         </div>
         <div className="max-w-6xl mx-auto text-center relative z-10">
           <span className="inline-block bg-secondary-500 text-brand-900 text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider mb-4">
-            Produk
+            {t.badge}
           </span>
           <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight text-secondary-500">
-            Produk Omah Nalar
+            {t.title}
           </h1>
           <p className="text-sm text-brand-100/70 mt-3 max-w-2xl mx-auto leading-relaxed">
-            Media dan alat bantu untuk meningkatkan pemahaman dan kesadaran seputar kekerasan seksual.
+            {t.desc}
           </p>
         </div>
       </div>
@@ -54,7 +58,7 @@ export default function ProdukPage() {
         ) : products.length === 0 ? (
           <div className="bg-white rounded-2xl p-12 text-center border border-gray-100 shadow-sm mt-12">
             <ShoppingCart className="w-12 h-12 mx-auto text-gray-300 mb-3" />
-            <p className="text-brand-700/60">Belum ada produk.</p>
+            <p className="text-brand-700/60">{t.empty}</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mt-12">
@@ -99,7 +103,7 @@ export default function ProdukPage() {
 
                     <div className="flex items-center justify-between mt-4 pt-3 border-t border-gray-100">
                       <span className="text-base font-bold text-brand-900">
-                        Rp {p.price.toLocaleString("id-ID")}
+                        Rp {p.price.toLocaleString(locale === "id" ? "id-ID" : "en-US")}
                       </span>
                       <span className="w-7 h-7 rounded-full bg-brand-100 flex items-center justify-center group-hover:bg-brand-900 group-hover:text-white transition-all shrink-0">
                         <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>

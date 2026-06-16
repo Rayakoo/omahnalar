@@ -5,10 +5,15 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { LogIn, Home } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { id, en } from "@/data/translations";
 
 export default function AuthGuard({ children }: { children: ReactNode }) {
   const { user, loading } = useAuth();
   const router = useRouter();
+  const { locale } = useLanguage();
+  const t = locale === "id" ? id.auth : en.auth;
+  const common = locale === "id" ? id.common : en.common;
 
   if (loading) {
     return (
@@ -32,10 +37,10 @@ export default function AuthGuard({ children }: { children: ReactNode }) {
             </div>
 
             <h3 className="text-lg font-bold text-gray-900 mb-2">
-              Login Diperlukan
+              {t.loginRequired}
             </h3>
             <p className="text-sm text-gray-500 mb-6 leading-relaxed">
-              Anda harus login untuk mengakses fitur ini
+              {t.loginRequiredDesc}
             </p>
 
             <div className="flex flex-col gap-2">
@@ -43,14 +48,14 @@ export default function AuthGuard({ children }: { children: ReactNode }) {
                 href="/login"
                 className="w-full bg-[#4A4765] hover:bg-[#3b3852] text-white font-semibold py-2.5 rounded-lg text-sm transition-colors"
               >
-                Login
+                {t.loginBtn}
               </Link>
               <Link
                 href="/"
                 className="w-full flex items-center justify-center gap-1.5 border border-gray-300 hover:bg-gray-50 text-gray-700 font-medium py-2.5 rounded-lg text-sm transition-colors"
               >
                 <Home className="w-3.5 h-3.5" />
-                Kembali ke Beranda
+                {common.backToHome}
               </Link>
             </div>
           </div>

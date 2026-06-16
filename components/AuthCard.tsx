@@ -6,6 +6,8 @@ import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { Eye, EyeOff } from "lucide-react";
 import { signIn, signUp } from "@/services/auth";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { id, en } from "@/data/translations";
 
 interface AuthCardProps {
   initialMode: "login" | "register";
@@ -13,6 +15,9 @@ interface AuthCardProps {
 
 export default function AuthCard({ initialMode }: AuthCardProps) {
   const router = useRouter();
+  const { locale } = useLanguage();
+  const t = locale === "id" ? id.auth : en.auth;
+  const common = locale === "id" ? id.common : en.common;
   const [mode, setMode] = useState<"login" | "register">(initialMode);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
@@ -32,11 +37,11 @@ export default function AuthCard({ initialMode }: AuthCardProps) {
 
     if (!isLogin) {
       if (password.length < 6) {
-        setError("Kata sandi minimal 6 karakter");
+        setError(t.passwordMin);
         return;
       }
       if (password !== confirmPassword) {
-        setError("Konfirmasi kata sandi tidak cocok");
+        setError(t.confirmMismatch);
         return;
       }
     }
@@ -63,15 +68,15 @@ export default function AuthCard({ initialMode }: AuthCardProps) {
         }
       }
     } catch (err) {
-      const msg = err instanceof Error ? err.message : "Terjadi kesalahan";
+      const msg = err instanceof Error ? err.message : common.error;
       if (msg.includes("already registered") || msg.includes("already exists")) {
-        setError("Email sudah terdaftar");
+        setError(t.emailExists);
       } else if (msg.includes("weak") || msg.includes("password")) {
-        setError("Kata sandi terlalu lemah, minimal 6 karakter");
+        setError(t.weakPassword);
       } else if (msg.includes("Invalid login credentials")) {
-        setError("Email atau kata sandi salah");
+        setError(t.wrongCreds);
       } else if (msg.includes("Email not confirmed")) {
-        setError("Email belum dikonfirmasi. Cek kotak masuk kamu");
+        setError(t.emailUnconfirmed);
       } else {
         setError(msg);
       }
@@ -99,21 +104,21 @@ export default function AuthCard({ initialMode }: AuthCardProps) {
             </div>
 
             <h2 className="text-gray-900 font-bold text-xl mb-1">
-              {isLogin ? "Masuk ke akun Anda" : "Daftar untuk akun baru"}
+              {isLogin ? t.loginTitle : t.registerTitle}
             </h2>
             <p className="text-sm text-gray-500 mb-6">
               {isLogin ? (
                 <>
-                  Belum punya akun?{" "}
+                  {t.noAccountPrompt}{" "}
                   <button onClick={() => setMode("register")} className="text-blue-500 hover:underline font-medium">
-                    Daftar untuk akun baru
+                    {t.registerTitle}
                   </button>
                 </>
               ) : (
                 <>
-                  Sudah menjadi anggota?{" "}
+                  {t.haveAccountPrompt}{" "}
                   <button onClick={() => setMode("login")} className="text-blue-500 hover:underline font-medium">
-                    Masuk
+                    {t.loginBtn}
                   </button>
                 </>
               )}
@@ -121,40 +126,40 @@ export default function AuthCard({ initialMode }: AuthCardProps) {
 
             <form className="space-y-4" onSubmit={handleSubmit}>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Alamat Email</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t.emailLabel}</label>
                 <input
                   type="email"
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="nisa123@gmail.com"
+                  placeholder={t.emailPlaceholder}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-[#4A4765] focus:border-[#4A4765] text-gray-900"
                 />
               </div>
 
               {!isLogin && (
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Nama Lengkap</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">{t.nameLabel}</label>
                   <input
                     type="text"
                     required
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    placeholder="Nisa Aulia"
+                    placeholder={t.namePlaceholder}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-[#4A4765] focus:border-[#4A4765] text-gray-900"
                   />
                 </div>
               )}
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Kata Sandi</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t.passwordLabel}</label>
                 <div className="relative">
                   <input
                     type={showPassword ? "text" : "password"}
                     required
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    placeholder="••••••••"
+                    placeholder={t.passwordPlaceholder}
                     className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-[#4A4765] focus:border-[#4A4765] text-gray-900"
                   />
                   <button
@@ -169,14 +174,14 @@ export default function AuthCard({ initialMode }: AuthCardProps) {
 
               {!isLogin && (
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Konfirmasi Kata Sandi Anda</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">{t.confirmPasswordLabel}</label>
                   <div className="relative">
                     <input
                       type={showConfirm ? "text" : "password"}
                       required
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
-                      placeholder="••••••••"
+                      placeholder={t.passwordPlaceholder}
                       className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-[#4A4765] focus:border-[#4A4765] text-gray-900"
                     />
                     <button
@@ -194,10 +199,7 @@ export default function AuthCard({ initialMode }: AuthCardProps) {
 
               {!isLogin && (
                 <p className="text-[11px] text-gray-500 leading-tight">
-                  Dengan bergabung, Anda setuju dengan{" "}
-                  <a href="#" className="font-bold text-gray-800 hover:underline">
-                    Syarat & Privasi
-                  </a>
+                  {t.terms}
                 </p>
               )}
 
@@ -206,7 +208,7 @@ export default function AuthCard({ initialMode }: AuthCardProps) {
                 disabled={loading}
                 className="w-full bg-[#4A4765] hover:bg-[#3b3852] text-white font-medium py-2.5 rounded-md transition-colors text-sm mt-2 disabled:opacity-50"
               >
-                {loading ? "Memproses..." : isLogin ? "Masuk" : "Daftar"}
+                {loading ? t.processing : isLogin ? t.loginBtn : t.registerBtn}
               </button>
             </form>
 
@@ -215,7 +217,7 @@ export default function AuthCard({ initialMode }: AuthCardProps) {
                 <div className="w-full border-t border-gray-200" />
               </div>
               <div className="relative flex justify-center text-xs">
-                <span className="bg-white px-3 text-gray-400">atau lanjutkan dengan</span>
+                <span className="bg-white px-3 text-gray-400">{t.orContinue}</span>
               </div>
             </div>
 
@@ -226,14 +228,14 @@ export default function AuthCard({ initialMode }: AuthCardProps) {
                 <path fill="#FBBC05" d="M5.1 14.7c-.25-.75-.39-1.55-.39-2.37s.14-1.62.39-2.37l-3.6-2.8C.54 8.86 0 10.37 0 12s.54 3.14 1.5 4.67l3.6-2.97z" />
                 <path fill="#34A853" d="M12 23c3.24 0 5.97-1.07 7.96-2.92l-3.69-2.86c-1.12.75-2.55 1.2-4.27 1.2-3.26 0-5.99-2.1-6.98-5.26l-3.6 2.8C3.4 20.35 7.35 23 12 23z" />
               </svg>
-              Google
+              {t.google}
             </button>
 
             <Link
               href="/"
               className="block text-center text-xs font-semibold text-[#4A4765] underline underline-offset-2 hover:text-[#3b3852] mt-5 transition-colors"
             >
-              Kembali ke Beranda
+              {common.backToHome}
             </Link>
           </motion.div>
         </AnimatePresence>

@@ -5,8 +5,13 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 import { getGalleries, type Gallery } from "@/services/galleries";
 import { transformImageUrl } from "@/lib/image";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { id, en } from "@/data/translations";
 
 export default function AboutSection() {
+  const { locale } = useLanguage();
+  const t = locale === "id" ? id.home : en.home;
+  const common = locale === "id" ? id.common : en.common;
   const [galleries, setGalleries] = useState<Gallery[]>([]);
   const [current, setCurrent] = useState(0);
 
@@ -67,18 +72,16 @@ export default function AboutSection() {
         </div>
         <div className="w-full lg:w-1/2">
           <span className="text-sm font-semibold text-secondary-600 uppercase tracking-wider">
-            Tentang Omah Nalar
+            {t.aboutTitle}
           </span>
           <h2 className="text-2xl md:text-3xl font-bold text-brand-900 mt-3 mb-5 leading-tight">
-            Selamat Datang di <br /> Omah Nalar Indonesia
+            {t.aboutHeading}
           </h2>
           <p className="text-brand-700/80 leading-relaxed mb-6">
-            Omah Nalar adalah platform yang menyediakan ruang aman bagi masyarakat untuk berbicara,
-            belajar, dan melapor. Kami percaya bahwa setiap orang berhak mendapatkan akses terhadap
-            informasi dan dukungan yang mereka butuhkan.
+            {t.aboutDesc}
           </p>
           <button className="bg-brand-900 text-white font-medium px-6 py-3 rounded-full hover:bg-brand-700 transition-colors flex items-center gap-2 text-sm shadow-sm">
-            Pelajari Siapa Kami <ArrowRight className="w-4 h-4" />
+            {t.aboutCta} <ArrowRight className="w-4 h-4" />
           </button>
         </div>
       </div>

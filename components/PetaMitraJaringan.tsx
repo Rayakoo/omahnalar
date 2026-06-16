@@ -27,10 +27,10 @@ const createDotIcon = (color: string, isCore: boolean, size: number = 10) => {
   });
 };
 
-const createFloatingCardIcon = (title: string, subtitle: string, color: string, dotColor: string, link?: string) => {
+const createFloatingCardIcon = (title: string, subtitle: string, color: string, dotColor: string, link?: string, imageUrl?: string, coverImageUrl?: string) => {
   return new L.DivIcon({
     html: `
-      <div style="display: flex; flex-direction: column; align-items: center; justify-content: flex-end; width: 200px; height: 200px; pointer-events: auto;">
+      <div style="display: flex; flex-direction: column; align-items: center; justify-content: flex-end; width: 200px; height: ${coverImageUrl ? "260px" : "200px"}; pointer-events: auto;">
         <div style="
           background: linear-gradient(135deg, ${color}22, ${color}44);
           backdrop-filter: blur(12px);
@@ -42,8 +42,10 @@ const createFloatingCardIcon = (title: string, subtitle: string, color: string, 
           box-shadow: 0 8px 32px rgba(0,0,0,0.5), 0 0 20px ${color}33;
           text-align: center;
         ">
+          ${imageUrl ? `<img src="${imageUrl}" alt="${title}" style="width: 48px; height: 48px; border-radius: 50%; object-fit: cover; margin: -34px auto 4px; border: 2px solid ${color}; box-shadow: 0 2px 12px rgba(0,0,0,0.3); display: block;" />` : ""}
           <h4 style="margin: 0; font-size: 12px; font-weight: 800; color: white; letter-spacing: 0.3px;">${title}</h4>
           ${subtitle ? `<p style="margin: 3px 0 0; font-size: 9px; color: ${color}; font-weight: 600;">${subtitle}</p>` : ""}
+          ${coverImageUrl ? `<img src="${coverImageUrl}" alt="" style="width: 100%; height: 80px; object-fit: cover; display: block; border-radius: 8px; margin-top: 6px;" />` : ""}
           ${link ? `<a href="${link}" target="_blank" rel="noopener noreferrer" style="display: inline-flex; align-items: center; gap: 4px; margin-top: 6px; padding: 4px 10px; font-size: 9px; font-weight: 700; color: white; background: ${color}; border-radius: 20px; text-decoration: none; transition: opacity 0.2s;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">
             <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
             Buka Google Maps
@@ -117,6 +119,11 @@ function MapCapture({ onMap }: { onMap: (m: L.Map) => void }) {
 export default function PetaMitraJaringan() {
   const mapRef = useRef<L.Map | null>(null);
   const [selected, setSelected] = useState<string | null>(null);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const handleMap = useCallback((m: L.Map) => { mapRef.current = m; }, []);
 
@@ -138,7 +145,9 @@ export default function PetaMitraJaringan() {
       </div>
 
       <div className="w-full h-[300px] md:h-[450px] rounded-xl overflow-hidden border border-gray-700">
+        {mounted && (
         <MapContainer
+          key="mitra-map"
           center={center}
           zoom={8}
           className="w-full h-full mitra-line"
@@ -158,7 +167,7 @@ export default function PetaMitraJaringan() {
           {/* Omah Nalar floating card marker */}
           <Marker
             position={omahNalar}
-            icon={createFloatingCardIcon("Omah Nalar", "", "#F4C46B", "#F4C46B")}
+            icon={createFloatingCardIcon("Omah Nalar", "", "#F4C46B", "#F4C46B", undefined, "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='50' fill='%234A4763'/%3E%3Ctext x='50' y='68' text-anchor='middle' font-size='52' font-weight='bold' fill='%23FFF9F1' font-family='serif'%3EΩ%3C/text%3E%3C/svg%3E", "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 70'%3E%3Crect width='200' height='70' fill='%23FAC775'/%3E%3Ctext x='100' y='42' text-anchor='middle' font-size='20' font-weight='bold' fill='%234A4763' font-family='sans-serif'%3EOmah Nalar%3C/text%3E%3C/svg%3E")}
           />
 
           {/* Partner connections */}
@@ -185,8 +194,9 @@ export default function PetaMitraJaringan() {
                   : createDotIcon("#4FD1C5", false, 10)
               }
             />
-          ))}
-        </MapContainer>
+            ))}
+          </MapContainer>
+        )}
       </div>
 
       {/* Legend */}

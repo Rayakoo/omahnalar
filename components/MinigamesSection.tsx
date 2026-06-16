@@ -3,6 +3,8 @@
 import { useRouter } from "next/navigation";
 import { Gamepad2, ArrowRight, Sparkles } from "lucide-react";
 import { MINIGAMES } from "@/data/minigames";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { id, en } from "@/data/translations";
 
 const BG_PATTERNS = [
   "radial-gradient(circle at 20% 50%, rgba(250,199,117,0.15) 0%, transparent 60%)",
@@ -11,6 +13,10 @@ const BG_PATTERNS = [
 
 export default function MinigamesSection() {
   const router = useRouter();
+  const { locale } = useLanguage();
+  const t = locale === "id" ? id.home : en.home;
+  const common = locale === "id" ? id.common : en.common;
+  const min = locale === "id" ? id.minigames : en.minigames;
 
   return (
     <section className="bg-brand-900 py-20 relative overflow-hidden">
@@ -22,13 +28,13 @@ export default function MinigamesSection() {
       <div className="max-w-5xl mx-auto px-6 relative">
         <div className="text-center mb-16">
           <span className="inline-flex items-center gap-2 text-sm font-semibold text-secondary-500 uppercase tracking-wider bg-secondary-500/10 px-4 py-1.5 rounded-full">
-            <Gamepad2 className="w-4 h-4" /> Minigames
+            <Gamepad2 className="w-4 h-4" /> {min.badge}
           </span>
           <h2 className="text-3xl md:text-4xl font-bold text-white mt-5 tracking-tight">
-            Main Sambil Belajar
+            {t.minigamesSub}
           </h2>
           <p className="text-sm text-brand-100/60 mt-3 max-w-xl mx-auto leading-relaxed">
-            Asah pengetahuanmu tentang kesehatan reproduksi melalui permainan seru dan interaktif.
+            {t.minigamesDesc}
           </p>
         </div>
 
@@ -54,13 +60,13 @@ export default function MinigamesSection() {
 
                 <div className="flex-1 min-w-0">
                   <h3 className="text-xl md:text-2xl font-bold text-white mb-3">
-                    {game.title}
+                    {locale === "id" ? game.title : game.titleEn}
                   </h3>
                   <p className="text-sm text-brand-100/60 leading-relaxed mb-6">
-                    {game.description}
+                    {locale === "id" ? game.description : game.descriptionEn}
                   </p>
                   <div className="flex items-center gap-2 text-sm font-semibold text-secondary-500 group-hover:gap-3 transition-all">
-                    Mainkan <ArrowRight className="w-4 h-4" />
+                    {common.play} <ArrowRight className="w-4 h-4" />
                   </div>
                 </div>
               </div>
@@ -75,7 +81,7 @@ export default function MinigamesSection() {
             onClick={() => router.push("/minigames")}
             className="inline-flex items-center gap-2 bg-secondary-500 text-brand-900 px-8 py-3.5 rounded-full text-sm font-bold hover:bg-secondary-600 transition-all shadow-lg hover:shadow-secondary-500/25"
           >
-            Lihat Semua Minigames <ArrowRight className="w-4 h-4" />
+            {common.seeAll} <ArrowRight className="w-4 h-4" />
           </button>
         </div>
       </div>

@@ -1,6 +1,10 @@
-import { MessageCircle, BookOpen, PenLine, ArrowRight } from "lucide-react";
+"use client";
 
-const PROGRAMS = [
+import { MessageCircle, BookOpen, PenLine, ArrowRight } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { id, en } from "@/data/translations";
+
+const PROGRAMS_ID = [
   {
     icon: <MessageCircle className="w-10 h-10 text-brand-700" />,
     title: "Omah Cerita",
@@ -21,20 +25,46 @@ const PROGRAMS = [
   },
 ];
 
+const PROGRAMS_EN = [
+  {
+    icon: <MessageCircle className="w-10 h-10 text-brand-700" />,
+    title: "Omah Cerita",
+    desc: "A friendly space to share stories and experiences anonymously with a supportive community.",
+    tag: "Stories",
+  },
+  {
+    icon: <BookOpen className="w-10 h-10 text-brand-700" />,
+    title: "Omah Belajar",
+    desc: "An interactive learning platform with educational modules on health and reproductive rights.",
+    tag: "Learn",
+  },
+  {
+    icon: <PenLine className="w-10 h-10 text-brand-700" />,
+    title: "Tanya Nalar",
+    desc: "A safe and trusted Q&A service about reproductive health and sexuality issues.",
+    tag: "Ask",
+  },
+];
+
 export default function ProgramSection() {
+  const { locale } = useLanguage();
+  const t = locale === "id" ? id.home : en.home;
+  const common = locale === "id" ? id.common : en.common;
+  const programs = locale === "id" ? PROGRAMS_ID : PROGRAMS_EN;
+
   return (
     <section className="bg-page-50 py-20">
       <div className="max-w-6xl mx-auto px-6">
         <div className="text-center mb-14">
           <span className="text-sm font-semibold text-secondary-600 uppercase tracking-wider">
-            Program Kami
+            {t.programsTitle}
           </span>
           <h2 className="text-2xl md:text-3xl font-bold text-brand-900 mt-3">
-            Jelajahi Program Omah Nalar
+            {t.programsSub}
           </h2>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {PROGRAMS.map((program, idx) => (
+          {programs.map((program, idx) => (
             <div
               key={idx}
               className="bg-white rounded-3xl p-8 shadow-sm hover:shadow-md transition-shadow flex flex-col"
@@ -50,7 +80,7 @@ export default function ProgramSection() {
                 {program.desc}
               </p>
               <button className="text-brand-700 font-medium text-sm flex items-center gap-1 hover:text-brand-900 transition-colors group">
-                Selengkapnya{" "}
+                {common.learnMore}{" "}
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
               </button>
             </div>

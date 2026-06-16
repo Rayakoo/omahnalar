@@ -18,6 +18,17 @@ export type CreateStoryInput = {
   is_anonymous?: boolean;
 };
 
+export async function getStoryById(id: string) {
+  const { data, error } = await getSupabase()
+    .from("stories")
+    .select("*")
+    .eq("id", id)
+    .single();
+
+  if (error) throw error;
+  return data as Story;
+}
+
 export async function getStories() {
   const { data, error } = await getSupabase()
     .from("stories")

@@ -6,6 +6,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, ArrowRight, Heart, MessageSquare, Flag } from "lucide-react";
 import { getStories, type Story } from "@/services/stories";
 import { DUMMY_STORIES } from "@/data/dummyStories";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { id, en } from "@/data/translations";
 
 const CARD_THEMES = [
   { bg: "#F07A94", text: "#FFFFFF" },
@@ -29,13 +31,15 @@ function formatDate(iso: string) {
 
 export default function CeritaSection() {
   const router = useRouter();
+  const { locale } = useLanguage();
+  const t = locale === "id" ? id.omahCerita : en.omahCerita;
   const [dbStories, setDbStories] = useState<Story[]>([]);
-  const id = useId();
+  const uid = useId();
   const seed = useMemo(() => {
     let h = 0;
-    for (let i = 0; i < id.length; i++) h = ((h << 5) - h) + id.charCodeAt(i), h |= 0;
+    for (let i = 0; i < uid.length; i++) h = ((h << 5) - h) + uid.charCodeAt(i), h |= 0;
     return Math.abs(h) % 1000;
-  }, [id]);
+  }, [uid]);
 
   useEffect(() => {
     getStories()
@@ -50,7 +54,7 @@ export default function CeritaSection() {
       activeStories.map((s, i) => ({
         id: s.id,
         title: s.title,
-        author: s.is_anonymous ? "Anonim" : s.name,
+        author: s.is_anonymous ? t.anonim : s.name,
         category: s.category || "",
         date: formatDate(s.created_at),
         content: s.content,
@@ -89,31 +93,31 @@ export default function CeritaSection() {
   return (
     <div className="w-full bg-page-50 min-h-screen text-brand-900 font-sans select-none overflow-hidden">
       <section className="bg-brand-900 text-white px-8 md:px-20 py-16 flex flex-col gap-4">
-        <h1 className="text-3xl font-bold text-secondary-500">Cerita Kita</h1>
+        <h1 className="text-3xl font-bold text-secondary-500">{t.ceritaKita}</h1>
         <p className="text-lg md:text-xl font-normal max-w-2xl opacity-90 leading-relaxed">
-          Ruang aman untuk bercerita dan menyalurkan curahan hati yang sulit diceritakan.
+          {t.ceritaDesc}
         </p>
         <p className="text-xs md:text-sm text-secondary-200/80 font-light tracking-wide">
-          Anda tidak wajib mengisi identitas dan bisa bercerita sebagai anonim
+          {t.anonimNotice}
         </p>
         <button
           onClick={() => router.push("/omah-cerita/buat-cerita")}
           className="mt-4 w-fit bg-brand-100 text-brand-900 font-semibold px-6 py-3 rounded-xl shadow-md hover:bg-brand-100/90 active:scale-95 transition-all text-sm"
         >
-          Bagikan kisahku
+          {t.bagikanKisah}
         </button>
       </section>
 
       <section className="max-w-6xl mx-auto px-6 py-16">
         <div className="flex justify-between items-center mb-16 relative">
           <h2 className="text-2xl md:text-3xl font-bold text-brand-900 tracking-wide">
-            Cerita Kawan Kita
+            {t.ceritaKawan}
           </h2>
           <button
             onClick={() => router.push("/omah-cerita/semua-cerita")}
             className="bg-brand-100 border border-brand-700/20 text-brand-900/80 px-5 py-2 rounded-full text-xs font-semibold shadow-sm hover:bg-brand-100/90 transition-all"
           >
-            Lihat Semua Cerita
+            {t.lihatSemua}
           </button>
         </div>
 
@@ -135,7 +139,7 @@ export default function CeritaSection() {
               style={{ backgroundColor: `${stackThemes.middle}CC` }}
             >
               <div className="flex items-center gap-1.5 text-brand-900/40 font-semibold text-xs tracking-wide">
-                <Flag className="w-3.5 h-3.5" /> laporkan
+                <Flag className="w-3.5 h-3.5" /> {t.laporkan}
               </div>
             </div>
 
@@ -152,7 +156,8 @@ export default function CeritaSection() {
                 animate="center"
                 exit="exit"
                 style={{ backfaceVisibility: "hidden", transformStyle: "preserve-3d", backgroundColor: theme.bg, color: theme.text }}
-                className="w-full p-8 md:p-12 rounded-[28px] shadow-xl relative z-10 flex flex-col justify-between min-h-[340px]"
+                className="w-full p-8 md:p-12 rounded-[28px] shadow-xl relative z-10 flex flex-col justify-between min-h-[340px] cursor-pointer"
+                onClick={() => router.push(`/omah-cerita/${currentStory.id}`)}
               >
                 <div className="text-center flex flex-col gap-4">
                   <h3 className="text-xl md:text-2xl font-bold tracking-wide leading-snug px-4" style={{ color: theme.text }}>
@@ -169,8 +174,12 @@ export default function CeritaSection() {
                   </p>
                   <p className="text-xs md:text-sm leading-relaxed max-w-2xl mx-auto font-normal mt-2" style={{ color: theme.text, opacity: 0.9 }}>
                     {currentStory.content}{" "}
-                    <span className="font-bold underline cursor-pointer" style={{ color: theme.text }}>
-                      baca selengkapnya
+                    <span
+                      className="font-bold underline cursor-pointer"
+                      style={{ color: theme.text }}
+                      onClick={() => router.push(`/omah-cerita/${currentStory.id}`)}
+                    >
+                      {t.bacaSelengkapnya}
                     </span>
                   </p>
                 </div>
@@ -179,16 +188,16 @@ export default function CeritaSection() {
                   <div className="flex items-center gap-5">
                     <button className="flex items-center gap-1.5 hover:opacity-80 transition-opacity">
                       <Heart className="w-4 h-4" style={{ fill: theme.text, color: theme.text }} />
-                      <span>suka ({currentStory.likes})</span>
+                      <span>{t.suka.replace("{likes}", currentStory.likes)}</span>
                     </button>
                     <button className="flex items-center gap-1.5 hover:opacity-80 transition-opacity">
                       <MessageSquare className="w-4 h-4" />
-                      <span>komentar ({currentStory.comments})</span>
+                      <span>{t.komentar.replace("{comments}", currentStory.comments)}</span>
                     </button>
                   </div>
                   <button className="flex items-center gap-1.5 transition-all" style={{ color: theme.text, opacity: 0.9 }}>
                     <Flag className="w-4 h-4" />
-                    <span>laporkan</span>
+                    <span>{t.laporkan}</span>
                   </button>
                 </div>
               </motion.div>

@@ -6,20 +6,25 @@ import { ArrowLeft, Calendar, User } from "lucide-react";
 import { getBeritaBySlug, type Berita, type ImageUrl } from "@/services/berita";
 import { transformImageUrl } from "@/lib/image";
 import { getVideoEmbedUrl } from "@/lib/video";
-
-function formatDate(dateStr: string | null): string {
-  if (!dateStr) return "";
-  return new Date(dateStr).toLocaleDateString("id-ID", {
-    day: "numeric", month: "long", year: "numeric",
-  });
-}
+import { useLanguage } from "@/contexts/LanguageContext";
+import { id, en } from "@/data/translations";
 
 export default function BeritaDetail() {
   const router = useRouter();
   const params = useParams();
+  const { locale } = useLanguage();
+  const t = locale === "id" ? id.berita : en.berita;
+  const common = locale === "id" ? id.common : en.common;
   const [berita, setBerita] = useState<Berita | null>(null);
   const [loading, setLoading] = useState(true);
   const [imgErrors, setImgErrors] = useState<Set<number>>(new Set());
+
+  function formatDate(dateStr: string | null): string {
+    if (!dateStr) return "";
+    return new Date(dateStr).toLocaleDateString(locale === "id" ? "id-ID" : "en-US", {
+      day: "numeric", month: "long", year: "numeric",
+    });
+  }
 
   useEffect(() => {
     const slug = params?.slug as string;
@@ -42,9 +47,9 @@ export default function BeritaDetail() {
     return (
       <div className="min-h-screen bg-page-50 flex items-center justify-center">
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-brand-900">Berita tidak ditemukan</h2>
+          <h2 className="text-2xl font-bold text-brand-900">{t.notFound}</h2>
           <button onClick={() => router.push("/berita")} className="mt-4 px-5 py-2 bg-brand-900 text-white rounded-xl text-sm">
-            Kembali
+            {common.back}
           </button>
         </div>
       </div>
@@ -61,7 +66,7 @@ export default function BeritaDetail() {
           onClick={() => router.push("/berita")}
           className="inline-flex items-center gap-1.5 px-4 py-2 bg-white border border-gray-200 text-sm font-semibold rounded-xl hover:bg-gray-50 transition-all text-brand-900"
         >
-          <ArrowLeft className="w-4 h-4" /> Semua Berita
+          <ArrowLeft className="w-4 h-4" /> {t.backToAll}
         </button>
       </div>
 
@@ -130,7 +135,7 @@ export default function BeritaDetail() {
         {/* Additional images */}
         {images.length > 1 && (
           <div className="mt-10">
-            <h3 className="text-lg font-bold text-brand-900 mb-4">Dokumentasi</h3>
+            <h3 className="text-lg font-bold text-brand-900 mb-4">{t.dokumentasi}</h3>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
               {images.slice(1).map((img, idx) => (
                 <div key={idx} className="rounded-xl overflow-hidden bg-gray-100 aspect-video">

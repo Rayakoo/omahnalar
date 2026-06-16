@@ -10,7 +10,7 @@ export default function EditCourse() {
   const params = useParams();
   const savingRef = useRef(false);
 
-  const [form, setForm] = useState({ title: "", description: "", category_id: "", education_level_id: "" });
+  const [form, setForm] = useState({ title: "", description: "", category_id: "", education_level_id: "", thumbnail_url: "" });
   const [categories, setCategories] = useState<Category[]>([]);
   const [levels, setLevels] = useState<EducationLevel[]>([]);
   const [loading, setLoading] = useState(true);
@@ -27,6 +27,7 @@ export default function EditCourse() {
           description: course.description ?? "",
           category_id: course.category_id,
           education_level_id: course.education_level_id,
+          thumbnail_url: course.thumbnail_url ?? "",
         });
         setCategories(cats);
         setLevels(levs);
@@ -51,6 +52,7 @@ export default function EditCourse() {
         description: form.description || undefined,
         category_id: form.category_id,
         education_level_id: form.education_level_id,
+        thumbnail_url: form.thumbnail_url || undefined,
       });
       router.push("/admin/courses");
     } catch (err) {
@@ -97,6 +99,17 @@ export default function EditCourse() {
               value={form.description}
               onChange={(e) => setForm((prev) => ({ ...prev, description: e.target.value }))}
               className="w-full px-4 py-3 bg-white border border-[#D9D7EC] rounded-xl focus:outline-none focus:ring-1 focus:ring-purple-500 text-sm text-gray-900 resize-none"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-1">Thumbnail <span className="text-gray-400 font-normal text-xs">(opsional)</span></label>
+            <input
+              type="url"
+              value={form.thumbnail_url}
+              onChange={(e) => setForm((prev) => ({ ...prev, thumbnail_url: e.target.value }))}
+              placeholder="https://example.com/gambar.jpg"
+              className="w-full px-4 py-3 bg-white border border-[#D9D7EC] rounded-xl focus:outline-none focus:ring-1 focus:ring-purple-500 placeholder-gray-400 text-sm text-gray-900"
             />
           </div>
 

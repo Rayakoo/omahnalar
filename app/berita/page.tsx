@@ -5,6 +5,8 @@ import Link from "next/link";
 import { Calendar, User, ArrowRight } from "lucide-react";
 import { getBerita, type Berita, type ImageUrl } from "@/services/berita";
 import { transformImageUrl } from "@/lib/image";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { id, en } from "@/data/translations";
 
 function getThumbnail(image_url: ImageUrl[]): string | null {
   const thumb = image_url.find((img) => img.is_thumbnail);
@@ -12,16 +14,18 @@ function getThumbnail(image_url: ImageUrl[]): string | null {
   return url ? transformImageUrl(url) : null;
 }
 
-function formatDate(dateStr: string | null): string {
-  if (!dateStr) return "";
-  return new Date(dateStr).toLocaleDateString("id-ID", {
-    day: "numeric", month: "long", year: "numeric",
-  });
-}
-
 export default function BeritaPage() {
+  const { locale } = useLanguage();
+  const t = locale === "id" ? id.berita : en.berita;
   const [berita, setBerita] = useState<Berita[]>([]);
   const [loading, setLoading] = useState(true);
+
+  function formatDate(dateStr: string | null): string {
+    if (!dateStr) return "";
+    return new Date(dateStr).toLocaleDateString(locale === "id" ? "id-ID" : "en-US", {
+      day: "numeric", month: "long", year: "numeric",
+    });
+  }
 
   useEffect(() => {
     getBerita()
@@ -41,13 +45,13 @@ export default function BeritaPage() {
         </div>
         <div className="max-w-6xl mx-auto text-center relative z-10">
           <span className="inline-block bg-secondary-500 text-brand-900 text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider mb-4">
-            Berita
+            {t.badge}
           </span>
           <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight text-secondary-500">
-            Berita & Artikel
+            {t.title}
           </h1>
           <p className="text-sm text-brand-100/70 mt-3 max-w-2xl mx-auto leading-relaxed">
-            Informasi dan artikel terbaru seputar kegiatan dan program Omah Nalar.
+            {t.desc}
           </p>
         </div>
       </div>
@@ -60,7 +64,7 @@ export default function BeritaPage() {
           </div>
         ) : berita.length === 0 ? (
           <div className="bg-white rounded-2xl p-12 text-center border border-gray-100 shadow-sm mt-12">
-            <p className="text-brand-700/60">Belum ada berita.</p>
+            <p className="text-brand-700/60">{t.empty}</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mt-12">

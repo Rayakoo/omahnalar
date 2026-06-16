@@ -6,6 +6,8 @@ import { useRouter } from "next/navigation";
 import { ChevronLeft, Heart, MessageSquare, Flag } from "lucide-react";
 import { getStoriesPaginated, type Story } from "@/services/stories";
 import { DUMMY_STORIES } from "@/data/dummyStories";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { id, en } from "@/data/translations";
 
 const CARD_THEMES = [
   { bg: "#F07A94", text: "#FFFFFF" },
@@ -41,12 +43,15 @@ interface DisplayStory {
 
 export default function SemuaCerita() {
   const router = useRouter();
-  const id = useId();
+  const { locale } = useLanguage();
+  const t = locale === "id" ? id.omahCerita : en.omahCerita;
+  const common = locale === "id" ? id.common : en.common;
+  const uid = useId();
   const seed = useMemo(() => {
     let h = 0;
-    for (let i = 0; i < id.length; i++) h = ((h << 5) - h) + id.charCodeAt(i), h |= 0;
+    for (let i = 0; i < uid.length; i++) h = ((h << 5) - h) + uid.charCodeAt(i), h |= 0;
     return Math.abs(h) % 1000;
-  }, [id]);
+  }, [uid]);
 
   const [stories, setStories] = useState<DisplayStory[]>([]);
   const [offset, setOffset] = useState(0);
@@ -70,7 +75,7 @@ export default function SemuaCerita() {
       const mapped = source.slice(startFrom, startFrom + PAGE_SIZE).map((s, i) => ({
         id: s.id,
         title: s.title,
-        author: s.is_anonymous ? "Anonim" : s.name,
+        author: s.is_anonymous ? t.anonim : s.name,
         category: s.category || "",
         date: formatDate(s.created_at),
         content: s.content,
@@ -123,25 +128,26 @@ export default function SemuaCerita() {
           className="flex items-center gap-1 bg-brand-900 text-white px-5 py-2 rounded-xl text-sm font-medium hover:bg-brand-700 transition-all active:scale-95 shadow-sm"
         >
           <ChevronLeft className="w-4 h-4" />
-          Kembali
+          {common.back}
         </button>
       </nav>
 
       <main className="max-w-7xl mx-auto px-6 py-12">
         <h1 className="text-2xl font-bold mb-8 text-brand-900 tracking-wide">
-          Cerita Kawan Kita
+          {t.ceritaKawan}
         </h1>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {stories.map((story) => (
             <div
               key={story.id}
-              className="rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow duration-200 flex flex-col justify-between border min-h-[260px]"
+              className="rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow duration-200 flex flex-col justify-between border min-h-[260px] cursor-pointer"
               style={{
                 backgroundColor: story.theme.bg,
                 color: story.theme.text,
                 borderColor: `${story.theme.text}1A`,
               }}
+              onClick={() => router.push(`/omah-cerita/${story.id}`)}
             >
               <div>
                 <h3 className="text-base font-bold leading-snug mb-1" style={{ color: story.theme.text }}>
@@ -188,11 +194,11 @@ export default function SemuaCerita() {
           {hasMore ? (
             <div className="flex items-center gap-2 text-sm text-brand-700/70 font-medium">
               <div className="w-5 h-5 border-2 border-brand-700 border-t-transparent rounded-full animate-spin" />
-              <span>Memuat cerita lainnya...</span>
+              <span>{t.memuatCerita}</span>
             </div>
           ) : stories.length > 0 ? (
             <p className="text-sm text-brand-700/40 font-medium tracking-wide">
-              Semua cerita telah ditampilkan
+              {t.semuaDitampilkan}
             </p>
           ) : null}
         </div>

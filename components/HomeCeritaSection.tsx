@@ -6,6 +6,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, ArrowRight, Heart, MessageSquare, Flag } from "lucide-react";
 import { getStories, type Story } from "@/services/stories";
 import { DUMMY_STORIES } from "@/data/dummyStories";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { id, en } from "@/data/translations";
 
 const CARD_THEMES = [
   { bg: "#F07A94", text: "#FFFFFF" },
@@ -22,20 +24,24 @@ function seededPick(seed: number, i: number, total: number) {
   return CARD_THEMES[final];
 }
 
-function formatDate(iso: string) {
+function formatDate(iso: string, locale: string) {
   const d = new Date(iso);
-  return d.toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" });
+  return d.toLocaleDateString(locale === "en" ? "en-US" : "id-ID", { day: "numeric", month: "long", year: "numeric" });
 }
 
 export default function HomeCeritaSection() {
   const router = useRouter();
+  const { locale } = useLanguage();
+  const t = locale === "id" ? id.home : en.home;
+  const common = locale === "id" ? id.common : en.common;
+  const omahCerita = locale === "id" ? id.omahCerita : en.omahCerita;
   const [dbStories, setDbStories] = useState<Story[]>([]);
-  const id = useId();
+  const uid = useId();
   const seed = useMemo(() => {
     let h = 0;
-    for (let i = 0; i < id.length; i++) h = ((h << 5) - h) + id.charCodeAt(i), h |= 0;
+    for (let i = 0; i < uid.length; i++) h = ((h << 5) - h) + uid.charCodeAt(i), h |= 0;
     return Math.abs(h) % 1000;
-  }, [id]);
+  }, [uid]);
 
   useEffect(() => {
     getStories()
@@ -52,7 +58,7 @@ export default function HomeCeritaSection() {
         title: s.title,
         author: s.is_anonymous ? "Anonim" : s.name,
         category: s.category || "",
-        date: formatDate(s.created_at),
+        date: formatDate(s.created_at, locale),
         content: s.content,
         likes: 0,
         comments: 0,
@@ -92,15 +98,15 @@ export default function HomeCeritaSection() {
         <div className="flex justify-between items-center mb-12">
           <div>
             <h2 className="text-2xl md:text-3xl font-bold text-brand-900 tracking-wide">
-              Cerita Terbaru
+              {t.ceritaTitle}
             </h2>
-            <p className="text-sm text-brand-700/60 mt-1 font-medium">Cerita terbaru dari komunitas</p>
+            <p className="text-sm text-brand-700/60 mt-1 font-medium">{t.ceritaSub}</p>
           </div>
           <button
             onClick={() => router.push("/omah-cerita/semua-cerita")}
             className="bg-brand-100 border border-brand-700/20 text-brand-900/80 px-5 py-2 rounded-full text-xs font-semibold shadow-sm hover:bg-brand-100/90 transition-all"
           >
-            Lihat Semua Cerita
+            {omahCerita.lihatSemua}
           </button>
         </div>
 
@@ -122,7 +128,7 @@ export default function HomeCeritaSection() {
               style={{ backgroundColor: `${stackThemes.middle}CC` }}
             >
               <div className="flex items-center gap-1.5 text-brand-900/40 font-semibold text-xs tracking-wide">
-                <Flag className="w-3.5 h-3.5" /> laporkan
+                <Flag className="w-3.5 h-3.5" /> {t.ceritaLaporkan}
               </div>
             </div>
 
@@ -139,7 +145,8 @@ export default function HomeCeritaSection() {
                 animate="center"
                 exit="exit"
                 style={{ backfaceVisibility: "hidden", transformStyle: "preserve-3d", backgroundColor: theme.bg, color: theme.text }}
-                className="w-full p-8 md:p-12 rounded-[28px] shadow-xl relative z-10 flex flex-col justify-between min-h-[340px]"
+                className="w-full p-8 md:p-12 rounded-[28px] shadow-xl relative z-10 flex flex-col justify-between min-h-[340px] cursor-pointer"
+                onClick={() => router.push(`/omah-cerita/${currentStory.id}`)}
               >
                 <div className="text-center flex flex-col gap-4">
                   <h3 className="text-xl md:text-2xl font-bold tracking-wide leading-snug px-4" style={{ color: theme.text }}>
@@ -156,8 +163,12 @@ export default function HomeCeritaSection() {
                   </p>
                   <p className="text-xs md:text-sm leading-relaxed max-w-2xl mx-auto font-normal mt-2" style={{ color: theme.text, opacity: 0.9 }}>
                     {currentStory.content}{" "}
-                    <span className="font-bold underline cursor-pointer" style={{ color: theme.text }}>
-                      baca selengkapnya
+                    <span
+                      className="font-bold underline cursor-pointer"
+                      style={{ color: theme.text }}
+                      onClick={() => router.push(`/omah-cerita/${currentStory.id}`)}
+                    >
+                      {t.ceritaBaca}
                     </span>
                   </p>
                 </div>
@@ -166,16 +177,16 @@ export default function HomeCeritaSection() {
                   <div className="flex items-center gap-5">
                     <button className="flex items-center gap-1.5 hover:opacity-80 transition-opacity">
                       <Heart className="w-4 h-4" style={{ fill: theme.text, color: theme.text }} />
-                      <span>suka (0)</span>
+                      <span>{t.ceritaSuka} (0)</span>
                     </button>
                     <button className="flex items-center gap-1.5 hover:opacity-80 transition-opacity">
                       <MessageSquare className="w-4 h-4" />
-                      <span>komentar (0)</span>
+                      <span>{t.ceritaKomentar} (0)</span>
                     </button>
                   </div>
                   <button className="flex items-center gap-1.5 transition-all" style={{ color: theme.text, opacity: 0.9 }}>
                     <Flag className="w-4 h-4" />
-                    <span>laporkan</span>
+                    <span>{t.ceritaLaporkan}</span>
                   </button>
                 </div>
               </motion.div>

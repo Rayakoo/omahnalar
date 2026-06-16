@@ -5,6 +5,8 @@ import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useState } from "react";
 import { Check, Info, ClipboardList, Home, Copy, CheckCheck } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { id, en } from "@/data/translations";
 
 export default function LaporanSuksesPage() {
   return (
@@ -16,6 +18,9 @@ export default function LaporanSuksesPage() {
 
 function LaporanSukses() {
   const searchParams = useSearchParams();
+  const { locale } = useLanguage();
+  const t = locale === "id" ? id.tanyaNalar : en.tanyaNalar;
+  const common = locale === "id" ? id.common : en.common;
   const kodeLaporan = searchParams.get("ticket") || "TN-XXXXX";
   const [copied, setCopied] = useState(false);
 
@@ -46,11 +51,11 @@ function LaporanSukses() {
           </div>
 
           <h1 className="text-2xl md:text-3xl font-bold text-[#F4C46B]">
-            Laporan berhasil terkirim
+            {t.suksesTitle}
           </h1>
 
           <p className="text-sm text-gray-300 leading-relaxed max-w-md mx-auto">
-            Terima kasih sudah berani bersuara. Laporanmu sudah kami terima dan akan segera ditindaklanjuti oleh tim kami.
+            {t.suksesDesc}
           </p>
         </div>
       </section>
@@ -58,7 +63,7 @@ function LaporanSukses() {
       <main className="flex-1 max-w-4xl mx-auto w-full p-6 flex flex-col items-center justify-center -mt-4">
         <div className="w-full max-w-2xl bg-[#E5E2F8] bg-opacity-60 border border-[#D7D3F2] rounded-2xl p-6 md:p-8 text-center mb-8">
           <p className="text-xs font-bold tracking-wider text-[#736A9C] uppercase mb-2">
-            # KODE LAPORANMU
+            {t.kodeLaporanmu}
           </p>
 
           <div className="flex items-center justify-center gap-3 mb-4">
@@ -71,7 +76,7 @@ function LaporanSukses() {
             <button
               onClick={handleCopy}
               className="p-2 rounded-lg bg-[#D7D3F2] hover:bg-[#C5BFE8] transition-colors"
-              title="Salin kode laporan"
+              title={t.salinKode}
             >
               {copied ? (
                 <CheckCheck className="w-5 h-5 text-green-700" />
@@ -84,7 +89,7 @@ function LaporanSukses() {
           <div className="flex items-start gap-2 max-w-md mx-auto text-left justify-center bg-transparent">
             <Info className="w-3.5 h-3.5 text-[#736A9C] mt-0.5 shrink-0" />
             <p className="text-[11px] md:text-xs text-gray-600 leading-relaxed">
-              Kode laporan sudah dikirim ke emailmu. Kamu akan membutuhkannya untuk memantau status dan perkembangan laporanmu kapan saja.
+              {t.kodeHint}
             </p>
           </div>
         </div>
@@ -94,14 +99,14 @@ function LaporanSukses() {
             href={`/tanya-nalar/detail-laporan?ticket=${kodeLaporan}`}
             className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#4C4765] text-white text-xs font-semibold rounded-lg hover:bg-opacity-90 transition-colors shadow-sm w-full sm:w-auto justify-center"
           >
-            <ClipboardList className="w-3.5 h-3.5" /> Pantau Status Laporan
+            <ClipboardList className="w-3.5 h-3.5" /> {t.pantauStatus}
           </Link>
 
           <Link
             href="/"
             className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#4C4765] text-white text-xs font-semibold rounded-lg hover:bg-opacity-90 transition-colors shadow-sm w-full sm:w-auto justify-center"
           >
-            <Home className="w-3.5 h-3.5" /> Kembali ke Beranda
+            <Home className="w-3.5 h-3.5" /> {common.backToHome}
           </Link>
         </div>
       </main>

@@ -6,6 +6,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, Loader2, AlertTriangle } from "lucide-react";
 import { getQuizWithQuestions, upsertQuizResult, type QuizQuestion } from "@/services/quizzes";
 import { useAuth } from "@/contexts/AuthContext";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { id, en } from "@/data/translations";
 import QuizResultModal from "./QuizResultModal";
 
 export default function QuizPage() {
@@ -14,6 +16,9 @@ export default function QuizPage() {
   const courseId = params["id-course"] as string;
   const quizId = params["id-quiz"] as string;
   const { user } = useAuth();
+  const { locale } = useLanguage();
+  const t = locale === "id" ? id.omahBelajar : en.omahBelajar;
+  const common = locale === "id" ? id.common : en.common;
 
   const [questions, setQuestions] = useState<QuizQuestion[]>([]);
   const [loadingData, setLoadingData] = useState(true);
@@ -29,7 +34,7 @@ export default function QuizPage() {
     if (!quizId) return;
     getQuizWithQuestions(quizId)
       .then((data) => setQuestions(data.questions))
-      .catch(() => setErrorPopup("Gagal memuat soal"))
+      .catch(() => setErrorPopup(t.gagalSoal))
       .finally(() => setLoadingData(false));
   }, [quizId]);
 
@@ -49,7 +54,7 @@ export default function QuizPage() {
     if (isLastQuestion) {
       const answeredCount = Object.keys(quizProgress).length;
       if (answeredCount < questions.length - 1) {
-        setErrorPopup("Anda belum menjawab semua soal");
+        setErrorPopup(t.belumSemua);
         return;
       }
     }
@@ -106,13 +111,13 @@ export default function QuizPage() {
     return (
       <div className="min-h-screen bg-page-50 flex items-center justify-center text-brand-900 font-sans antialiased p-6">
         <div className="text-center max-w-md bg-white border border-gray-200 rounded-3xl p-8 shadow-sm">
-          <p className="text-lg font-bold mb-2">Belum Ada Soal</p>
-          <p className="text-sm text-brand-900/70 mb-6">Kuis ini belum memiliki pertanyaan.</p>
+          <p className="text-lg font-bold mb-2">{t.belumSoal}</p>
+          <p className="text-sm text-brand-900/70 mb-6">{t.belumSoalDesc}</p>
           <button
             onClick={() => router.push(`/omah-belajar/${courseId}`)}
             className="bg-brand-900 text-white px-6 py-2.5 rounded-xl text-sm font-bold hover:bg-brand-700 transition-all"
           >
-            Kembali ke Course
+            {t.kembaliCourse}
           </button>
         </div>
       </div>
@@ -126,12 +131,12 @@ export default function QuizPage() {
   return (
     <div className="min-h-screen bg-page-50 text-brand-900 flex flex-col">
       <nav className="bg-secondary-200 px-6 py-4 flex items-center justify-between shadow-sm">
-        <span className="font-bold text-lg">Kuis</span>
+        <span className="font-bold text-lg">{t.kuisNav}</span>
         <button
           onClick={() => router.push(`/omah-belajar/${courseId}`)}
           className="flex items-center gap-1 bg-brand-900 text-white px-5 py-2 rounded-xl text-sm font-medium hover:bg-brand-700 transition-all active:scale-95 shadow-sm"
         >
-          <ChevronLeft className="w-4 h-4" /> Kembali
+          <ChevronLeft className="w-4 h-4" /> {common.back}
         </button>
       </nav>
 
@@ -139,7 +144,7 @@ export default function QuizPage() {
         <div className="w-full lg:flex-1 bg-white border border-gray-100 rounded-3xl p-6 md:p-8 min-h-[400px] shadow-sm flex flex-col">
           <div className="flex items-center justify-between mb-6">
             <span className="text-xs uppercase font-bold tracking-widest text-brand-700/60">
-              Soal {currentIdx + 1} dari {questions.length}
+              {t.soalCounter.replace("{current}", String(currentIdx + 1)).replace("{total}", String(questions.length))}
             </span>
             {isSubmitted && (
               <span
@@ -149,7 +154,7 @@ export default function QuizPage() {
                     : "bg-rose-100 text-rose-700"
                 }`}
               >
-                {quizProgress[currentQuestion.id] === "correct" ? "✓ Benar" : "✗ Salah"}
+                {quizProgress[currentQuestion.id] === "correct" ? t.benarBadge : t.salahBadge}
               </span>
             )}
           </div>
@@ -208,13 +213,13 @@ export default function QuizPage() {
               disabled={currentIdx === 0}
               className="px-5 py-2.5 rounded-xl border border-gray-200 text-sm font-bold text-brand-700 hover:bg-brand-100 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
             >
-              Sebelumnya
+              {t.sebelumnya}
             </button>
 
             {loading ? (
               <div className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-brand-900/60 text-white text-sm font-bold shadow-sm">
                 <Loader2 className="w-4 h-4 animate-spin" />
-                Memeriksa...
+                {t.memeriksa}
               </div>
             ) : !isSubmitted ? (
               <button
@@ -226,7 +231,7 @@ export default function QuizPage() {
                     : "bg-brand-900 text-white hover:bg-brand-700"
                 }`}
               >
-                {isLastQuestion ? "Selesai" : "Jawab"}
+                {isLastQuestion ? t.selesaiBtn : t.jawabBtn}
               </button>
             ) : (
               <button
@@ -234,7 +239,7 @@ export default function QuizPage() {
                 disabled={currentIdx === questions.length - 1}
                 className="px-6 py-2.5 rounded-xl bg-brand-900 text-white text-sm font-bold hover:bg-brand-700 transition-all active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed shadow-sm"
               >
-                Selanjutnya
+                {t.selanjutnya}
               </button>
             )}
           </div>
@@ -242,7 +247,7 @@ export default function QuizPage() {
 
         <div className="w-full lg:w-72 bg-[#E6E4F9]/60 border border-brand-700/10 rounded-3xl p-5 shadow-sm">
           <h3 className="text-xs font-bold uppercase tracking-wider text-brand-900/60 mb-4">
-            Nomor Soal
+            {t.nomorSoal}
           </h3>
 
           <div className="grid grid-cols-5 sm:grid-cols-6 lg:grid-cols-4 gap-3">
@@ -262,16 +267,16 @@ export default function QuizPage() {
 
           <div className="hidden lg:flex flex-col gap-2 mt-6 pt-4 border-t border-brand-700/10 text-[11px] font-semibold text-brand-700/70">
             <div className="flex items-center gap-2">
-              <div className="w-3 h-3 bg-brand-900 rounded-sm" /> <span>Soal Saat Ini (Ungu)</span>
+              <div className="w-3 h-3 bg-brand-900 rounded-sm" /> <span>{t.legendSaatIni}</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-3 h-3 bg-white border border-gray-300 rounded-sm" /> <span>Belum Terjawab (Putih)</span>
+              <div className="w-3 h-3 bg-white border border-gray-300 rounded-sm" /> <span>{t.legendBelum}</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-3 h-3 bg-emerald-500 rounded-sm" /> <span>Jawaban Benar (Hijau)</span>
+              <div className="w-3 h-3 bg-emerald-500 rounded-sm" /> <span>{t.legendBenar}</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-3 h-3 bg-rose-500 rounded-sm" /> <span>Jawaban Salah (Merah)</span>
+              <div className="w-3 h-3 bg-rose-500 rounded-sm" /> <span>{t.legendSalah}</span>
             </div>
           </div>
         </div>

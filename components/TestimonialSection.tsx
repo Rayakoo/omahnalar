@@ -2,9 +2,10 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { id, en } from "@/data/translations";
 
-
-const TESTIMONIALS = [
+const TESTIMONIALS_ID = [
   {
     name: "Ani, 19 tahun",
     role: "Siswa",
@@ -35,19 +36,53 @@ const TESTIMONIALS = [
   },
 ];
 
+const TESTIMONIALS_EN = [
+  {
+    name: "Ani, 19 years",
+    role: "Student",
+    avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=150",
+    content:
+      "Omah Nalar helped me understand reproductive health in a way that's easy and not embarrassing. Now I'm more confident in taking care of myself and talking openly with friends.",
+  },
+  {
+    name: "Mr. Budi",
+    role: "Teacher",
+    avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=150",
+    content:
+      "As a teacher, the Omah Belajar modules are very helpful in delivering reproductive health material to my students. The language is easy to understand and interactive.",
+  },
+  {
+    name: "Sari",
+    role: "Volunteer",
+    avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&q=80&w=150",
+    content:
+      "I am proud to be part of the Omah Nalar community. Together we can create positive change for Indonesia's young generation.",
+  },
+  {
+    name: "Dimas, 21 years",
+    role: "College Student",
+    avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=150",
+    content:
+      "At first I was hesitant to take the course, but the material turned out to be fun and very relevant. The interactive quizzes make learning not boring.",
+  },
+];
+
 export default function TestimonialSection() {
+  const { locale } = useLanguage();
+  const t = locale === "id" ? id.home : en.home;
+  const testimonials = locale === "id" ? TESTIMONIALS_ID : TESTIMONIALS_EN;
   const [index, setIndex] = useState(0);
   const [direction, setDirection] = useState(0);
 
   useEffect(() => {
     const timer = setInterval(() => {
       setDirection(1);
-      setIndex((p) => (p + 1) % TESTIMONIALS.length);
+      setIndex((p) => (p + 1) % testimonials.length);
     }, 5000);
     return () => clearInterval(timer);
-  }, []);
+  }, [testimonials.length]);
 
-  const item = TESTIMONIALS[index];
+  const item = testimonials[index];
 
   const variants = {
     enter: (dir: number) => ({ x: dir > 0 ? 200 : -200, opacity: 0 }),
@@ -60,10 +95,10 @@ export default function TestimonialSection() {
       <div className="max-w-6xl mx-auto px-6">
         <div className="text-center mb-14">
           <span className="text-sm font-semibold text-secondary-500 uppercase tracking-wider">
-            Testimoni
+            {t.testimonialsTitle}
           </span>
           <h2 className="text-2xl md:text-3xl font-bold text-page-50 mt-3">
-            Kata Mereka Tentang Omah Nalar
+            {t.testimonialsSub}
           </h2>
         </div>
 
@@ -105,7 +140,7 @@ export default function TestimonialSection() {
 
         {/* Dots */}
         <div className="flex items-center justify-center gap-2 mt-8">
-          {TESTIMONIALS.map((_, idx) => (
+          {testimonials.map((_, idx) => (
             <button
               key={idx}
               onClick={() => { setDirection(idx > index ? 1 : -1); setIndex(idx); }}

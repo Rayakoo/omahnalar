@@ -7,6 +7,8 @@ import { getCourseById, getCourseSections, type CourseWithRelations, type Course
 import { getQuizById, getQuizIdsByCourse, getUserQuizResults } from "@/services/quizzes";
 import { getUserCourse, enrollCourse, updateProgress } from "@/services/userCourses";
 import { useAuth } from "@/contexts/AuthContext";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { id, en } from "@/data/translations";
 import { getVideoEmbedUrl } from "@/lib/video";
 
 function sectionIcon(type: string) {
@@ -22,6 +24,9 @@ export default function MateriDetail() {
   const router = useRouter();
   const params = useParams();
   const { user } = useAuth();
+  const { locale } = useLanguage();
+  const t = locale === "id" ? id.omahBelajar : en.omahBelajar;
+  const common = locale === "id" ? id.common : en.common;
   const courseId = params["id-course"] as string;
 
   const [course, setCourse] = useState<CourseWithRelations | null>(null);
@@ -126,7 +131,7 @@ export default function MateriDetail() {
           className="flex items-center gap-1 bg-brand-900 text-white px-5 py-2 rounded-xl text-sm font-medium hover:bg-brand-700 transition-all active:scale-95 shadow-sm"
         >
           <ChevronLeft className="w-4 h-4" />
-          Kembali
+          {common.back}
         </button>
       </nav>
 
@@ -135,7 +140,7 @@ export default function MateriDetail() {
           <div className="w-full bg-gray-200 rounded-3xl overflow-hidden aspect-video shadow-md relative border border-gray-200/50">
             {!activeSection ? (
               <div className="w-full h-full flex items-center justify-center text-brand-700/60 text-sm bg-white">
-                Pilih materi dari daftar
+                {t.pilihMateri}
               </div>
             ) : activeSection.type === "video" ? (
               <iframe
@@ -152,7 +157,7 @@ export default function MateriDetail() {
             ) : activeSection.type === "materi" ? (
               <div className="w-full h-full bg-white p-8 md:p-12 overflow-y-auto flex flex-col justify-center items-start leading-relaxed">
                 <div className="bg-brand-100 text-brand-700 text-xs font-bold px-3 py-1 rounded-md mb-4 flex items-center gap-1">
-                  <FileText className="w-3.5 h-3.5" /> Modul Bacaan Teks
+                  <FileText className="w-3.5 h-3.5" /> {t.modulBacaan}
                 </div>
                 <h2 className="text-xl md:text-2xl font-bold text-brand-900 mb-4">{activeSection.data.title}</h2>
                 <p className="text-sm md:text-base text-brand-900/80 font-normal whitespace-pre-line">
@@ -170,7 +175,7 @@ export default function MateriDetail() {
                   activeTab === "overview" ? "bg-white text-brand-900 shadow-sm" : "text-brand-900/60 hover:text-brand-900"
                 }`}
               >
-                Overview
+                {t.overviewTab}
               </button>
               <button
                 onClick={() => setActiveTab("notes")}
@@ -178,7 +183,7 @@ export default function MateriDetail() {
                   activeTab === "notes" ? "bg-white text-brand-900 shadow-sm" : "text-brand-900/60 hover:text-brand-900"
                 }`}
               >
-                Notes
+                {t.notesTab}
               </button>
             </div>
 
@@ -187,28 +192,28 @@ export default function MateriDetail() {
                 <div className="flex flex-wrap items-center gap-6 text-xs md:text-sm text-brand-900/80 bg-white/50 border border-gray-100 p-4 rounded-2xl shadow-sm">
                   <div className="flex items-center gap-2">
                     <Clock className="w-4 h-4 text-brand-700" />
-                    <span>Total Materi: <strong className="font-bold text-brand-900">{sections.length}</strong></span>
+                    <span>{t.totalMateri} <strong className="font-bold text-brand-900">{sections.length}</strong></span>
                   </div>
                   <div className="flex items-center gap-2">
                     <BookOpen className="w-4 h-4 text-brand-700" />
-                    <span>Selesai: <strong className="font-bold text-brand-900">{completedIds.length}</strong></span>
+                    <span>{t.selesaiStat} <strong className="font-bold text-brand-900">{completedIds.length}</strong></span>
                   </div>
                   <div className="flex items-center gap-2">
                     <BarChart className="w-4 h-4 text-brand-700" />
-                    <span>Progress: <strong className="font-bold text-brand-900">{Math.round((completedIds.length / Math.max(sections.length, 1)) * 100)}%</strong></span>
+                    <span>{t.progressStat} <strong className="font-bold text-brand-900">{Math.round((completedIds.length / Math.max(sections.length, 1)) * 100)}%</strong></span>
                   </div>
                 </div>
 
                 <div className="flex flex-col gap-2">
                   <h3 className="text-base font-bold text-brand-900">{course?.title}</h3>
                   <p className="text-sm text-brand-900/70 leading-relaxed font-normal">
-                    {course?.description || "Tidak ada deskripsi"}
+                    {course?.description || t.noDesc}
                   </p>
                 </div>
               </div>
             ) : (
               <div className="p-4 bg-white rounded-2xl text-sm text-gray-500 italic">
-                Fitur catatan materi belajar pribadi kawan kita akan tampil di sini.
+                {t.notesPlaceholder}
               </div>
             )}
           </div>
@@ -217,12 +222,12 @@ export default function MateriDetail() {
         <div className="w-full">
           <div className="bg-[#E6E4F9] border border-brand-700/10 rounded-3xl overflow-hidden shadow-sm sticky top-24">
             <div className="bg-[#4A4763] text-white p-4 font-bold text-sm tracking-wide text-center">
-              Daftar Materi {courseTitle}
+              {t.daftarMateri.replace("{courseTitle}", courseTitle)}
             </div>
 
             <div className="p-4 flex flex-col gap-6 max-h-[600px] overflow-y-auto no-scrollbar">
               {sections.length === 0 ? (
-                <p className="text-xs text-brand-700/60 text-center py-8">Belum ada materi</p>
+                <p className="text-xs text-brand-700/60 text-center py-8">{t.noMateri}</p>
               ) : (
                 sections.map((sec, idx) => {
                   const isActive = activeIdx === idx;
@@ -265,7 +270,7 @@ export default function MateriDetail() {
 
                         {sec.type === "quiz" && (
                           <span className="bg-orange-100 text-orange-600 font-extrabold text-[9px] uppercase px-2 py-0.5 rounded-md tracking-wider">
-                            Quiz
+                            {t.quizBadge}
                           </span>
                         )}
                       </button>

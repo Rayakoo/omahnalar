@@ -3,24 +3,28 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-import { Menu, X, LogIn } from "lucide-react";
+import { Menu, X, LogIn, Languages } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { id, en } from "@/data/translations";
 
 const NAV_LINKS = [
-  { label: "Program", href: "/program" },
-  { label: "Berita", href: "/berita" },
-  { label: "Tentang", href: "/tentang" },
-  { label: "Omah Cerita", href: "/omah-cerita" },
-  { label: "Omah Belajar", href: "/omah-belajar" },
-  { label: "Tanya Nalar", href: "/tanya-nalar" },
-  { label: "Produk", href: "/produk" },
-  { label: "Minigames", href: "/minigames" },
+  { key: "program", href: "/program" },
+  { key: "berita", href: "/berita" },
+  { key: "tentang", href: "/tentang" },
+  { key: "omahCerita", href: "/omah-cerita" },
+  { key: "omahBelajar", href: "/omah-belajar" },
+  { key: "tanyaNalar", href: "/tanya-nalar" },
+  { key: "produk", href: "/produk" },
+  { key: "minigames", href: "/minigames" },
 ];
 
 export default function Navbar() {
   const pathname = usePathname();
   const { user, loading, signOut } = useAuth();
+  const { locale, toggleLanguage } = useLanguage();
   const [menuOpen, setMenuOpen] = useState(false);
+  const t = locale === "id" ? id.nav : en.nav;
 
   return (
     <nav className="bg-secondary-200 px-6 py-4 flex items-center justify-between shadow-sm relative">
@@ -43,27 +47,36 @@ export default function Navbar() {
                   : "text-brand-900 hover:bg-brand-100"
               }`}
             >
-              {link.label}
+              {t[link.key as keyof typeof t]}
             </Link>
           );
         })}
       </div>
 
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2">
+        <button
+          onClick={toggleLanguage}
+          className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold text-brand-800 hover:bg-brand-100 transition-colors border border-brand-200"
+          title={locale === "id" ? "Switch to English" : "Ganti ke Bahasa Indonesia"}
+        >
+          <Languages className="w-3.5 h-3.5" />
+          <span className="hidden sm:inline">{locale === "id" ? "EN" : "ID"}</span>
+        </button>
+
         <div className="flex items-center gap-3">
           {loading ? (
             <div className="w-10 h-10 rounded-full bg-gray-200 animate-pulse" />
           ) : user ? (
             <div className="flex items-center gap-3">
               <span className="hidden lg:block text-sm font-semibold text-brand-900">
-                Hai, {(user.user_metadata?.full_name || user.email).split(" ")[0]}
+                {t.hai}, {(user.user_metadata?.full_name || user.email).split(" ")[0]}
               </span>
               {user.user_metadata?.role === "admin" && (
                 <Link
                   href="/admin"
                   className="text-[10px] font-bold bg-[#4D455D] hover:bg-[#3d364a] text-white px-3 py-1.5 rounded-md transition-colors hidden lg:block"
                 >
-                  Admin
+                  {t.admin}
                 </Link>
               )}
               <img
@@ -75,7 +88,7 @@ export default function Navbar() {
                 onClick={signOut}
                 className="text-[10px] font-bold bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 rounded-md transition-colors hidden lg:block"
               >
-                Logout
+                {t.logout}
               </button>
             </div>
           ) : (
@@ -84,7 +97,7 @@ export default function Navbar() {
               className="flex items-center gap-1.5 bg-brand-900 text-white px-4 py-2 rounded-full text-xs font-semibold hover:bg-brand-700 transition-all shadow-sm"
             >
               <LogIn className="w-3.5 h-3.5" />
-              Masuk
+              {t.login}
             </Link>
           )}
         </div>
@@ -92,7 +105,7 @@ export default function Navbar() {
         <button
           className="lg:hidden p-2 rounded-lg text-brand-900 hover:bg-brand-100 transition-colors"
           onClick={() => setMenuOpen(!menuOpen)}
-          aria-label="Toggle menu"
+          aria-label={t.toggleMenu}
         >
           {menuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
         </button>
@@ -114,10 +127,17 @@ export default function Navbar() {
                       : "text-brand-900 hover:bg-brand-100"
                   }`}
                 >
-                  {link.label}
+                  {t[link.key as keyof typeof t]}
                 </Link>
               );
             })}
+            <button
+              onClick={() => { toggleLanguage(); }}
+              className="px-4 py-3 rounded-xl text-sm font-medium bg-brand-100 text-brand-900 text-center flex items-center justify-center gap-2"
+            >
+              <Languages className="w-4 h-4" />
+              {locale === "id" ? "English" : "Indonesia"}
+            </button>
             {user ? (
               <>
                 {user.user_metadata?.role === "admin" && (
@@ -126,14 +146,14 @@ export default function Navbar() {
                     onClick={() => setMenuOpen(false)}
                     className="px-4 py-3 rounded-xl text-sm font-medium bg-[#4D455D] text-white text-center"
                   >
-                    Admin Panel
+                    {t.adminPanel}
                   </Link>
                 )}
                 <button
                   onClick={() => { signOut(); setMenuOpen(false); }}
                   className="px-4 py-3 rounded-xl text-sm font-bold bg-red-600 hover:bg-red-700 text-white text-center"
                 >
-                  Logout
+                  {t.logout}
                 </button>
               </>
             ) : (
@@ -142,7 +162,7 @@ export default function Navbar() {
                 onClick={() => setMenuOpen(false)}
                 className="px-4 py-3 rounded-xl text-sm font-medium bg-brand-900 text-white text-center"
               >
-                Masuk
+                {t.login}
               </Link>
             )}
           </div>

@@ -8,29 +8,45 @@ import dynamic from "next/dynamic";
 import { getPrograms, type Program, type ImageUrl } from "@/services/programs";
 import { getGalleries, type Gallery } from "@/services/galleries";
 import { transformImageUrl } from "@/lib/image";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { id, en } from "@/data/translations";
 import StrukturOrganisasi from "@/components/StrukturOrganisasi";
 
 const PetaMitraJaringan = dynamic(() => import("@/components/PetaMitraJaringan"), {
   ssr: false,
   loading: () => (
     <div className="w-full h-[400px] bg-[#1A2332] rounded-2xl animate-pulse flex items-center justify-center text-gray-400 text-xs">
-      Memuat Peta Jaringan Mitra...
+      Memuat...
     </div>
   ),
 });
 
-const timeline = [
+const timelinId = [
   { year: "2023", title: "Ide dan Perencanaan", desc: "Omah Nalar lahir dari diskusi panjang mengenai pendidikan dan kesehatan reproduksi seksual di Indonesia. Berawal dari keresahan akan kurangnya ruang belajar inklusif, konsep komunitas ini mulai dirumuskan.", img: "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&q=80&w=800" },
   { year: "2023", title: "Pembentukan Komunitas", desc: "Omah Nalar mulai dibangun sebagai komunitas yang mendorong budaya berpikir kritis dan bernalar. Nama 'Omah Nalar' dipilih — Omah berarti rumah, Nalar berarti kemampuan berpikir kritis — menjadi 'rumah untuk belajar bernalar'.", img: "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&q=80&w=800" },
   { year: "2024", title: "Program Perdana", desc: "Program-program edukasi pertama mulai berjalan, termasuk seminar parenting, workshop anti bullying, dan pelatihan penulisan. Kolaborasi dengan sekolah-sekolah mitra dimulai.", img: "https://images.unsplash.com/photo-1559223607-a43c990c692c?auto=format&fit=crop&q=80&w=800" },
   { year: "2025", title: "Pengembangan & Dampak", desc: "Omah Nalar terus berkembang dengan lebih banyak program, mitra, dan anggota. Fokus pada pendidikan dan kesehatan reproduksi seksual sebagai pilar utama kontribusi.", img: "https://images.unsplash.com/photo-1559027615-cd4628902d4a?auto=format&fit=crop&q=80&w=800" },
 ];
 
-const features = [
+const timelineEn = [
+  { year: "2023", title: "Idea & Planning", desc: "Omah Nalar was born from lengthy discussions about education and reproductive health in Indonesia. Stemming from concerns about the lack of inclusive learning spaces, this community concept began to be formulated.", img: "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&q=80&w=800" },
+  { year: "2023", title: "Community Formation", desc: "Omah Nalar was established as a community that promotes critical thinking and reasoning. The name 'Omah Nalar' was chosen — Omah means home, Nalar means the ability to think critically — becoming a 'home for learning to reason'.", img: "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&q=80&w=800" },
+  { year: "2024", title: "First Programs", desc: "The first educational programs began, including parenting seminars, anti-bullying workshops, and writing training. Collaboration with partner schools commenced.", img: "https://images.unsplash.com/photo-1559223607-a43c990c692c?auto=format&fit=crop&q=80&w=800" },
+  { year: "2025", title: "Growth & Impact", desc: "Omah Nalar continues to grow with more programs, partners, and members. Focus on education and reproductive health as the main pillars of contribution.", img: "https://images.unsplash.com/photo-1559027615-cd4628902d4a?auto=format&fit=crop&q=80&w=800" },
+];
+
+const featuresId = [
   { icon: MessageSquare, title: "Berbagi Cerita", desc: "Curhat anonim di komunitas yang aman dan saling mendukung." },
   { icon: Shield, title: "Buat Laporan", desc: "Aduan kekerasan & pelecehan dengan pendampingan penuh empati." },
   { icon: BookOpen, title: "Ikut Course", desc: "Edukasi interaktif tentang hubungan sehat dan kesehatan reproduksi." },
   { icon: Heart, title: "Komunitas Peduli", desc: "Bergabung dengan Kawan Nalar yang saling mendukung dan tumbuh bersama." },
+];
+
+const featuresEn = [
+  { icon: MessageSquare, title: "Share Stories", desc: "Anonymous sharing in a safe and supportive community." },
+  { icon: Shield, title: "File Reports", desc: "Report violence & harassment with full empathetic support." },
+  { icon: BookOpen, title: "Take Courses", desc: "Interactive education on healthy relationships and reproductive health." },
+  { icon: Heart, title: "Caring Community", desc: "Join Kawan Nalar to support each other and grow together." },
 ];
 
 function getThumbnail(image_url: ImageUrl[]): string | null {
@@ -53,6 +69,10 @@ function getTheme(slug: string): string {
 }
 
 export default function TentangPage() {
+  const { locale } = useLanguage();
+  const t = locale === "id" ? id.tentang : en.tentang;
+  const timeline = locale === "id" ? timelinId : timelineEn;
+  const features = locale === "id" ? featuresId : featuresEn;
   const [programs, setPrograms] = useState<Program[]>([]);
   const [galleries, setGalleries] = useState<Gallery[]>([]);
 
@@ -71,10 +91,10 @@ export default function TentangPage() {
         </div>
         <div className="max-w-4xl mx-auto text-center relative z-10">
           <motion.h1 initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} className="text-4xl md:text-5xl font-extrabold text-secondary-500 tracking-tight">
-            Tentang Omah Nalar
+            {t.heroTitle}
           </motion.h1>
           <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.2 }} className="text-sm md:text-base text-brand-100/80 mt-4 max-w-2xl mx-auto leading-relaxed">
-            Rumah untuk belajar bernalar — ruang tumbuh bersama bagi siapa saja tanpa memandang usia, latar belakang, maupun profesi.
+            {t.heroDesc}
           </motion.p>
         </div>
       </section>
@@ -82,8 +102,8 @@ export default function TentangPage() {
       {/* ============ SEJARAH (Timeline) ============ */}
       <section className="max-w-6xl mx-auto px-6 py-20">
         <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} className="text-center mb-14">
-          <span className="text-sm font-semibold text-secondary-600 uppercase tracking-wider">Perjalanan</span>
-          <h2 className="text-2xl md:text-3xl font-bold text-brand-900 mt-2">Sejarah Omah Nalar</h2>
+          <span className="text-sm font-semibold text-secondary-600 uppercase tracking-wider">{t.perjalanan}</span>
+          <h2 className="text-2xl md:text-3xl font-bold text-brand-900 mt-2">{t.sejarah}</h2>
         </motion.div>
 
         <div className="relative max-w-5xl mx-auto">
@@ -178,7 +198,7 @@ export default function TentangPage() {
               {/* Label */}
               <div className="flex items-center justify-center gap-3 mb-6">
                 <div className="h-px w-8 bg-secondary-500/60" />
-                <span className="text-secondary-500 text-[11px] font-bold uppercase tracking-[0.25em]">Visi</span>
+                <span className="text-secondary-500 text-[11px] font-bold uppercase tracking-[0.25em]">{t.visi}</span>
                 <div className="h-px w-8 bg-secondary-500/60" />
               </div>
 
@@ -189,7 +209,11 @@ export default function TentangPage() {
 
               {/* Vision text */}
               <p className="text-page-50/95 text-lg md:text-2xl leading-relaxed md:leading-relaxed font-light max-w-3xl mx-auto tracking-wide">
-                Nalar memiliki visi menjadi sebuah <span className="text-secondary-500 font-semibold">komunitas yang berkontribusi</span> pada ranah pendidikan dan kesehatan reproduksi seksual.
+                {locale === "id" ? (
+                  <>Omah Nalar memiliki visi menjadi sebuah <span className="text-secondary-500 font-semibold">komunitas yang berkontribusi</span> pada ranah pendidikan dan kesehatan reproduksi seksual.</>
+                ) : (
+                  <>Omah Nalar has a vision to become a <span className="text-secondary-500 font-semibold">contributing community</span> in the field of education and reproductive health.</>
+                )}
               </p>
 
               {/* Spacer with decorative line */}
@@ -200,9 +224,15 @@ export default function TentangPage() {
               </div>
 
               <p className="text-page-50/85 text-base md:text-lg leading-relaxed max-w-2xl mx-auto font-light">
-                Area ini menjadi esensial bagi Nalar. Nalar memandang sudah saatnya{' '}
-                <span className="text-secondary-500 font-medium">bergerak untuk menjadi bagian dari solusi</span>{' '}
-                dalam mengurai urgensi.
+                {locale === "id" ? (
+                  <>Area ini menjadi esensial bagi Omah Nalar. Omah Nalar memandang sudah saatnya{' '}
+                    <span className="text-secondary-500 font-medium">bergerak untuk menjadi bagian dari solusi</span>{' '}
+                    dalam mengurai urgensi.</>
+                ) : (
+                  <>This area is essential for Omah Nalar. Omah Nalar believes it is time{' '}
+                    <span className="text-secondary-500 font-medium">to move and be part of the solution</span>{' '}
+                    in addressing this urgency.</>
+                )}
               </p>
 
               {/* Bottom decorative mark */}
@@ -226,12 +256,83 @@ export default function TentangPage() {
         <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-page-50 to-transparent pointer-events-none" />
       </section>
 
+      {/* ============ MAKNA LOGO ============ */}
+      <section className="max-w-6xl mx-auto px-6 py-20">
+        <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} className="text-center mb-14">
+          <span className="text-sm font-semibold text-secondary-600 uppercase tracking-wider">{t.maknaLogo}</span>
+          <h2 className="text-2xl md:text-3xl font-bold text-brand-900 mt-2">{t.logoTitle}</h2>
+        </motion.div>
+
+        <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-16">
+          {/* Floating Logo */}
+          <motion.div
+            animate={{ y: [0, -8, 0] }}
+            transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut" }}
+            className="shrink-0 group cursor-pointer"
+          >
+            <div className="transition-all duration-500 rounded-2xl p-4 group-hover:shadow-[0_0_50px_15px_rgba(74,71,99,0.25)]">
+              <svg viewBox="0 0 240 290" className="w-52 md:w-64 h-auto" fill="none">
+                {/* Orange flame on top */}
+                <path d="M120 5 C128 18 140 30 120 38 C100 30 112 18 120 5Z" fill="#F97316" />
+
+                {/* Purple house body */}
+                <path d="M20 105 L120 25 L220 105 L220 255 Q220 265 210 265 L30 265 Q20 265 20 255Z" fill="#4A4763" />
+
+                {/* Left arm (thinking pose - raised to chin) */}
+                <path d="M140 178 C162 172 175 152 168 142" stroke="white" strokeWidth="8" strokeLinecap="round" />
+
+                {/* Right arm (resting) */}
+                <path d="M140 185 C158 192 165 205 158 215" stroke="white" strokeWidth="8" strokeLinecap="round" />
+
+                {/* Body/question mark curve */}
+                <path d="M132 170 C164 172 178 195 170 218 C162 240 136 247 122 228" stroke="white" strokeWidth="12" strokeLinecap="round" />
+
+                {/* Question mark dot */}
+                <circle cx="118" cy="245" r="7" fill="white" />
+
+                {/* Head group */}
+                <g transform="translate(125, 140)">
+                  {/* Top-right: Red */}
+                  <path d="M0 0 L0 -22 A22 22 0 0 1 22 0 Z" fill="#EF4444" />
+                  {/* Bottom-right: Blue */}
+                  <path d="M0 0 L22 0 A22 22 0 0 1 0 22 Z" fill="#3B82F6" />
+                  {/* Bottom-left: Green */}
+                  <path d="M0 0 L0 22 A22 22 0 0 1 -22 0 Z" fill="#22C55E" />
+                  {/* Top-left: Yellow */}
+                  <path d="M0 0 L-22 0 A22 22 0 0 1 0 -22 Z" fill="#EAB308" />
+                  {/* Head outline */}
+                  <circle cx="0" cy="0" r="22" stroke="white" strokeWidth="3" fill="none" />
+                </g>
+              </svg>
+            </div>
+          </motion.div>
+
+          {/* Explanation */}
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            className="flex-1 space-y-4 text-center lg:text-left max-w-xl"
+          >
+            <p className="text-sm md:text-base text-brand-900/80 leading-relaxed">
+              {t.logoDesc1}
+            </p>
+            <p className="text-sm md:text-base text-brand-900/80 leading-relaxed">
+              {t.logoDesc2}
+            </p>
+            <p className="text-sm md:text-base text-brand-900/80 leading-relaxed">
+              {t.logoDesc3}
+            </p>
+          </motion.div>
+        </div>
+      </section>
+
       {/* ============ STRUKTUR ORGANISASI ============ */}
       <section className="max-w-6xl mx-auto px-6 py-20">
         <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} className="text-center mb-14">
-          <span className="text-sm font-semibold text-secondary-600 uppercase tracking-wider">Tim</span>
-          <h2 className="text-2xl md:text-3xl font-bold text-brand-900 mt-2">Kawan Nalar</h2>
-          <p className="text-sm text-brand-700/60 mt-2">Anggota komunitas yang memiliki semangat untuk belajar dan bertumbuh bersama</p>
+          <span className="text-sm font-semibold text-secondary-600 uppercase tracking-wider">{t.tim}</span>
+          <h2 className="text-2xl md:text-3xl font-bold text-brand-900 mt-2">{t.kawanNalar}</h2>
+          <p className="text-sm text-brand-700/60 mt-2">{t.anggota}</p>
         </motion.div>
         <StrukturOrganisasi />
       </section>
@@ -240,8 +341,8 @@ export default function TentangPage() {
       <section className="bg-brand-900 text-white py-20">
         <div className="max-w-6xl mx-auto px-6">
           <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} className="text-center mb-14">
-            <span className="text-sm font-semibold text-secondary-500 uppercase tracking-wider">Fitur</span>
-            <h2 className="text-2xl md:text-3xl font-bold text-page-50 mt-2">Apa yang Bisa Kamu Lakukan?</h2>
+            <span className="text-sm font-semibold text-secondary-500 uppercase tracking-wider">{t.fitur}</span>
+            <h2 className="text-2xl md:text-3xl font-bold text-page-50 mt-2">{t.fiturDesc}</h2>
           </motion.div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {features.map((feat, idx) => (
@@ -265,9 +366,9 @@ export default function TentangPage() {
       {/* ============ PROGRAM ============ */}
       <section className="max-w-6xl mx-auto px-6 py-20">
         <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} className="text-center mb-12">
-          <span className="text-sm font-semibold text-secondary-600 uppercase tracking-wider">Program</span>
-          <h2 className="text-2xl md:text-3xl font-bold text-brand-900 mt-2">Program Kami</h2>
-          <p className="text-sm text-brand-700/60 mt-2">Berbagai kegiatan dan program untuk mendukung pendidikan, perlindungan anak, dan pemberdayaan masyarakat.</p>
+          <span className="text-sm font-semibold text-secondary-600 uppercase tracking-wider">{t.program}</span>
+          <h2 className="text-2xl md:text-3xl font-bold text-brand-900 mt-2">{t.programKami}</h2>
+          <p className="text-sm text-brand-700/60 mt-2">{t.programDesc}</p>
         </motion.div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 max-w-5xl mx-auto">
@@ -337,9 +438,9 @@ export default function TentangPage() {
       <section className="bg-white py-20">
         <div className="max-w-6xl mx-auto px-6">
           <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} className="text-center mb-14">
-            <span className="text-sm font-semibold text-secondary-600 uppercase tracking-wider">Jaringan</span>
-            <h2 className="text-2xl md:text-3xl font-bold text-brand-900 mt-2">Mitra & Kolaborasi</h2>
-            <p className="text-sm text-brand-700/60 mt-2">Terhubung dengan berbagai mitra di seluruh Indonesia</p>
+            <span className="text-sm font-semibold text-secondary-600 uppercase tracking-wider">{t.jaringan}</span>
+            <h2 className="text-2xl md:text-3xl font-bold text-brand-900 mt-2">{t.mitra}</h2>
+            <p className="text-sm text-brand-700/60 mt-2">{t.mitraDesc}</p>
           </motion.div>
 
           {/* Peta Jaringan Mitra */}
@@ -354,9 +455,9 @@ export default function TentangPage() {
       {/* ============ MARI BERGABUNG (Gallery) ============ */}
       <section className="max-w-6xl mx-auto px-6 py-20">
         <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} className="text-center mb-14">
-          <span className="text-sm font-semibold text-secondary-600 uppercase tracking-wider">Bersama</span>
-          <h2 className="text-2xl md:text-3xl font-bold text-brand-900 mt-2">Mari Bergabung dengan Kita</h2>
-          <p className="text-sm text-brand-700/60 mt-2 max-w-lg mx-auto">Jadilah bagian dari Kawan Nalar dan bersama kita ciptakan perubahan positif</p>
+          <span className="text-sm font-semibold text-secondary-600 uppercase tracking-wider">{t.gallery}</span>
+          <h2 className="text-2xl md:text-3xl font-bold text-brand-900 mt-2">{t.galleryCta}</h2>
+          <p className="text-sm text-brand-700/60 mt-2 max-w-lg mx-auto">{t.gallerySub}</p>
         </motion.div>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 max-w-5xl mx-auto">
@@ -386,7 +487,7 @@ export default function TentangPage() {
               >
                 <img
                   src={transformImageUrl(g.url)}
-                  alt="Dokumentasi Omah Nalar"
+                  alt="Omah Nalar documentation"
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                   onError={(e) => {
                     (e.currentTarget as HTMLImageElement).style.display = "none";
@@ -404,7 +505,7 @@ export default function TentangPage() {
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 bg-brand-900 text-white px-6 py-3 rounded-xl text-sm font-bold hover:bg-brand-700 transition-all active:scale-95 shadow-md"
           >
-            <ExternalLink className="w-4 h-4" /> Ikuti Kami di Instagram
+            <ExternalLink className="w-4 h-4" /> {t.ikutiInstagram}
           </a>
         </motion.div>
       </section>

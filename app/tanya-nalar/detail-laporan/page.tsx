@@ -18,13 +18,15 @@ import {
   BarChart3,
 } from "lucide-react";
 import { getReportByTicket, getReportLogs, getConversations, addConversationMessage, type Report, type ReportLog, type ReportConversation } from "@/services/reports";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { id, en } from "@/data/translations";
 
-const STATUS_MAP: Record<string, { label: string; color: string }> = {
-  pending: { label: "Menunggu", color: "bg-red-100 text-red-700" },
-  in_progress: { label: "Diproses", color: "bg-amber-100 text-amber-700" },
-  resolved: { label: "Selesai", color: "bg-green-100 text-green-700" },
-  closed: { label: "Ditutup", color: "bg-gray-100 text-gray-600" },
-};
+const STATUS_MAP = (locale: string): Record<string, { label: string; color: string }> => ({
+  pending: { label: locale === "id" ? "Menunggu" : "Pending", color: "bg-red-100 text-red-700" },
+  in_progress: { label: locale === "id" ? "Diproses" : "Processing", color: "bg-amber-100 text-amber-700" },
+  resolved: { label: locale === "id" ? "Selesai" : "Completed", color: "bg-green-100 text-green-700" },
+  closed: { label: locale === "id" ? "Ditutup" : "Closed", color: "bg-gray-100 text-gray-600" },
+});
 
 const direktoriBantuan = [
   { nama: "LBH Malang", sub: "Bantuan hukum", icon: Scale },
@@ -32,16 +34,6 @@ const direktoriBantuan = [
   { nama: "KPAI", sub: "021-319-015-32", icon: Users },
   { nama: "Polres / Polda", sub: "Call center 110", icon: ShieldAlert },
 ];
-
-function formatDate(iso: string) {
-  const d = new Date(iso);
-  return d.toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" });
-}
-
-function formatDateTime(iso: string) {
-  const d = new Date(iso);
-  return d.toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit" });
-}
 
 export default function DetailLaporanPage() {
   return (
@@ -53,9 +45,23 @@ export default function DetailLaporanPage() {
 
 function DetailLaporan() {
   const searchParams = useSearchParams();
+  const { locale } = useLanguage();
+  const t = locale === "id" ? id.tanyaNalar : en.tanyaNalar;
+  const common = locale === "id" ? id.common : en.common;
   const ticket = searchParams.get("ticket") || "";
 
+  function formatDate(iso: string) {
+    const d = new Date(iso);
+    return d.toLocaleDateString(locale === "id" ? "id-ID" : "en-US", { day: "numeric", month: "long", year: "numeric" });
+  }
+
+  function formatDateTime(iso: string) {
+    const d = new Date(iso);
+    return d.toLocaleDateString(locale === "id" ? "id-ID" : "en-US", { day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit" });
+  }
+
   const [report, setReport] = useState<Report | null>(null);
+  const status = STATUS_MAP(locale)[report?.status || "pending"];
   const [logs, setLogs] = useState<ReportLog[]>([]);
   const [conversations, setConversations] = useState<ReportConversation[]>([]);
   const [newMessage, setNewMessage] = useState("");
@@ -115,9 +121,9 @@ function DetailLaporan() {
   if (!report) {
     return (
       <div className="min-h-screen bg-[#FFFBF3] font-sans antialiased flex flex-col items-center justify-center gap-4 p-6">
-        <p className="text-sm text-gray-500">Laporan tidak ditemukan.</p>
+        <p className="text-sm text-gray-500">{t.laporanTidakDitemukan}</p>
         <Link href="/tanya-nalar" className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#4C4765] text-white text-xs font-semibold rounded-lg hover:bg-opacity-90 transition-colors">
-          <ArrowLeft className="w-3.5 h-3.5" /> Kembali
+          <ArrowLeft className="w-3.5 h-3.5" /> {common.back}
         </Link>
       </div>
     );
@@ -136,34 +142,34 @@ function DetailLaporan() {
           href="/tanya-nalar"
           className="inline-flex items-center gap-1.5 px-4 py-1.5 bg-[#4C4765] text-white text-xs font-semibold rounded-lg hover:bg-opacity-90 transition-colors"
         >
-          <ArrowLeft className="w-3.5 h-3.5" /> Kembali
+          <ArrowLeft className="w-3.5 h-3.5" /> {common.back}
         </Link>
       </nav>
 
       <main className="max-w-6xl mx-auto w-full p-4 md:p-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* LEFT COLUMN */}
         <section className="lg:col-span-2 space-y-6">
-          <h1 className="text-xl md:text-2xl font-bold text-[#3B3654] text-center lg:text-left">Detail Laporan</h1>
+          <h1 className="text-xl md:text-2xl font-bold text-[#3B3654] text-center lg:text-left">{t.detailLaporan}</h1>
 
           <div className="bg-[#E5E2F8] bg-opacity-40 border border-[#D7D3F2] rounded-2xl p-5 space-y-3.5">
             <div className="flex justify-between items-center text-sm">
-              <span className="font-semibold text-gray-500">ID Laporan</span>
+              <span className="font-semibold text-gray-500">{t.idLaporan}</span>
               <span className="font-bold text-[#3B3654]">{report.ticket_id}</span>
             </div>
             <div className="flex justify-between items-center text-sm">
-              <span className="font-semibold text-gray-500">Status saat ini</span>
+              <span className="font-semibold text-gray-500">{t.statusSaatIni}</span>
               <span className={`px-3 py-0.5 text-xs font-bold rounded-full ${status.color}`}>{status.label}</span>
             </div>
             <div className="flex justify-between items-center text-sm">
-              <span className="font-semibold text-gray-500">Tanggal laporan masuk</span>
+              <span className="font-semibold text-gray-500">{t.tanggalMasuk}</span>
               <span className="font-medium text-gray-800">{formatDate(report.created_at)}</span>
             </div>
             <div className="flex justify-between items-center text-sm">
-              <span className="font-semibold text-gray-500">Tanggal kejadian</span>
+              <span className="font-semibold text-gray-500">{t.tanggalKejadian}</span>
               <span className="font-medium text-gray-800">{formatDate(report.date)}</span>
             </div>
             <div className="flex justify-between items-center text-sm">
-              <span className="font-semibold text-gray-500">Lokasi kejadian</span>
+              <span className="font-semibold text-gray-500">{t.lokasiKejadian}</span>
               <span className="font-medium text-gray-800">{report.location}</span>
             </div>
           </div>
@@ -172,7 +178,7 @@ function DetailLaporan() {
             <div className="bg-[#E5E2F8] bg-opacity-40 border border-[#D7D3F2] rounded-2xl p-5 flex items-center gap-3">
               <span className="text-lg">🏷️</span>
               <div>
-                <p className="text-xs font-semibold text-gray-500">Klasifikasi Laporan</p>
+                <p className="text-xs font-semibold text-gray-500">{t.klasifikasi}</p>
                 <p className="text-sm font-bold text-[#3B3654]">{report.category}</p>
               </div>
             </div>
@@ -182,7 +188,7 @@ function DetailLaporan() {
             <div className="bg-white bg-opacity-80 rounded-xl p-4 border border-white space-y-4">
               <div className="flex items-center gap-2 border-b border-gray-100 pb-2">
                 <FileText className="w-4 h-4 text-[#736A9C]" />
-                <h4 className="text-sm font-bold text-[#3B3654]">Kronologi kejadian</h4>
+                <h4 className="text-sm font-bold text-[#3B3654]">{t.kronologiKejadian}</h4>
               </div>
               <p className="text-xs md:text-sm text-gray-600 leading-relaxed">
                 {report.chronology}
@@ -192,7 +198,7 @@ function DetailLaporan() {
                 <div className="pt-2">
                   <div className="flex items-center gap-1.5 text-xs font-bold text-[#3B3654] mb-3">
                     <Paperclip className="w-3.5 h-3.5 text-[#736A9C]" />
-                    <span>Bukti yang dilampirkan</span>
+                    <span>{t.bukti}</span>
                   </div>
                   <div className="flex gap-3">
                     {report.images.map((img, idx) => (
@@ -215,14 +221,14 @@ function DetailLaporan() {
           {/* TIMELINE */}
           <div className="space-y-4">
             <h3 className="text-base font-bold text-[#3B3654] flex items-center gap-2">
-              <BarChart3 className="w-4 h-4 text-[#736A9C]" /> Riwayat tindakan
+              <BarChart3 className="w-4 h-4 text-[#736A9C]" /> {t.riwayat}
             </h3>
             <div className="relative border-l-2 border-[#736A9C] ml-2 pl-4 space-y-5">
               {logs.length === 0 && (
                 <div className="relative">
                   <span className="absolute -left-[21px] mt-1 bg-[#736A9C] w-2 h-2 rounded-full border-4 border-[#FFFBF3]"></span>
                   <span className={`inline-block ${status.color} text-[10px] font-bold px-2 py-0.5 rounded-md mb-1`}>{status.label}</span>
-                  <h5 className="text-xs font-bold text-gray-800">Laporan diterima</h5>
+                  <h5 className="text-xs font-bold text-gray-800">{t.laporanDiterima}</h5>
                   <p className="text-[10px] text-gray-400">{formatDateTime(report.created_at)}</p>
                 </div>
               )}
@@ -265,7 +271,7 @@ function DetailLaporan() {
           {/* CHAT */}
           <div className="border border-orange-100 rounded-2xl p-4 bg-[#FFFDF9] space-y-4">
             <h4 className="text-xs font-bold text-[#3B3654] border-b border-gray-100 pb-2 flex items-center gap-1.5">
-              <MessageSquare className="w-3.5 h-3.5 text-[#736A9C]" /> Pertanyaan Lebih Lanjut
+              <MessageSquare className="w-3.5 h-3.5 text-[#736A9C]" /> {t.pertanyaanLanjut}
             </h4>
 
             <div className="space-y-3 max-h-[180px] overflow-y-auto pr-1">
@@ -275,7 +281,7 @@ function DetailLaporan() {
                   className={`flex flex-col ${msg.sender === "admin" ? "items-start" : "items-end"} max-w-[85%] ${msg.sender === "admin" ? "" : "ml-auto"}`}
                 >
                   <span className="text-[9px] font-semibold text-gray-400 mx-1 mb-0.5">
-                    {msg.sender === "admin" ? "Admin" : "Anda"}
+                    {msg.sender === "admin" ? t.admin : t.anda}
                   </span>
                   <div
                     className={`text-[11px] p-2.5 leading-relaxed ${
@@ -296,7 +302,7 @@ function DetailLaporan() {
                 value={newMessage}
                 onChange={(e) => setNewMessage(e.target.value)}
                 onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSendMessage(); } }}
-                placeholder="Ketik diskusi..."
+                placeholder={t.ketikDiskusi}
                 className="w-full text-xs px-2 py-1.5 focus:outline-none text-gray-700 bg-transparent"
               />
               <button

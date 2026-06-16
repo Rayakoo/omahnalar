@@ -7,6 +7,8 @@ import { getCourseById } from "@/services/courses";
 import { areAllQuizzesPassed, getQuizIdsByCourse } from "@/services/quizzes";
 import { completeCourse } from "@/services/userCourses";
 import { useAuth } from "@/contexts/AuthContext";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { id, en } from "@/data/translations";
 
 export default function HasilQuiz() {
   const router = useRouter();
@@ -14,6 +16,9 @@ export default function HasilQuiz() {
   const searchParams = useSearchParams();
   const courseId = params["id-course"] as string;
   const { user } = useAuth();
+  const { locale } = useLanguage();
+  const t = locale === "id" ? id.omahBelajar : en.omahBelajar;
+  const common = locale === "id" ? id.common : en.common;
 
   const [courseTitle, setCourseTitle] = useState("");
   const [allPassed, setAllPassed] = useState(false);
@@ -44,7 +49,7 @@ export default function HasilQuiz() {
   const percentage = Math.round((score / total) * 100);
   const isPassed = percentage >= 75;
 
-  const displayName = user?.user_metadata?.full_name || user?.email?.split("@")[0] || "Kawan Kita";
+  const displayName = user?.user_metadata?.full_name || user?.email?.split("@")[0] || t.kawanKita;
   const [isDownloading, setIsDownloading] = useState(false);
   const certificateRef = useRef<HTMLDivElement>(null);
 
@@ -87,14 +92,14 @@ export default function HasilQuiz() {
       <nav className="bg-secondary-200 px-6 py-4 flex items-center justify-between shadow-sm">
         <div className="flex items-center gap-2">
           <div className="w-10 h-10 bg-brand-900 rounded-xl flex items-center justify-center text-white font-bold text-xl shadow-md">Ω</div>
-          <span className="font-bold text-sm tracking-wide ml-2 hidden sm:inline">Course</span>
-          <span className="font-bold text-sm bg-brand-900 text-white px-4 py-1.5 rounded-full ml-2 shadow-sm">Hasil</span>
+          <span className="font-bold text-sm tracking-wide ml-2 hidden sm:inline">{t.title}</span>
+          <span className="font-bold text-sm bg-brand-900 text-white px-4 py-1.5 rounded-full ml-2 shadow-sm">{t.hasilTitle}</span>
         </div>
         <button
           onClick={() => router.push(`/omah-belajar/${courseId}`)}
           className="flex items-center gap-1 bg-brand-900 text-white px-5 py-2 rounded-xl text-sm font-medium hover:bg-brand-700 transition-all active:scale-95 shadow-sm"
         >
-          <ChevronLeft className="w-4 h-4" /> Kembali
+          <ChevronLeft className="w-4 h-4" /> {common.back}
         </button>
       </nav>
 
@@ -102,13 +107,13 @@ export default function HasilQuiz() {
         <div className="flex-1 flex flex-col">
           <div className="bg-[#4A4763] text-white text-center py-12 px-6 shadow-inner">
             <span className="bg-amber-400/20 text-amber-300 border border-amber-400/30 text-xs font-bold px-4 py-1.5 rounded-full uppercase tracking-wider">
-              🎉 Selamat, kamu berhasil!
+              {t.selamatBadge}
             </span>
             <h1 className="text-2xl md:text-4xl font-black mt-4 tracking-wide max-w-3xl mx-auto leading-tight">
-              Kamu telah menyelesaikan course ini 🎓
+              {t.selesaiCourse}
             </h1>
             <p className="text-xs md:text-sm text-white/70 mt-3 max-w-xl mx-auto leading-relaxed">
-              Skor kamu: {score}/{total} ({percentage}%) — Setiap ilmu yang kamu pelajari hari ini adalah langkah nyata untuk melindungi dirimu dan orang-orang di sekitarmu.
+              {t.skorMsg.replace("{score}", String(score)).replace("{total}", String(total)).replace("{percentage}", String(percentage))}
             </p>
           </div>
 
@@ -126,10 +131,10 @@ export default function HasilQuiz() {
                 <div className="absolute inset-6 border-4 border-double border-brand-900/10 pointer-events-none rounded-lg" />
 
                 <h2 className="text-3xl md:text-4xl font-serif font-bold text-[#1E293B] tracking-wide mb-2 uppercase">
-                  Certificate of Completion
+                  {t.certificateTitle}
                 </h2>
                 <p className="text-xs md:text-sm text-gray-500 font-medium tracking-widest uppercase mb-10">
-                  Presented to
+                  {t.certificateTo}
                 </p>
 
                 <h3 className="text-4xl md:text-5xl font-sans font-black text-brand-700 tracking-wider border-b-2 border-brand-700/30 pb-2 px-8 min-w-[300px]">
@@ -137,13 +142,13 @@ export default function HasilQuiz() {
                 </h3>
 
                 <p className="text-xs md:text-sm text-gray-600 font-medium max-w-md leading-relaxed mt-8">
-                  For successfully completing a free online course <br />
+                  {t.certificateDesc} <br />
                   <strong className="text-brand-900 font-bold">{courseTitle}</strong>
                 </p>
 
                 <div className="mt-12 flex flex-col items-center">
-                  <span className="text-[10px] text-gray-400 uppercase tracking-widest">Provided by</span>
-                  <span className="font-bold text-sm text-[#4A4763] tracking-wide mt-1">Omah Cerita Academy</span>
+                  <span className="text-[10px] text-gray-400 uppercase tracking-widest">{t.certificateBy}</span>
+                  <span className="font-bold text-sm text-[#4A4763] tracking-wide mt-1">{t.certificateAcademy}</span>
                   <span className="text-[9px] text-gray-400 mt-0.5">
                     {new Date().toLocaleDateString("id-ID", { month: "long", year: "numeric" })}
                   </span>
@@ -159,12 +164,12 @@ export default function HasilQuiz() {
               {isDownloading ? (
                 <>
                   <RefreshCw className="w-4 h-4 animate-spin" />
-                  Sedang Memproses PDF...
+                  {t.processingPdf}
                 </>
               ) : (
                 <>
                   <Download className="w-4 h-4" />
-                  Download Sertifikat (PDF)
+                  {t.downloadCert}
                 </>
               )}
             </button>
@@ -177,20 +182,20 @@ export default function HasilQuiz() {
               <Award className="w-7 h-7 stroke-[2]" />
             </div>
             <h2 className="text-lg font-black text-emerald-700 tracking-wide">
-              Kuis Lulus!
+              {t.lulusTitle}
             </h2>
             <p className="text-xs md:text-sm text-emerald-900/80 font-semibold leading-relaxed max-w-xs">
-              Skor kamu: {score}/{total} ({percentage}%) — Selamat! Kamu lulus kuis ini.
+              {t.lulusMsg.replace("{score}", String(score)).replace("{total}", String(total)).replace("{percentage}", String(percentage))}
             </p>
             <p className="text-[11px] text-emerald-700/60">
-              Selesaikan semua kuis di course ini untuk mendapatkan sertifikat.
+              {t.selesaikanSemua}
             </p>
             <div className="w-full h-[1px] bg-emerald-200/60 my-2" />
             <button
               onClick={() => router.push(`/omah-belajar/${courseId}`)}
               className="flex items-center gap-1 bg-emerald-600 text-white px-6 py-2.5 rounded-xl text-sm font-bold hover:bg-emerald-700 transition-all shadow-sm"
             >
-              Lanjut ke Materi Berikutnya
+              {t.lanjutMateri}
             </button>
           </div>
         </main>
@@ -202,11 +207,11 @@ export default function HasilQuiz() {
             </div>
 
             <h2 className="text-lg font-black text-rose-700 tracking-wide">
-              Evaluasi Belum Terpenuhi
+              {t.gagalTitle}
             </h2>
 
             <p className="text-xs md:text-sm text-rose-900/80 font-semibold leading-relaxed max-w-xs">
-              Skor kamu: {score}/{total} ({percentage}%) — minimal 75% untuk lulus. Tetap semangat dan jangan menyerah!
+              {t.gagalMsg.replace("{score}", String(score)).replace("{total}", String(total)).replace("{percentage}", String(percentage))}
             </p>
 
             <div className="w-full h-[1px] bg-rose-200/60 my-2" />
@@ -215,7 +220,7 @@ export default function HasilQuiz() {
               onClick={() => router.push(`/omah-belajar/${courseId}`)}
               className="text-xs font-bold text-rose-600 hover:text-rose-800 transition-colors bg-white border border-rose-200 px-4 py-2 rounded-xl shadow-sm"
             >
-              Coba Ulang Kuis Modul
+              {t.cobaUlang}
             </button>
           </div>
         </main>

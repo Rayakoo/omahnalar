@@ -4,6 +4,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { PenTool } from "lucide-react";
 import { createStory } from "@/services/stories";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { id, en } from "@/data/translations";
 
 const FIXED_CATEGORIES = [
   "Puisi",
@@ -18,6 +20,9 @@ const LAINNYA = "__lainnya__";
 
 export default function StoryForm() {
   const router = useRouter();
+  const { locale } = useLanguage();
+  const t = locale === "id" ? id.omahCerita : en.omahCerita;
+  const common = locale === "id" ? id.common : en.common;
   const [isAnonymous, setIsAnonymous] = useState(false);
   const [title, setTitle] = useState("");
   const [name, setName] = useState("");
@@ -32,7 +37,7 @@ export default function StoryForm() {
     e.preventDefault();
     const category = isLainnya ? customCategory.trim() : selectedCat;
     if (!category) {
-      alert("Pilih atau isi kategori cerita");
+      alert(t.pilihKategori);
       return;
     }
     setLoading(true);
@@ -47,7 +52,7 @@ export default function StoryForm() {
       router.push("/omah-cerita/semua-cerita");
     } catch (err) {
       console.error("Gagal mengirim cerita:", err);
-      alert("Gagal mengirim cerita. Silakan coba lagi.");
+      alert(t.gagalKirim);
     } finally {
       setLoading(false);
     }
@@ -58,20 +63,20 @@ export default function StoryForm() {
       <div className="flex items-center gap-3 mb-2">
         <PenTool className="w-6 h-6 text-brand-900 stroke-[2.5]" />
         <h1 className="text-xl md:text-2xl font-bold tracking-wide">
-          Bagikan ceritamu
+          {t.bagikanCeritamu}
         </h1>
       </div>
 
       <div className="flex flex-col gap-2">
         <label htmlFor="title-input" className="text-sm font-semibold text-brand-900/80">
-          Judul Cerita
+          {t.judulCerita}
         </label>
         <input
           id="title-input"
           type="text"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          placeholder="Beri judul yang menarik"
+          placeholder={t.judulPlaceholder}
           className="w-full px-4 py-3 bg-white border border-gray-300 rounded-xl text-sm text-brand-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-700/30 focus:border-brand-700 transition-all shadow-sm"
           required
         />
@@ -85,7 +90,7 @@ export default function StoryForm() {
         }`}
       >
         <label htmlFor="nama-input" className="text-sm font-semibold text-brand-900/80">
-          Nama Kamu
+          {t.namaKamu}
         </label>
         <input
           id="nama-input"
@@ -93,14 +98,14 @@ export default function StoryForm() {
           disabled={isAnonymous}
           value={name}
           onChange={(e) => setName(e.target.value)}
-          placeholder="Boleh pakai nama samaran"
+          placeholder={t.namaPlaceholder}
           className="w-full px-4 py-3 bg-white border border-gray-300 rounded-xl text-sm text-brand-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-700/30 focus:border-brand-700 transition-all shadow-sm"
         />
       </div>
 
       <div className="flex flex-col gap-2">
         <label className="text-sm font-semibold text-brand-900/80">
-          Kategori Cerita
+          {t.kategoriCerita}
         </label>
         <div className="flex flex-wrap gap-2">
           {FIXED_CATEGORIES.map((cat) => (
@@ -126,7 +131,7 @@ export default function StoryForm() {
                 : "bg-white text-brand-900/70 border-gray-300 hover:border-brand-700"
             }`}
           >
-            Lainnya
+            {t.lainnya}
           </button>
         </div>
 
@@ -135,7 +140,7 @@ export default function StoryForm() {
             type="text"
             value={customCategory}
             onChange={(e) => setCustomCategory(e.target.value)}
-            placeholder="Tulis nama kategori kamu"
+            placeholder={t.kategoriCustomPlaceholder}
             className="mt-2 w-full px-4 py-3 bg-white border border-gray-300 rounded-xl text-sm text-brand-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-700/30 focus:border-brand-700 transition-all shadow-sm"
             autoFocus
           />
@@ -155,7 +160,7 @@ export default function StoryForm() {
           </div>
         </label>
         <span className="text-sm font-medium text-brand-900/90">
-          Saya memilih sebagai anonymus
+          {t.anonimCheckbox}
         </span>
       </div>
 
@@ -165,7 +170,7 @@ export default function StoryForm() {
             rows={10}
             value={story}
             onChange={(e) => setStory(e.target.value)}
-            placeholder="Ceritakan pengalaman mu. Identitashmu terlindungi"
+            placeholder={t.ceritaPlaceholder}
             className="w-full p-4 bg-white border border-gray-200 rounded-xl text-sm text-brand-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-700/20 focus:border-brand-700 transition-all resize-none shadow-inner leading-relaxed"
             required
           />
@@ -177,7 +182,7 @@ export default function StoryForm() {
             disabled={loading}
             className="bg-brand-900 text-white font-medium text-xs px-6 py-2.5 rounded-lg hover:bg-brand-700 transition-all active:scale-95 shadow-md uppercase tracking-wider disabled:opacity-50"
           >
-            {loading ? "Mengirim..." : "Bagikan"}
+            {loading ? common.loading : t.bagikanBtn}
           </button>
         </div>
       </div>
