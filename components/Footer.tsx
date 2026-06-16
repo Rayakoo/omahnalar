@@ -9,22 +9,22 @@ const FOOTER_LINKS_ID = [
   {
     title: "Tentang",
     key: "tentang" as const,
-    links: ["siapaKami", "programKami", "timKami"],
+    links: ["siapaKami", "programKami", "timKami"] as const,
   },
   {
     title: "Program",
     key: "program" as const,
-    links: ["omahCerita", "omahBelajar", "tanyaNalar", "produk"],
+    links: ["omahCerita", "omahBelajar", "tanyaNalar", "produk"] as const,
   },
   {
     title: "Dukungan",
     key: "dukungan" as const,
-    links: ["ikutVolunteer", "donasi", "gabungMitra"],
+    links: ["ikutVolunteer", "donasi", "gabungMitra"] as const,
   },
   {
     title: "Ikuti Kami",
     key: "ikutiKami" as const,
-    links: ["whatsapp", "instagram", "youtube"],
+    links: ["whatsapp", "instagram", "youtube"] as const,
   },
 ];
 

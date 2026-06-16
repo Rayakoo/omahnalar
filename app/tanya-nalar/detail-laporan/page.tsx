@@ -129,8 +129,6 @@ function DetailLaporan() {
     );
   }
 
-  const status = STATUS_MAP[report.status] || STATUS_MAP.pending;
-
   return (
     <div className="min-h-screen bg-[#FFFBF3] font-sans antialiased text-gray-800 flex flex-col">
       <nav className="bg-[#FFF1D6] p-4 flex items-center justify-between border-b border-orange-100">

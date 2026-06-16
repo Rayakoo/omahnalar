@@ -188,11 +188,11 @@ export default function CeritaSection() {
                   <div className="flex items-center gap-5">
                     <button className="flex items-center gap-1.5 hover:opacity-80 transition-opacity">
                       <Heart className="w-4 h-4" style={{ fill: theme.text, color: theme.text }} />
-                      <span>{t.suka.replace("{likes}", currentStory.likes)}</span>
+                      <span>{t.suka.replace("{likes}", String(currentStory.likes))}</span>
                     </button>
                     <button className="flex items-center gap-1.5 hover:opacity-80 transition-opacity">
                       <MessageSquare className="w-4 h-4" />
-                      <span>{t.komentar.replace("{comments}", currentStory.comments)}</span>
+                      <span>{t.komentar.replace("{comments}", String(currentStory.comments))}</span>
                     </button>
                   </div>
                   <button className="flex items-center gap-1.5 transition-all" style={{ color: theme.text, opacity: 0.9 }}>
