@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { ChevronLeft, Play, FileText, HelpCircle, CheckCircle2, Clock, BookOpen, BarChart } from "lucide-react";
 import { getCourseById, getCourseSections, type CourseWithRelations, type CourseSection } from "@/services/courses";
@@ -121,11 +122,9 @@ export default function MateriDetail() {
   return (
     <div className="min-h-screen bg-page-50 text-brand-900 font-sans antialiased">
       <nav className="bg-secondary-200 px-6 py-4 flex items-center justify-between shadow-sm">
-        <div className="flex items-center gap-2 cursor-pointer">
-          <div className="w-10 h-10 bg-brand-900 rounded-xl flex items-center justify-center text-white font-bold text-xl shadow-md">
-            Ω
-          </div>
-        </div>
+        <Link href="/" className="flex items-center gap-2">
+          <img src="/images/logo_omah.png" alt="Omah Nalar" className="h-10 w-auto" />
+        </Link>
         <button
           onClick={() => router.push("/omah-belajar")}
           className="flex items-center gap-1 bg-brand-900 text-white px-5 py-2 rounded-xl text-sm font-medium hover:bg-brand-700 transition-all active:scale-95 shadow-sm"

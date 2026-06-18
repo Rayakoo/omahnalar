@@ -119,7 +119,7 @@ export default function SemuaCerita() {
       <nav className="bg-secondary-200 px-6 py-4 flex items-center justify-between shadow-sm">
         <div className="flex items-center gap-2 cursor-pointer">
           <div className="w-10 h-10 bg-brand-900 rounded-xl flex items-center justify-center text-white font-bold text-xl shadow-md">
-            Ω
+            <img src="/images/logo_omah.png" alt="Omah Nalar" className="h-10 w-auto" />
           </div>
         </div>
 

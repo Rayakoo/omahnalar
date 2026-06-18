@@ -91,7 +91,7 @@ export default function HasilQuiz() {
     <div className="min-h-screen bg-page-50 text-brand-900 font-sans antialiased flex flex-col">
       <nav className="bg-secondary-200 px-6 py-4 flex items-center justify-between shadow-sm">
         <div className="flex items-center gap-2">
-          <div className="w-10 h-10 bg-brand-900 rounded-xl flex items-center justify-center text-white font-bold text-xl shadow-md">Ω</div>
+          <img src="/images/logo_omah.png" alt="Omah Nalar" className="h-10 w-auto" />
           <span className="font-bold text-sm tracking-wide ml-2 hidden sm:inline">{t.title}</span>
           <span className="font-bold text-sm bg-brand-900 text-white px-4 py-1.5 rounded-full ml-2 shadow-sm">{t.hasilTitle}</span>
         </div>

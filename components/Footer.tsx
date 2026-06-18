@@ -124,9 +124,7 @@ export default function Footer() {
 
         <div className="border-t border-brand-100/10 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-page-50 rounded-lg flex items-center justify-center text-brand-900 font-bold text-sm shadow-sm">
-              Ω
-            </div>
+            <img src="/images/logo_omah.png" alt="Omah Nalar" className="h-8 w-auto" />
             <span className="text-sm text-brand-100/60">{t.brand}</span>
           </div>
 
