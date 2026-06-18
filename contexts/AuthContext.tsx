@@ -2,8 +2,7 @@
 
 import { createContext, useContext, useEffect, useState, useCallback, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
-import { getCurrentUser, signOut as authSignOut, onAuthStateChange, type User } from "@/services/auth";
-import { createClient } from "@/utils/supabase/client";
+import { getCurrentUser, signOut as authSignOut, onAuthStateChange, exchangeOAuthCode, type User } from "@/services/auth";
 
 interface AuthContextValue {
   user: User | null;
@@ -34,19 +33,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
-    // Cek apakah URL mengandung ?code= (fallback jika callback route tidak ditangkap)
+    // Cek apakah URL mengandung ?code= (handle OAuth redirect)
     const params = new URLSearchParams(window.location.search);
     const code = params.get("code");
     if (code) {
-      const exchangeCode = async () => {
-        const supabase = createClient();
-        const { error } = await supabase.auth.exchangeCodeForSession(code);
-        if (!error) {
-          // Bersihkan URL dari ?code=
-          router.replace(window.location.pathname);
-        }
-      };
-      exchangeCode();
+      exchangeOAuthCode(code).then(() => {
+        router.replace(window.location.pathname);
+      }).catch(() => {});
     }
 
     fetchUser().finally(() => setLoading(false));

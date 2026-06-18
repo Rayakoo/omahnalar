@@ -6,7 +6,6 @@ import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { Eye, EyeOff } from "lucide-react";
 import { signIn, signUp } from "@/services/auth";
-import { createClient } from "@/utils/supabase/client";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { id, en } from "@/data/translations";
@@ -232,7 +231,11 @@ export default function AuthCard({ initialMode }: AuthCardProps) {
 
             <button
               onClick={async () => {
-                const supabase = createClient();
+                const { createClient } = await import("@supabase/supabase-js");
+                const supabase = createClient(
+                  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+                  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+                );
                 await supabase.auth.signInWithOAuth({
                   provider: "google",
                   options: { redirectTo: `${window.location.origin}/auth/callback` },
