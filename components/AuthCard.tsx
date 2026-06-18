@@ -238,7 +238,10 @@ export default function AuthCard({ initialMode }: AuthCardProps) {
                 );
                 await supabase.auth.signInWithOAuth({
                   provider: "google",
-                  options: { redirectTo: `${window.location.origin}/auth/callback` },
+                  options: {
+                    redirectTo: `${window.location.origin}/auth/callback`,
+                    flowType: "pkce",
+                  },
                 });
               }}
               className="w-full flex items-center justify-center gap-2 border border-gray-300 bg-white hover:bg-gray-50 text-gray-700 py-2 rounded-md transition-colors text-sm font-medium"
