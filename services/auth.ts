@@ -202,7 +202,7 @@ export async function exchangeOAuthCode(code: string) {
   const { data, error } = await supabase.auth.exchangeCodeForSession(code);
   if (error) throw error;
 
-  // Simpan session ke localStorage agar现有 auth bisa baca
+  // Simpan session ke localStorage agar existing auth bisa baca
   if (data.session) {
     saveOAuthSession({
       access_token: data.session.access_token,
@@ -214,6 +214,36 @@ export async function exchangeOAuthCode(code: string) {
     });
   }
   return data;
+}
+
+// ── Handle Implicit Flow (#access_token=...) ────────────────
+export function handleImplicitFlow() {
+  const hash = window.location.hash; // "#access_token=xxx&expires_in=3600&..."
+  if (!hash || !hash.includes("access_token=")) return false;
+
+  const params = new URLSearchParams(hash.replace(/^#/, ""));
+  const access_token = params.get("access_token");
+  const refresh_token = params.get("refresh_token");
+  const expires_in = params.get("expires_in");
+
+  if (!access_token) return false;
+
+  // Decode JWT untuk ambil user id & email
+  let userId = "";
+  let email = "";
+  try {
+    const payload = JSON.parse(atob(access_token.split(".")[1]));
+    userId = payload.sub;
+    email = payload.email;
+  } catch {}
+
+  saveOAuthSession({
+    access_token,
+    refresh_token: refresh_token || "",
+    user: { id: userId, email },
+  });
+
+  return true;
 }
 
 // ── Reset Password ───────────────────────────────────────────

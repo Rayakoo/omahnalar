@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useEffect, useState, useCallback, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
-import { getCurrentUser, signOut as authSignOut, onAuthStateChange, exchangeOAuthCode, type User } from "@/services/auth";
+import { getCurrentUser, signOut as authSignOut, onAuthStateChange, exchangeOAuthCode, handleImplicitFlow, type User } from "@/services/auth";
 
 interface AuthContextValue {
   user: User | null;
@@ -39,8 +39,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const code = params.get("code");
 
     if (hash && hash.includes("access_token=")) {
-      // Implicit flow: session sudah di URL fragment, tinggal bersihkan URL
-      router.replace(window.location.pathname);
+      // Implicit flow: simpan token ke localStorage, lalu bersihkan URL
+      handleImplicitFlow();
     } else if (code) {
       // PKCE flow: tukar code jadi session
       exchangeOAuthCode(code).then(() => {
