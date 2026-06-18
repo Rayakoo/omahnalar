@@ -1,7 +1,9 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState, useCallback, type ReactNode } from "react";
+import { useRouter } from "next/navigation";
 import { getCurrentUser, signOut as authSignOut, onAuthStateChange, type User } from "@/services/auth";
+import { createClient } from "@/utils/supabase/client";
 
 interface AuthContextValue {
   user: User | null;
@@ -18,6 +20,7 @@ const AuthContext = createContext<AuthContextValue>({
 });
 
 export function AuthProvider({ children }: { children: ReactNode }) {
+  const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -31,6 +34,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
+    // Cek apakah URL mengandung ?code= (fallback jika callback route tidak ditangkap)
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get("code");
+    if (code) {
+      const exchangeCode = async () => {
+        const supabase = createClient();
+        const { error } = await supabase.auth.exchangeCodeForSession(code);
+        if (!error) {
+          // Bersihkan URL dari ?code=
+          router.replace(window.location.pathname);
+        }
+      };
+      exchangeCode();
+    }
+
     fetchUser().finally(() => setLoading(false));
 
     const sub = onAuthStateChange((u) => {
@@ -39,7 +57,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
 
     return () => sub?.subscription.unsubscribe();
-  }, [fetchUser]);
+  }, [fetchUser, router]);
 
   const signOut = async () => {
     await authSignOut();

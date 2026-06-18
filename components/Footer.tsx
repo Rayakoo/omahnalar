@@ -65,7 +65,8 @@ const LINK_URLS: Record<string, string> = {
   produk: "/produk",
   donasi: "https://docs.google.com/forms/d/e/1FAIpQLSeYeUyB-29jvAPCjWNEpSwsUWbj7ADnj2DcG1qGyDK6hi22HQ/viewform",
   ikutVolunteer: "https://docs.google.com/forms/d/e/1FAIpQLSfBR0PmdhvrJexxg6ycK1a27aHGFHIkaWm8J51vtOAYLdM5IA/viewform",
-  whatsapp: "#",
+  gabungMitra: "https://forms.gle/tjB2wzqasMcaVgsS6",
+  whatsapp: "https://wa.me/6285231509049",
   instagram: "https://www.instagram.com/0mahnalar",
   youtube: "https://youtube.com/@omahnalar",
 };
