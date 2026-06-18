@@ -21,32 +21,18 @@ const PetaMitraJaringan = dynamic(() => import("@/components/PetaMitraJaringan")
   ),
 });
 
-const timelinId = [
-  { year: "2023", title: "Ide dan Perencanaan", desc: "Omah Nalar lahir dari diskusi panjang mengenai pendidikan dan kesehatan reproduksi seksual di Indonesia. Berawal dari keresahan akan kurangnya ruang belajar inklusif, konsep komunitas ini mulai dirumuskan.", img: "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&q=80&w=800" },
-  { year: "2023", title: "Pembentukan Komunitas", desc: "Omah Nalar mulai dibangun sebagai komunitas yang mendorong budaya berpikir kritis dan bernalar. Nama 'Omah Nalar' dipilih — Omah berarti rumah, Nalar berarti kemampuan berpikir kritis — menjadi 'rumah untuk belajar bernalar'.", img: "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&q=80&w=800" },
-  { year: "2024", title: "Program Perdana", desc: "Program-program edukasi pertama mulai berjalan, termasuk seminar parenting, workshop anti bullying, dan pelatihan penulisan. Kolaborasi dengan sekolah-sekolah mitra dimulai.", img: "https://images.unsplash.com/photo-1559223607-a43c990c692c?auto=format&fit=crop&q=80&w=800" },
-  { year: "2025", title: "Pengembangan & Dampak", desc: "Omah Nalar terus berkembang dengan lebih banyak program, mitra, dan anggota. Fokus pada pendidikan dan kesehatan reproduksi seksual sebagai pilar utama kontribusi.", img: "https://images.unsplash.com/photo-1559027615-cd4628902d4a?auto=format&fit=crop&q=80&w=800" },
-];
-
-const timelineEn = [
-  { year: "2023", title: "Idea & Planning", desc: "Omah Nalar was born from lengthy discussions about education and reproductive health in Indonesia. Stemming from concerns about the lack of inclusive learning spaces, this community concept began to be formulated.", img: "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&q=80&w=800" },
-  { year: "2023", title: "Community Formation", desc: "Omah Nalar was established as a community that promotes critical thinking and reasoning. The name 'Omah Nalar' was chosen — Omah means home, Nalar means the ability to think critically — becoming a 'home for learning to reason'.", img: "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&q=80&w=800" },
-  { year: "2024", title: "First Programs", desc: "The first educational programs began, including parenting seminars, anti-bullying workshops, and writing training. Collaboration with partner schools commenced.", img: "https://images.unsplash.com/photo-1559223607-a43c990c692c?auto=format&fit=crop&q=80&w=800" },
-  { year: "2025", title: "Growth & Impact", desc: "Omah Nalar continues to grow with more programs, partners, and members. Focus on education and reproductive health as the main pillars of contribution.", img: "https://images.unsplash.com/photo-1559027615-cd4628902d4a?auto=format&fit=crop&q=80&w=800" },
-];
-
 const featuresId = [
-  { icon: MessageSquare, title: "Berbagi Cerita", desc: "Curhat anonim di komunitas yang aman dan saling mendukung." },
-  { icon: Shield, title: "Buat Laporan", desc: "Aduan kekerasan & pelecehan dengan pendampingan penuh empati." },
-  { icon: BookOpen, title: "Ikut Course", desc: "Edukasi interaktif tentang hubungan sehat dan kesehatan reproduksi." },
-  { icon: Heart, title: "Komunitas Peduli", desc: "Bergabung dengan Kawan Nalar yang saling mendukung dan tumbuh bersama." },
+  { icon: MessageSquare, title: "Berbagi Cerita", desc: "Curhat anonim di komunitas yang aman dan saling mendukung.", href: "/omah-cerita" },
+  { icon: Shield, title: "Buat Laporan", desc: "Aduan kekerasan & pelecehan dengan pendampingan penuh empati.", href: "/tanya-nalar" },
+  { icon: BookOpen, title: "Ikut Course", desc: "Edukasi interaktif tentang hubungan sehat dan kesehatan reproduksi.", href: "/omah-belajar" },
+  { icon: Heart, title: "Komunitas Peduli", desc: "Bergabung dengan Kawan Nalar yang saling mendukung dan tumbuh bersama.", href: "/omah-cerita" },
 ];
 
 const featuresEn = [
-  { icon: MessageSquare, title: "Share Stories", desc: "Anonymous sharing in a safe and supportive community." },
-  { icon: Shield, title: "File Reports", desc: "Report violence & harassment with full empathetic support." },
-  { icon: BookOpen, title: "Take Courses", desc: "Interactive education on healthy relationships and reproductive health." },
-  { icon: Heart, title: "Caring Community", desc: "Join Kawan Nalar to support each other and grow together." },
+  { icon: MessageSquare, title: "Share Stories", desc: "Anonymous sharing in a safe and supportive community.", href: "/omah-cerita" },
+  { icon: Shield, title: "File Reports", desc: "Report violence & harassment with full empathetic support.", href: "/tanya-nalar" },
+  { icon: BookOpen, title: "Take Courses", desc: "Interactive education on healthy relationships and reproductive health.", href: "/omah-belajar" },
+  { icon: Heart, title: "Caring Community", desc: "Join Kawan Nalar to support each other and grow together.", href: "/omah-cerita" },
 ];
 
 function getThumbnail(image_url: ImageUrl[]): string | null {
@@ -71,7 +57,6 @@ function getTheme(slug: string): string {
 export default function TentangPage() {
   const { locale } = useLanguage();
   const t = locale === "id" ? id.tentang : en.tentang;
-  const timeline = locale === "id" ? timelinId : timelineEn;
   const features = locale === "id" ? featuresId : featuresEn;
   const [programs, setPrograms] = useState<Program[]>([]);
   const [galleries, setGalleries] = useState<Gallery[]>([]);
@@ -99,77 +84,38 @@ export default function TentangPage() {
         </div>
       </section>
 
-      {/* ============ SEJARAH (Timeline) ============ */}
+      {/* ============ SEJARAH ============ */}
       <section className="max-w-6xl mx-auto px-6 py-20">
         <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} className="text-center mb-14">
           <span className="text-sm font-semibold text-secondary-600 uppercase tracking-wider">{t.perjalanan}</span>
           <h2 className="text-2xl md:text-3xl font-bold text-brand-900 mt-2">{t.sejarah}</h2>
         </motion.div>
 
-        <div className="relative max-w-5xl mx-auto">
-          {/* Center line - hidden on mobile */}
-          <div className="hidden md:block absolute left-1/2 top-0 bottom-0 w-0.5 bg-brand-100 -translate-x-1/2" />
-
-          {timeline.map((item, idx) => {
-            const isLeft = idx % 2 === 0;
-            return (
-              <motion.div
-                key={idx}
-                initial={{ opacity: 0, y: 40 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-80px" }}
-                transition={{ duration: 0.6, delay: idx * 0.15 }}
-                className="relative mb-12 md:mb-20 last:mb-0"
-              >
-                {/* Mobile layout: stacked */}
-                <div className="md:hidden bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-                  <div className="relative h-44 overflow-hidden">
-                    <img src={item.img} alt={item.title} className="w-full h-full object-cover" />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
-                    <div className="absolute top-3 left-3 bg-brand-900 text-white text-[10px] font-bold px-2.5 py-1 rounded-full">
-                      {item.year}
-                    </div>
-                  </div>
-                  <div className="p-5">
-                    <h3 className="text-base font-bold text-brand-900">{item.title}</h3>
-                    <p className="text-xs text-brand-700/70 mt-2 leading-relaxed">{item.desc}</p>
-                  </div>
-                </div>
-
-                {/* Desktop layout: zig-zag */}
-                <div className={`hidden md:flex items-center gap-8 lg:gap-12 ${isLeft ? "" : "flex-row-reverse"}`}>
-                  {/* Image side */}
-                  <div className="flex-1">
-                    <div className={`relative h-52 lg:h-60 rounded-2xl overflow-hidden shadow-md ${isLeft ? "lg:mr-8" : "lg:ml-8"}`}>
-                      <img src={item.img} alt={item.title} className="w-full h-full object-cover" />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
-                      <div className="absolute bottom-3 left-3">
-                        <span className="inline-block bg-brand-900 text-white text-[10px] font-bold px-3 py-1 rounded-full shadow-md">
-                          {item.year}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Timeline dot */}
-                  <div className="relative z-10 shrink-0">
-                    <div className="w-12 h-12 rounded-full bg-brand-900 border-4 border-page-50 flex items-center justify-center text-white text-xs font-black shadow-md">
-                      {idx + 1}
-                    </div>
-                  </div>
-
-                  {/* Text side */}
-                  <div className="flex-1">
-                    <div className={`${isLeft ? "lg:ml-8" : "lg:mr-8"}`}>
-                      <span className="text-xs font-extrabold text-secondary-600 uppercase tracking-wider">{item.year}</span>
-                      <h3 className="text-lg font-bold text-brand-900 mt-1">{item.title}</h3>
-                      <p className="text-sm text-brand-700/70 mt-2 leading-relaxed">{item.desc}</p>
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
-            );
-          })}
+        <div className="flex flex-col lg:flex-row items-center gap-12 max-w-5xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, x: -30 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            className="w-full lg:w-1/2"
+          >
+            <div className="rounded-2xl overflow-hidden shadow-md">
+              <img src="/images/omah_nalar.JPG" alt="Omah Nalar" className="w-full h-full object-cover" />
+            </div>
+          </motion.div>
+          <motion.div
+            initial={{ opacity: 0, x: 30 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            className="w-full lg:w-1/2"
+          >
+            <p className="text-brand-700/80 leading-relaxed text-sm md:text-base">
+              {locale === "id" ? (
+                <>Omah Nalar lahir pada 2023 dari diskusi panjang mengenai pendidikan dan kesehatan reproduksi seksual di Indonesia. Berawal dari keresahan akan kurangnya ruang belajar inklusif, komunitas ini mulai dirumuskan dengan nama 'Omah Nalar' — Omah berarti rumah, Nalar berarti kemampuan berpikir kritis — menjadi rumah untuk belajar bernalar. Pada 2024 program edukasi pertama berjalan, termasuk seminar parenting, workshop anti bullying, dan pelatihan penulisan. Kini di 2025, Omah Nalar terus berkembang dengan lebih banyak program, mitra, dan anggota, berfokus pada pendidikan dan kesehatan reproduksi seksual sebagai pilar utama kontribusi.</>
+              ) : (
+                <>Omah Nalar was born in 2023 from lengthy discussions about education and reproductive health in Indonesia. Stemming from concerns about the lack of inclusive learning spaces, this community was formulated under the name 'Omah Nalar' — Omah means home, Nalar means the ability to think critically — becoming a home for learning to reason. In 2024 the first educational programs began, including parenting seminars, anti-bullying workshops, and writing training. Now in 2025, Omah Nalar continues to grow with more programs, partners, and members, focusing on education and reproductive health as the main pillars of contribution.</>
+              )}
+            </p>
+          </motion.div>
         </div>
       </section>
 
@@ -268,43 +214,9 @@ export default function TentangPage() {
           <motion.div
             animate={{ y: [0, -8, 0] }}
             transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut" }}
-            className="shrink-0 group cursor-pointer"
+            className="shrink-0"
           >
-            <div className="transition-all duration-500 rounded-2xl p-4 group-hover:shadow-[0_0_50px_15px_rgba(74,71,99,0.25)]">
-              <svg viewBox="0 0 240 290" className="w-52 md:w-64 h-auto" fill="none">
-                {/* Orange flame on top */}
-                <path d="M120 5 C128 18 140 30 120 38 C100 30 112 18 120 5Z" fill="#F97316" />
-
-                {/* Purple house body */}
-                <path d="M20 105 L120 25 L220 105 L220 255 Q220 265 210 265 L30 265 Q20 265 20 255Z" fill="#4A4763" />
-
-                {/* Left arm (thinking pose - raised to chin) */}
-                <path d="M140 178 C162 172 175 152 168 142" stroke="white" strokeWidth="8" strokeLinecap="round" />
-
-                {/* Right arm (resting) */}
-                <path d="M140 185 C158 192 165 205 158 215" stroke="white" strokeWidth="8" strokeLinecap="round" />
-
-                {/* Body/question mark curve */}
-                <path d="M132 170 C164 172 178 195 170 218 C162 240 136 247 122 228" stroke="white" strokeWidth="12" strokeLinecap="round" />
-
-                {/* Question mark dot */}
-                <circle cx="118" cy="245" r="7" fill="white" />
-
-                {/* Head group */}
-                <g transform="translate(125, 140)">
-                  {/* Top-right: Red */}
-                  <path d="M0 0 L0 -22 A22 22 0 0 1 22 0 Z" fill="#EF4444" />
-                  {/* Bottom-right: Blue */}
-                  <path d="M0 0 L22 0 A22 22 0 0 1 0 22 Z" fill="#3B82F6" />
-                  {/* Bottom-left: Green */}
-                  <path d="M0 0 L0 22 A22 22 0 0 1 -22 0 Z" fill="#22C55E" />
-                  {/* Top-left: Yellow */}
-                  <path d="M0 0 L-22 0 A22 22 0 0 1 0 -22 Z" fill="#EAB308" />
-                  {/* Head outline */}
-                  <circle cx="0" cy="0" r="22" stroke="white" strokeWidth="3" fill="none" />
-                </g>
-              </svg>
-            </div>
+            <img src="/images/logo_omah.png" alt="Logo Omah Nalar" className="w-72 md:w-96 h-auto" />
           </motion.div>
 
           {/* Explanation */}
@@ -346,18 +258,19 @@ export default function TentangPage() {
           </motion.div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {features.map((feat, idx) => (
-              <motion.div
-                key={idx}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: idx * 0.1 }}
-                className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/10 hover:bg-white/20 transition-all"
-              >
-                <feat.icon className="w-8 h-8 text-secondary-500 mb-4" />
-                <h3 className="text-base font-bold text-page-50 mb-2">{feat.title}</h3>
-                <p className="text-xs text-brand-100/70 leading-relaxed">{feat.desc}</p>
-              </motion.div>
+              <Link key={idx} href={feat.href}>
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: idx * 0.1 }}
+                  className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/10 hover:bg-white/20 transition-all"
+                >
+                  <feat.icon className="w-8 h-8 text-secondary-500 mb-4" />
+                  <h3 className="text-base font-bold text-page-50 mb-2">{feat.title}</h3>
+                  <p className="text-xs text-brand-100/70 leading-relaxed">{feat.desc}</p>
+                </motion.div>
+              </Link>
             ))}
           </div>
         </div>

@@ -105,6 +105,17 @@ export const id = {
     pilarDukunganDesc: "Mendampingi dan mendukung setiap langkah menuju pemulihan dan pemberdayaan.",
     pilarInovasi: "Inovasi",
     pilarInovasiDesc: "Mengembangkan solusi kreatif untuk tantangan sosial yang kompleks.",
+    nilaiTitle: "Nilai yang Dijunjung",
+    nilaiBerani: "Berani",
+    nilaiBeraniDesc: "Keberanian untuk menyuarakan kebenaran dan bertindak demi kebaikan bersama.",
+    nilaiHarapan: "Harapan",
+    nilaiHarapanDesc: "Optimisme dan keyakinan akan masa depan yang lebih baik untuk semua.",
+    nilaiTeknologi: "Teknologi",
+    nilaiTeknologiDesc: "Memanfaatkan teknologi sebagai alat untuk menjangkau dan memberdayakan.",
+    nilaiPertumbuhan: "Pertumbuhan",
+    nilaiPertumbuhanDesc: "Terus belajar dan berkembang bersama komunitas.",
+    nilaiSehat: "Sehat Reproduksi",
+    nilaiSehatDesc: "Fondasi kokoh pada kesadaran dan kesehatan reproduksi sebagai hak dasar.",
   },
 
   tentang: {
@@ -173,6 +184,9 @@ export const id = {
     backToAll: "Semua Berita",
     notFound: "Berita tidak ditemukan",
     dokumentasi: "Dokumentasi",
+    kategori: "Kategori",
+    berita: "Berita",
+    artikel: "Artikel",
   },
 
   produk: {
@@ -562,6 +576,17 @@ export const en: typeof id = {
     pilarDukunganDesc: "Accompanying and supporting every step towards recovery and empowerment.",
     pilarInovasi: "Innovation",
     pilarInovasiDesc: "Developing creative solutions for complex social challenges.",
+    nilaiTitle: "Values We Uphold",
+    nilaiBerani: "Courage",
+    nilaiBeraniDesc: "The courage to speak the truth and act for the common good.",
+    nilaiHarapan: "Hope",
+    nilaiHarapanDesc: "Optimism and faith in a better future for all.",
+    nilaiTeknologi: "Technology",
+    nilaiTeknologiDesc: "Leveraging technology as a tool to reach and empower.",
+    nilaiPertumbuhan: "Growth",
+    nilaiPertumbuhanDesc: "Continuously learning and growing together with the community.",
+    nilaiSehat: "Reproductive Health",
+    nilaiSehatDesc: "A strong foundation in reproductive health awareness and rights.",
   },
 
   tentang: {
@@ -630,6 +655,9 @@ export const en: typeof id = {
     backToAll: "All News",
     notFound: "News not found",
     dokumentasi: "Documentation",
+    kategori: "Category",
+    berita: "News",
+    artikel: "Article",
   },
 
   produk: {

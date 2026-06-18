@@ -29,9 +29,8 @@ export default function Navbar() {
   return (
     <nav className="bg-secondary-200 px-6 py-4 flex items-center justify-between shadow-sm relative">
       <Link href="/" className="flex items-center gap-2">
-        <div className="w-10 h-10 bg-brand-900 rounded-xl flex items-center justify-center text-white font-bold text-xl shadow-md">
-          Ω
-        </div>
+        <img src="/images/logo_omah.png" alt="Omah Nalar" className="h-10 w-auto" />
+        <span className="text-lg font-black text-[#7B1E84] tracking-tight">Omah Nalar</span>
       </Link>
 
       <div className="hidden lg:flex items-center gap-6">

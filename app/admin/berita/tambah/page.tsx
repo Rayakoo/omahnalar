@@ -18,6 +18,7 @@ export default function TambahBerita() {
     slug: "",
     content: "",
     excerpt: "",
+    kategori: "Artikel",
     author: user?.user_metadata?.full_name || user?.email?.split("@")[0] || "",
   });
   const [images, setImages] = useState<ImageInput[]>([{ url: "", is_thumbnail: true }]);
@@ -80,6 +81,7 @@ export default function TambahBerita() {
         slug: form.slug,
         content: form.content,
         excerpt: form.excerpt || undefined,
+        kategori: form.kategori,
         image_url: validImages,
         video_url: validVideos,
         author: form.author,
@@ -140,6 +142,33 @@ export default function TambahBerita() {
               placeholder="Ringkasan singkat berita"
               className="w-full px-4 py-3 bg-white border border-[#D9D7EC] rounded-xl focus:outline-none focus:ring-1 focus:ring-purple-500 placeholder-gray-400 text-sm text-gray-900 resize-none"
             />
+          </div>
+
+          {/* KATEGORI */}
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">Kategori</label>
+            <div className="flex gap-4">
+              {["Artikel", "Berita"].map((kat) => (
+                <label
+                  key={kat}
+                  className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border text-sm font-semibold cursor-pointer transition-all ${
+                    form.kategori === kat
+                      ? "border-[#4D455D] bg-[#EBEAF6] text-[#4D455D]"
+                      : "border-gray-200 bg-white text-gray-600 hover:border-[#4D455D]"
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="kategori"
+                    value={kat}
+                    checked={form.kategori === kat}
+                    onChange={(e) => update("kategori", e.target.value)}
+                    className="sr-only"
+                  />
+                  {kat}
+                </label>
+              ))}
+            </div>
           </div>
 
           {/* IMAGES */}

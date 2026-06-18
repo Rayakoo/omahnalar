@@ -1,6 +1,7 @@
 "use client";
 
 import { MessageSquare, AlertTriangle, BookOpen, Award } from "lucide-react";
+import Link from "next/link";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { id, en } from "@/data/translations";
 
@@ -17,28 +18,32 @@ const FEATURES_ID = [
     title: "Berbagi Cerita",
     desc: "Curhat anonim di komunitas. Temukan ruang aman untuk menuangkan isi hati dan terhubung dengan mereka yang peduli.",
     colorIdx: 0,
-    img: "/images/features/berbagi-cerita.jpg",
+    img: "/images/berbagi_cerita.png",
+    href: "/omah-cerita",
   },
   {
     icon: <AlertTriangle className="w-8 h-8" />,
     title: "Buat Laporan",
     desc: "Aduan kekerasan & pelecehan. Kami dampingi proses pelaporanmu dengan aman, rahasia, dan penuh empati.",
     colorIdx: 1,
-    img: "/images/features/buat-laporan.jpg",
+    img: "/images/buat_laporan.png",
+    href: "/tanya-nalar",
   },
   {
     icon: <BookOpen className="w-8 h-8" />,
     title: "Ikut Course",
     desc: "Edukasi + kuis interaktif. Perkuat pemahamanmu tentang hubungan sehat, consent, dan kekerasan berbasis gender.",
     colorIdx: 2,
-    img: "/images/features/ikut-course.jpg",
+    img: "/images/ikut_course.png",
+    href: "/omah-belajar",
   },
   {
     icon: <Award className="w-8 h-8" />,
     title: "Main Games",
     desc: "Belajar sambil bermain. Asah wawasanmu lewat permainan seru yang mendidik dan memberdayakan.",
     colorIdx: 3,
-    img: "/images/features/main-games.jpg",
+    img: "/images/main_games.png",
+    href: "/minigames",
   },
 ];
 
@@ -48,28 +53,32 @@ const FEATURES_EN = [
     title: "Share Story",
     desc: "Anonymous venting in the community. Find a safe space to express your feelings and connect with those who care.",
     colorIdx: 0,
-    img: "/images/features/berbagi-cerita.jpg",
+    img: "/images/berbagi_cerita.png",
+    href: "/omah-cerita",
   },
   {
     icon: <AlertTriangle className="w-8 h-8" />,
     title: "Make Report",
     desc: "Violence & abuse reporting. We support your reporting process safely, confidentially, and with empathy.",
     colorIdx: 1,
-    img: "/images/features/buat-laporan.jpg",
+    img: "/images/buat_laporan.png",
+    href: "/tanya-nalar",
   },
   {
     icon: <BookOpen className="w-8 h-8" />,
     title: "Take Course",
     desc: "Interactive education + quizzes. Strengthen your understanding of healthy relationships, consent, and gender-based violence.",
     colorIdx: 2,
-    img: "/images/features/ikut-course.jpg",
+    img: "/images/ikut_course.png",
+    href: "/omah-belajar",
   },
   {
     icon: <Award className="w-8 h-8" />,
     title: "Play Games",
     desc: "Learn while playing. Sharpen your knowledge through fun and educational games.",
     colorIdx: 3,
-    img: "/images/features/main-games.jpg",
+    img: "/images/main_games.png",
+    href: "/minigames",
   },
 ];
 
@@ -93,12 +102,13 @@ export default function Features() {
         {features.map((feat, idx) => {
           const c = COLORS[feat.colorIdx];
           return (
-            <div
+            <Link
               key={idx}
-              className="group cursor-pointer flex flex-col rounded-2xl overflow-hidden border border-brand-100 shadow-sm transition-transform duration-200 hover:-translate-y-1 hover:shadow-md"
+              href={feat.href}
+              className="group flex flex-col rounded-2xl overflow-hidden border border-brand-100 shadow-sm transition-transform duration-200 hover:-translate-y-1 hover:shadow-md"
             >
               <div className="h-28 bg-cover bg-center relative" style={{ backgroundImage: `url(${feat.img})` }}>
-                <div className="absolute inset-0 bg-gradient-to-t from-white/90 via-white/40 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-white/60 via-white/20 to-transparent" />
               </div>
               <div className="p-4 pt-3 flex flex-col items-start">
                 <div className={`w-10 h-10 ${c.bg} rounded-xl flex items-center justify-center mb-2`}>
@@ -107,7 +117,7 @@ export default function Features() {
                 <h3 className={`text-lg font-bold ${c.title} mb-1`}>{feat.title}</h3>
                 <p className="text-sm text-brand-700/80 leading-relaxed">{feat.desc}</p>
               </div>
-            </div>
+            </Link>
           );
         })}
       </div>

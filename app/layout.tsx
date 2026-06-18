@@ -17,7 +17,28 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Omah Nalar",
-  description: "Tempat bicara, belajar, dan melapor dengan aman",
+  description: "Ruang aman untuk berbagi cerita, belajar, dan melapor — komunitas pendidikan dan kesehatan reproduksi seksual.",
+  icons: {
+    icon: "/images/logo_omah.png",
+    apple: "/images/logo_omah.png",
+  },
+  other: {
+    "apple-mobile-web-app-capable": "yes",
+  },
+  openGraph: {
+    title: "Omah Nalar",
+    description: "Ruang aman untuk berbagi cerita, belajar, dan melapor — komunitas pendidikan dan kesehatan reproduksi seksual.",
+    siteName: "Omah Nalar",
+    images: [
+      {
+        url: "/images/logo_omah.png",
+        width: 512,
+        height: 512,
+        alt: "Omah Nalar",
+      },
+    ],
+    type: "website",
+  },
 };
 
 export default function RootLayout({

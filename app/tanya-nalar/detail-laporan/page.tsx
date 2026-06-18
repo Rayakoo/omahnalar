@@ -11,10 +11,9 @@ import {
   Image as ImageIcon,
   Send,
   MessageSquare,
+  Phone,
   Scale,
-  Brain,
   Users,
-  ShieldAlert,
   BarChart3,
 } from "lucide-react";
 import { getReportByTicket, getReportLogs, getConversations, addConversationMessage, type Report, type ReportLog, type ReportConversation } from "@/services/reports";
@@ -29,10 +28,32 @@ const STATUS_MAP = (locale: string): Record<string, { label: string; color: stri
 });
 
 const direktoriBantuan = [
-  { nama: "LBH Malang", sub: "Bantuan hukum", icon: Scale },
-  { nama: "Psikolog & Konselor", sub: "Penanganan mental", icon: Brain },
-  { nama: "KPAI", sub: "021-319-015-32", icon: Users },
-  { nama: "Polres / Polda", sub: "Call center 110", icon: ShieldAlert },
+  {
+    nama: "Call Centre SAPA\nKementerian PPA",
+    icon: Phone,
+    links: [
+      { label: "Hotline 021-129", href: "tel:021-129" },
+      { label: "WA 0811129129", href: "https://wa.me/62811129129" },
+    ],
+  },
+  {
+    nama: "Komnas Perempuan",
+    icon: Scale,
+    links: [
+      { label: "Hotline 021-80305399", href: "tel:021-80305399" },
+      { label: "Telp 021-3903963", href: "tel:021-3903963" },
+    ],
+  },
+  {
+    nama: "Komisi Perlindungan\nAnak Indonesia (KPAI)",
+    icon: Users,
+    links: [
+      { label: "WA Pengaduan 08111772273", href: "https://wa.me/628111772273" },
+      { label: "humas@kpai.go.id", href: "mailto:humas@kpai.go.id" },
+      { label: "pengaduan@kpai.go.id", href: "mailto:pengaduan@kpai.go.id" },
+      { label: "kpai.go.id", href: "https://www.kpai.go.id" },
+    ],
+  },
 ];
 
 export default function DetailLaporanPage() {
@@ -243,27 +264,36 @@ function DetailLaporan() {
 
           {/* DIREKTORI */}
           <div className="space-y-2">
-            {direktoriBantuan.map((item, idx) => {
-              const IconComponent = item.icon;
-              return (
-                <a
-                  key={idx}
-                  href="#"
-                  className="flex items-center justify-between p-2.5 bg-[#E5E2F8] bg-opacity-70 text-gray-900 rounded-xl hover:bg-opacity-100 transition-all border border-[#D7D3F2] group"
-                >
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-7 h-7 rounded-full bg-white flex items-center justify-center text-[#736A9C]">
-                      <IconComponent className="w-4 h-4" />
-                    </div>
-                    <div>
-                      <h4 className="text-xs font-bold text-[#3B3654]">{item.nama}</h4>
-                      <p className="text-[10px] text-gray-500">{item.sub}</p>
-                    </div>
+          {direktoriBantuan.map((item, idx) => {
+            const IconComponent = item.icon;
+            return (
+              <div
+                key={idx}
+                className="p-2.5 bg-[#E5E2F8] bg-opacity-70 text-gray-900 rounded-xl border border-[#D7D3F2]"
+              >
+                <div className="flex items-center gap-2.5 mb-2">
+                  <div className="w-7 h-7 rounded-full bg-white flex items-center justify-center text-[#736A9C] shrink-0">
+                    <IconComponent className="w-4 h-4" />
                   </div>
-                  <ExternalLink className="w-3.5 h-3.5 text-gray-400 group-hover:text-gray-700" />
-                </a>
-              );
-            })}
+                  <h4 className="text-xs font-bold text-[#3B3654] whitespace-pre-line">{item.nama}</h4>
+                </div>
+                <div className="flex flex-wrap gap-1 ml-9">
+                  {item.links.map((link, i) => (
+                    <a
+                      key={i}
+                      href={link.href}
+                      target={link.href.startsWith("http") ? "_blank" : undefined}
+                      rel={link.href.startsWith("http") ? "noopener noreferrer" : undefined}
+                      className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-white/70 rounded-lg text-[10px] font-semibold text-[#4C4765] hover:bg-white transition-colors"
+                    >
+                      <ExternalLink className="w-3 h-3" />
+                      {link.label}
+                    </a>
+                  ))}
+                </div>
+              </div>
+            );
+          })}
           </div>
 
           {/* CHAT */}

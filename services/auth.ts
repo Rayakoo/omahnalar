@@ -79,9 +79,15 @@ export async function signIn(email: string, password: string) {
   }
   const data = await res.json();
 
-  // Simpan session ke localStorage
+  // Hapus session lama sebelum simpan yang baru
+  const oldKey = Object.keys(localStorage).find((k) => k.startsWith("sb-") && k.endsWith("-auth-token"));
+  if (oldKey) localStorage.removeItem(oldKey);
+
+  const projectId = url.match(/\/\/([^.]+)/)?.[1] ?? "local";
+  const storageKey = `sb-${projectId}-auth-token`;
+
   localStorage.setItem(
-    `sb-${url.match(/\/\/([^.]+)/)?.[1] ?? "local"}-auth-token`,
+    storageKey,
     JSON.stringify({
       access_token: data.access_token,
       refresh_token: data.refresh_token,

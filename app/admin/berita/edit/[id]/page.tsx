@@ -17,6 +17,7 @@ export default function EditBerita() {
     slug: "",
     content: "",
     excerpt: "",
+    kategori: "Artikel",
     author: "",
     is_published: false,
   });
@@ -36,6 +37,7 @@ export default function EditBerita() {
           slug: b.slug,
           content: b.content,
           excerpt: b.excerpt ?? "",
+          kategori: b.kategori || "Artikel",
           author: b.author,
           is_published: b.is_published,
         });
@@ -99,6 +101,7 @@ export default function EditBerita() {
         slug: form.slug,
         content: form.content,
         excerpt: form.excerpt || undefined,
+        kategori: form.kategori,
         image_url: validImages,
         video_url: validVideos,
         author: form.author,
@@ -161,6 +164,33 @@ export default function EditBerita() {
               onChange={(e) => update("excerpt", e.target.value)}
               className="w-full px-4 py-3 bg-white border border-[#D9D7EC] rounded-xl focus:outline-none focus:ring-1 focus:ring-purple-500 text-sm text-gray-900 resize-none"
             />
+          </div>
+
+          {/* KATEGORI */}
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">Kategori</label>
+            <div className="flex gap-4">
+              {["Artikel", "Berita"].map((kat) => (
+                <label
+                  key={kat}
+                  className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border text-sm font-semibold cursor-pointer transition-all ${
+                    form.kategori === kat
+                      ? "border-[#4D455D] bg-[#EBEAF6] text-[#4D455D]"
+                      : "border-gray-200 bg-white text-gray-600 hover:border-[#4D455D]"
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="kategori"
+                    value={kat}
+                    checked={form.kategori === kat}
+                    onChange={(e) => update("kategori", e.target.value)}
+                    className="sr-only"
+                  />
+                  {kat}
+                </label>
+              ))}
+            </div>
           </div>
 
           {/* IMAGES */}

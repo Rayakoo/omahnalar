@@ -167,7 +167,7 @@ export default function PetaMitraJaringan() {
           {/* Omah Nalar floating card marker */}
           <Marker
             position={omahNalar}
-            icon={createFloatingCardIcon("Omah Nalar", "", "#F4C46B", "#F4C46B", undefined, "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='50' fill='%234A4763'/%3E%3Ctext x='50' y='68' text-anchor='middle' font-size='52' font-weight='bold' fill='%23FFF9F1' font-family='serif'%3EΩ%3C/text%3E%3C/svg%3E", "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 70'%3E%3Crect width='200' height='70' fill='%23FAC775'/%3E%3Ctext x='100' y='42' text-anchor='middle' font-size='20' font-weight='bold' fill='%234A4763' font-family='sans-serif'%3EOmah Nalar%3C/text%3E%3C/svg%3E")}
+            icon={createFloatingCardIcon("Omah Nalar", "", "#F4C46B", "#F4C46B", undefined, "/images/logo_omah.png", "/images/omah_nalar.JPG")}
           />
 
           {/* Partner connections */}

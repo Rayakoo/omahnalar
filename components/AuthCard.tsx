@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Eye, EyeOff } from "lucide-react";
 import { signIn, signUp } from "@/services/auth";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { id, en } from "@/data/translations";
 
 interface AuthCardProps {
@@ -18,6 +19,7 @@ export default function AuthCard({ initialMode }: AuthCardProps) {
   const { locale } = useLanguage();
   const t = locale === "id" ? id.auth : en.auth;
   const common = locale === "id" ? id.common : en.common;
+  const { refreshUser } = useAuth();
   const [mode, setMode] = useState<"login" | "register">(initialMode);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
@@ -52,8 +54,13 @@ export default function AuthCard({ initialMode }: AuthCardProps) {
         const result = await signIn(email, password);
         setEmail("");
         setPassword("");
+        if (!result.user) {
+          setError(t.emailUnconfirmed);
+          return;
+        }
+        await refreshUser();
         const isAdmin = result.user?.user_metadata?.role === "admin";
-        window.location.href = isAdmin ? "/admin" : "/omah-belajar";
+        router.replace(isAdmin ? "/admin" : "/");
       } else {
         const result = await signUp(email, password, name);
         setEmail("");
@@ -61,8 +68,9 @@ export default function AuthCard({ initialMode }: AuthCardProps) {
         setPassword("");
         setConfirmPassword("");
         if (result.user) {
+          await refreshUser();
           const isAdmin = result.user?.user_metadata?.role === "admin";
-          window.location.href = isAdmin ? "/admin" : "/omah-belajar";
+          router.replace(isAdmin ? "/admin" : "/");
         } else {
           router.push("/login?registered=true");
         }

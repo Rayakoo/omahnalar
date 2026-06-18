@@ -5,10 +5,10 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { id, en } from "@/data/translations";
 
 const PILLAR_KEYS = [
-  { icon: <Shield className="w-10 h-10 text-brand-700" />, titleKey: "pilarPerlindungan" as const, descKey: "pilarPerlindunganDesc" as const },
-  { icon: <GraduationCap className="w-10 h-10 text-brand-700" />, titleKey: "pilarEdukasi" as const, descKey: "pilarEdukasiDesc" as const },
-  { icon: <HeartHandshake className="w-10 h-10 text-brand-700" />, titleKey: "pilarDukungan" as const, descKey: "pilarDukunganDesc" as const },
-  { icon: <Lightbulb className="w-10 h-10 text-brand-700" />, titleKey: "pilarInovasi" as const, descKey: "pilarInovasiDesc" as const },
+  { icon: <Shield className="w-10 h-10 text-brand-900" />, titleKey: "pilarPerlindungan" as const, descKey: "pilarPerlindunganDesc" as const, color: "#BFDBFE" },
+  { icon: <GraduationCap className="w-10 h-10 text-brand-900" />, titleKey: "pilarEdukasi" as const, descKey: "pilarEdukasiDesc" as const, color: "#BBF7D0" },
+  { icon: <HeartHandshake className="w-10 h-10 text-brand-900" />, titleKey: "pilarDukungan" as const, descKey: "pilarDukunganDesc" as const, color: "#FED7AA" },
+  { icon: <Lightbulb className="w-10 h-10 text-brand-900" />, titleKey: "pilarInovasi" as const, descKey: "pilarInovasiDesc" as const, color: "#DDD6FE" },
 ];
 
 export default function PilarSection() {
@@ -16,7 +16,7 @@ export default function PilarSection() {
   const t = locale === "id" ? id.home : en.home;
 
   return (
-    <section className="bg-white py-20">
+    <section className="bg-page-50 py-20">
       <div className="max-w-6xl mx-auto px-6">
         <div className="text-center mb-14">
           <span className="text-sm font-semibold text-secondary-600 uppercase tracking-wider">
@@ -26,14 +26,18 @@ export default function PilarSection() {
             {t.pilarSub}
           </h2>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {PILLAR_KEYS.map((pilar, idx) => (
-            <div key={idx} className="text-center group">
-              <div className="w-20 h-20 bg-brand-100 rounded-2xl flex items-center justify-center mx-auto mb-5 group-hover:bg-brand-700/20 transition-colors">
+            <div
+              key={idx}
+              className="rounded-2xl p-6 text-brand-900 flex flex-col items-center text-center min-h-[220px] justify-center"
+              style={{ backgroundColor: pilar.color }}
+            >
+              <div className="mb-4">
                 {pilar.icon}
               </div>
-              <h3 className="text-xl font-bold text-brand-900 mb-2">{t[pilar.titleKey]}</h3>
-              <p className="text-sm text-brand-700/80 leading-relaxed">{t[pilar.descKey]}</p>
+              <h3 className="text-lg font-bold mb-2">{t[pilar.titleKey]}</h3>
+              <p className="text-sm leading-relaxed opacity-90">{t[pilar.descKey]}</p>
             </div>
           ))}
         </div>

@@ -19,6 +19,9 @@ export default function BeritaPage() {
   const t = locale === "id" ? id.berita : en.berita;
   const [berita, setBerita] = useState<Berita[]>([]);
   const [loading, setLoading] = useState(true);
+  const [filterKat, setFilterKat] = useState("");
+
+  const filtered = filterKat ? berita.filter((b) => b.kategori === filterKat) : berita;
 
   function formatDate(dateStr: string | null): string {
     if (!dateStr) return "";
@@ -67,8 +70,31 @@ export default function BeritaPage() {
             <p className="text-brand-700/60">{t.empty}</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mt-12">
-            {berita.map((b) => {
+          <>
+            {/* Filter */}
+            <div className="flex flex-wrap gap-2 mt-12 mb-6">
+              {["", "Berita", "Artikel"].map((kat) => (
+                <button
+                  key={kat}
+                  onClick={() => setFilterKat(kat)}
+                  className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all ${
+                    filterKat === kat
+                      ? "bg-brand-900 text-white shadow-sm"
+                      : "bg-white text-brand-700/60 border border-gray-200 hover:border-brand-900"
+                  }`}
+                >
+                  {kat === "" ? "Semua" : kat}
+                </button>
+              ))}
+            </div>
+
+            {filtered.length === 0 ? (
+              <div className="bg-white rounded-2xl p-12 text-center border border-gray-100 shadow-sm">
+                <p className="text-brand-700/60">Tidak ada {filterKat.toLowerCase()}.</p>
+              </div>
+            ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+              {filtered.map((b) => {
               const imgUrl = getThumbnail(b.image_url);
 
               return (
@@ -97,6 +123,11 @@ export default function BeritaPage() {
                       </div>
                     )}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent" />
+                    {b.kategori && (
+                      <span className="absolute top-3 left-3 bg-white/90 backdrop-blur-sm text-[10px] font-bold text-brand-900 px-2.5 py-0.5 rounded-full shadow-sm">
+                        {b.kategori}
+                      </span>
+                    )}
                   </div>
 
                   {/* Content */}
@@ -131,7 +162,9 @@ export default function BeritaPage() {
                 </Link>
               );
             })}
-          </div>
+            </div>
+          )}
+          </>
         )}
       </main>
     </div>

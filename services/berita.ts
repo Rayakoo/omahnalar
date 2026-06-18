@@ -8,6 +8,7 @@ export type Berita = {
   slug: string;
   content: string;
   excerpt: string | null;
+  kategori: string;
   image_url: ImageUrl[];
   video_url: string[];
   author: string;
@@ -22,6 +23,7 @@ export type CreateBeritaInput = {
   slug: string;
   content: string;
   excerpt?: string;
+  kategori?: string;
   image_url?: ImageUrl[];
   video_url?: string[];
   author: string;
@@ -80,6 +82,7 @@ export async function createBerita(input: CreateBeritaInput) {
     slug: input.slug,
     content: input.content,
     excerpt: input.excerpt ?? null,
+    kategori: input.kategori ?? "Artikel",
     image_url: input.image_url ?? [],
     video_url: input.video_url ?? [],
     author: input.author,
@@ -113,7 +116,7 @@ export async function createBerita(input: CreateBeritaInput) {
 
 export async function updateBerita(
   id: string,
-  updates: Partial<Pick<Berita, "title" | "slug" | "content" | "excerpt" | "image_url" | "video_url" | "author" | "is_published" | "published_at">>
+  updates: Partial<Pick<Berita, "title" | "slug" | "content" | "excerpt" | "kategori" | "image_url" | "video_url" | "author" | "is_published" | "published_at">>
 ) {
   const { url, anonKey } = getSupabaseConfig();
   const token = getAccessToken();

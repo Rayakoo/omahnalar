@@ -1,6 +1,7 @@
 "use client";
 
-import { MessageCircle, BookOpen, PenLine, ArrowRight } from "lucide-react";
+import { MessageCircle, BookOpen, PenLine, Gamepad2, ArrowRight } from "lucide-react";
+import Link from "next/link";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { id, en } from "@/data/translations";
 
@@ -10,18 +11,28 @@ const PROGRAMS_ID = [
     title: "Omah Cerita",
     desc: "Ruang ramah untuk berbagi cerita dan pengalaman secara anonim dengan komunitas yang mendukung.",
     tag: "Cerita",
+    href: "/omah-cerita",
   },
   {
     icon: <BookOpen className="w-10 h-10 text-brand-700" />,
     title: "Omah Belajar",
     desc: "Platform pembelajaran interaktif dengan modul-modul edukatif tentang kesehatan dan hak reproduksi.",
     tag: "Belajar",
+    href: "/omah-belajar",
   },
   {
     icon: <PenLine className="w-10 h-10 text-brand-700" />,
     title: "Tanya Nalar",
     desc: "Layanan tanya jawab seputar isu kesehatan reproduksi dan seksualitas yang aman dan terpercaya.",
     tag: "Tanya",
+    href: "/tanya-nalar",
+  },
+  {
+    icon: <Gamepad2 className="w-10 h-10 text-brand-700" />,
+    title: "Main Games",
+    desc: "Asah wawasanmu lewat permainan edukatif seru tentang kesehatan reproduksi dan pencegahan kekerasan.",
+    tag: "Games",
+    href: "/minigames",
   },
 ];
 
@@ -31,18 +42,28 @@ const PROGRAMS_EN = [
     title: "Omah Cerita",
     desc: "A friendly space to share stories and experiences anonymously with a supportive community.",
     tag: "Stories",
+    href: "/omah-cerita",
   },
   {
     icon: <BookOpen className="w-10 h-10 text-brand-700" />,
     title: "Omah Belajar",
     desc: "An interactive learning platform with educational modules on health and reproductive rights.",
     tag: "Learn",
+    href: "/omah-belajar",
   },
   {
     icon: <PenLine className="w-10 h-10 text-brand-700" />,
     title: "Tanya Nalar",
     desc: "A safe and trusted Q&A service about reproductive health and sexuality issues.",
     tag: "Ask",
+    href: "/tanya-nalar",
+  },
+  {
+    icon: <Gamepad2 className="w-10 h-10 text-brand-700" />,
+    title: "Play Games",
+    desc: "Sharpen your knowledge through fun educational games about reproductive health and violence prevention.",
+    tag: "Games",
+    href: "/minigames",
   },
 ];
 
@@ -63,11 +84,12 @@ export default function ProgramSection() {
             {t.programsSub}
           </h2>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {programs.map((program, idx) => (
-            <div
+            <Link
               key={idx}
-              className="bg-white rounded-3xl p-8 shadow-sm hover:shadow-md transition-shadow flex flex-col"
+              href={program.href}
+              className="bg-white rounded-3xl p-8 shadow-sm hover:shadow-md transition-shadow flex flex-col group"
             >
               <span className="text-xs font-semibold text-secondary-600 uppercase tracking-wider mb-4">
                 {program.tag}
@@ -79,11 +101,11 @@ export default function ProgramSection() {
               <p className="text-sm text-brand-700/80 leading-relaxed mb-6 flex-1">
                 {program.desc}
               </p>
-              <button className="text-brand-700 font-medium text-sm flex items-center gap-1 hover:text-brand-900 transition-colors group">
+              <span className="text-brand-700 font-medium text-sm flex items-center gap-1 group-hover:text-brand-900 transition-colors">
                 {common.learnMore}{" "}
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
-              </button>
-            </div>
+              </span>
+            </Link>
           ))}
         </div>
       </div>

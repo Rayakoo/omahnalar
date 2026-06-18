@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { ShieldCheck, Phone, Scale, Brain, Users, Shield, UploadCloud, ArrowUpRight } from "lucide-react";
+import { ShieldCheck, Phone, Scale, Users, UploadCloud, ArrowUpRight } from "lucide-react";
 import CustomDatePicker from "@/components/CustomDatePicker";
 import { createReport, getReportByTicket } from "@/services/reports";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -42,10 +42,32 @@ export default function TanyaNalarPage() {
   const [ceking, setCeking] = useState(false);
 
   const direktoriBantuan = [
-    { nama: "LBH Malang", sub: "Bantuan hukum", icon: <Scale className="w-5 h-5 text-[#4C4765]" /> },
-    { nama: "Psikolog & Konselor", sub: "Penanganan mental", icon: <Brain className="w-5 h-5 text-[#4C4765]" /> },
-    { nama: "KPAI", sub: "021-319-015-32", icon: <Users className="w-5 h-5 text-[#4C4765]" /> },
-    { nama: "Polres / Polda", sub: "Call center 110", icon: <Shield className="w-5 h-5 text-[#4C4765]" /> },
+    {
+      nama: "Call Centre SAPA\nKementerian PPA",
+      icon: <Phone className="w-5 h-5 text-[#4C4765]" />,
+      links: [
+        { label: "Hotline 021-129", href: "tel:021-129" },
+        { label: "WA 0811129129", href: "https://wa.me/62811129129" },
+      ],
+    },
+    {
+      nama: "Komnas Perempuan",
+      icon: <Scale className="w-5 h-5 text-[#4C4765]" />,
+      links: [
+        { label: "Hotline 021-80305399", href: "tel:021-80305399" },
+        { label: "Telp 021-3903963", href: "tel:021-3903963" },
+      ],
+    },
+    {
+      nama: "Komisi Perlindungan\nAnak Indonesia (KPAI)",
+      icon: <Users className="w-5 h-5 text-[#4C4765]" />,
+      links: [
+        { label: "WA Pengaduan 08111772273", href: "https://wa.me/628111772273" },
+        { label: "humas@kpai.go.id", href: "mailto:humas@kpai.go.id" },
+        { label: "pengaduan@kpai.go.id", href: "mailto:pengaduan@kpai.go.id" },
+        { label: "kpai.go.id", href: "https://www.kpai.go.id" },
+      ],
+    },
   ];
 
   const handleSubmitLaporan = async (e: React.FormEvent) => {
@@ -111,24 +133,33 @@ export default function TanyaNalarPage() {
             <p className="text-xs font-semibold text-gray-300 mb-3 flex items-center gap-2">
               <Phone className="w-3.5 h-3.5" /> {t.direktori}
             </p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
               {direktoriBantuan.map((item, index) => (
-                <a
+                <div
                   key={index}
-                  href="#"
-                  className="flex items-center justify-between p-3 bg-[#E5E2F8] text-gray-900 rounded-xl hover:bg-opacity-90 transition-all group"
+                  className="p-3 bg-[#E5E2F8] text-gray-900 rounded-xl"
                 >
-                  <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center">
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center shrink-0">
                       {item.icon}
                     </div>
-                    <div>
-                      <h4 className="text-xs font-bold text-[#3B3654]">{item.nama}</h4>
-                      <p className="text-[10px] text-gray-500">{item.sub}</p>
-                    </div>
+                    <h4 className="text-xs font-bold text-[#3B3654] whitespace-pre-line">{item.nama}</h4>
                   </div>
-                  <ArrowUpRight className="w-3.5 h-3.5 text-gray-400 group-hover:text-gray-700" />
-                </a>
+                  <div className="flex flex-wrap gap-1.5 ml-10">
+                    {item.links.map((link, i) => (
+                      <a
+                        key={i}
+                        href={link.href}
+                        target={link.href.startsWith("http") ? "_blank" : undefined}
+                        rel={link.href.startsWith("http") ? "noopener noreferrer" : undefined}
+                        className="inline-flex items-center gap-1 px-2 py-1 bg-white/70 rounded-lg text-[10px] font-semibold text-[#4C4765] hover:bg-white transition-colors"
+                      >
+                        <ArrowUpRight className="w-3 h-3" />
+                        {link.label}
+                      </a>
+                    ))}
+                  </div>
+                </div>
               ))}
             </div>
           </div>
