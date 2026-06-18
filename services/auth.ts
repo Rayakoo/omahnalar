@@ -1,4 +1,5 @@
 import { getSupabase, getAccessToken } from "@/lib/supabaseClient";
+import { createClient } from "@/utils/supabase/client";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -125,19 +126,25 @@ export async function signOut() {
   // Hapus session dari localStorage
   const key = Object.keys(localStorage).find((k) => k.startsWith("sb-") && k.endsWith("-auth-token"));
   if (key) localStorage.removeItem(key);
+  // Juga sign out dari SSR client (hapus cookie)
+  try {
+    const supabase = createClient();
+    await supabase.auth.signOut();
+  } catch {}
 }
 
 // ── Get Current User ─────────────────────────────────────────
 export async function getCurrentUser() {
   try {
+    // Coba localStorage dulu (email/password login)
     const token = getAccessToken();
     const { url, anonKey } = getSupabaseConfig();
     const res = await fetch(`${url}/auth/v1/user`, {
       headers: { apikey: anonKey, Authorization: `Bearer ${token}` },
     });
-    if (!res.ok) return null;
+    if (!res.ok) throw new Error("Token invalid");
     const userData = await res.json();
-    if (!userData?.id) return null;
+    if (!userData?.id) throw new Error("No user");
 
     const role = await getUserRole(userData.id, token);
 
@@ -151,7 +158,25 @@ export async function getCurrentUser() {
       },
     } as User;
   } catch {
-    return null;
+    // Fallback ke SSR client (Google OAuth via cookie)
+    try {
+      const supabase = createClient();
+      const { data } = await supabase.auth.getUser();
+      if (!data.user) return null;
+
+      const role = await getUserRole(data.user.id, data.user.id);
+      return {
+        id: data.user.id,
+        email: data.user.email!,
+        user_metadata: {
+          full_name: data.user.user_metadata?.full_name as string | undefined,
+          avatar_url: data.user.user_metadata?.avatar_url as string | undefined,
+          role: data.user.user_metadata?.role as string | undefined,
+        },
+      } as User;
+    } catch {
+      return null;
+    }
   }
 }
 
@@ -161,7 +186,14 @@ export async function getSession() {
     const token = getAccessToken();
     return { access_token: token };
   } catch {
-    return null;
+    // Fallback ke SSR client
+    try {
+      const supabase = createClient();
+      const { data } = await supabase.auth.getSession();
+      return data.session ? { access_token: data.session.access_token } : null;
+    } catch {
+      return null;
+    }
   }
 }
 
@@ -233,9 +265,42 @@ export async function getUserRole(userId: string, accessToken?: string) {
 
 // ── Auth State Listener ──────────────────────────────────────
 export function onAuthStateChange(callback: (user: User | null) => void) {
-  const { data } = getSupabase().auth.onAuthStateChange(async (_event, session) => {
+  // Listen on both clients (localStorage + cookie)
+  const { data: data1 } = getSupabase().auth.onAuthStateChange(async (_event, session) => {
     if (session?.user) {
       const role = await getUserRole(session.user.id, session.access_token);
+      callback({
+        id: session.user.id,
+        email: session.user.email!,
+        user_metadata: {
+          full_name: session.user.user_metadata?.full_name as string | undefined,
+          avatar_url: session.user.user_metadata?.avatar_url as string | undefined,
+          role: role || session.user.user_metadata?.role || "user",
+        },
+      });
+    } else {
+      // Jangan callback null dari client lama jika SSR client mungkin punya session
+      callback(null);
+    }
+  });
+
+  const supabase = createClient();
+  const { data: data2 } = supabase.auth.onAuthStateChange(async (_event, session) => {
+    if (session?.user) {
+      const role = await getUserRole(session.user.id, session.access_token);
+      // Simpan juga ke localStorage agar konsisten
+      const { url } = getSupabaseConfig();
+      const projectId = url.match(/\/\/([^.]+)/)?.[1] ?? "local";
+      const storageKey = `sb-${projectId}-auth-token`;
+      localStorage.setItem(
+        storageKey,
+        JSON.stringify({
+          access_token: session.access_token,
+          refresh_token: session.refresh_token,
+          expires_at: Date.now() + 3600 * 1000,
+          user: { id: session.user.id, email: session.user.email },
+        })
+      );
       callback({
         id: session.user.id,
         email: session.user.email!,
@@ -249,7 +314,8 @@ export function onAuthStateChange(callback: (user: User | null) => void) {
       callback(null);
     }
   });
-  return data;
+
+  return { subscription: { unsubscribe: () => { data1?.subscription.unsubscribe(); data2?.subscription.unsubscribe(); } } };
 }
 
 // ── User Management (Admin) ───────────────────────────────────
