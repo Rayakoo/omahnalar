@@ -33,10 +33,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
-    // Cek apakah URL mengandung ?code= (handle OAuth redirect)
+    // Cek OAuth redirect — handle ?code= (PKCE) dan #access_token= (Implicit)
+    const hash = window.location.hash;
     const params = new URLSearchParams(window.location.search);
     const code = params.get("code");
-    if (code) {
+
+    if (hash && hash.includes("access_token=")) {
+      // Implicit flow: session sudah di URL fragment, tinggal bersihkan URL
+      router.replace(window.location.pathname);
+    } else if (code) {
+      // PKCE flow: tukar code jadi session
       exchangeOAuthCode(code).then(() => {
         router.replace(window.location.pathname);
       }).catch(() => {});

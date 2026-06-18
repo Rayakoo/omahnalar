@@ -240,7 +240,6 @@ export default function AuthCard({ initialMode }: AuthCardProps) {
                   provider: "google",
                   options: {
                     redirectTo: `${window.location.origin}/auth/callback`,
-                    flowType: "pkce",
                   },
                 });
               }}
