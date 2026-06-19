@@ -1,5 +1,5 @@
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
-import { getSupabase, getAccessToken } from "@/lib/supabaseClient";
+import { getSupabase, getAccessToken, getValidToken } from "@/lib/supabaseClient";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -142,7 +142,7 @@ export async function signIn(email: string, password: string) {
 export async function signOut() {
   try {
     const { url, anonKey } = getSupabaseConfig();
-    const token = getAccessToken();
+    const token = await getValidToken().catch(() => getAccessToken());
     await fetch(`${url}/auth/v1/logout`, {
       method: "POST",
       headers: { apikey: anonKey, Authorization: `Bearer ${token}` },
@@ -161,7 +161,7 @@ export async function signOut() {
 // ── Get Current User ─────────────────────────────────────────
 export async function getCurrentUser() {
   try {
-    const token = getAccessToken();
+    const token = await getValidToken().catch(() => getAccessToken());
     const { url, anonKey } = getSupabaseConfig();
     const res = await fetch(`${url}/auth/v1/user`, {
       headers: { apikey: anonKey, Authorization: `Bearer ${token}` },
@@ -189,7 +189,7 @@ export async function getCurrentUser() {
 // ── Get Session ──────────────────────────────────────────────
 export async function getSession() {
   try {
-    const token = getAccessToken();
+    const token = await getValidToken().catch(() => getAccessToken());
     return { access_token: token };
   } catch {
     return null;
@@ -265,7 +265,7 @@ export async function resetPassword(email: string) {
 
 // ── Update Password ──────────────────────────────────────────
 export async function updatePassword(newPassword: string) {
-  const token = getAccessToken();
+  const token = await getValidToken().catch(() => getAccessToken());
   const { url, anonKey } = getSupabaseConfig();
   const res = await fetch(`${url}/auth/v1/user`, {
     method: "PUT",
@@ -284,7 +284,7 @@ export async function updatePassword(newPassword: string) {
 
 // ── Update Profile ──────────────────────────────────────────
 export async function updateProfile(input: { full_name?: string; avatar_url?: string }) {
-  const token = getAccessToken();
+  const token = await getValidToken().catch(() => getAccessToken());
   const { url, anonKey } = getSupabaseConfig();
   const res = await fetch(`${url}/auth/v1/user`, {
     method: "PUT",
@@ -302,7 +302,7 @@ export async function updateProfile(input: { full_name?: string; avatar_url?: st
 }
 
 export async function getUserRole(userId: string, accessToken?: string) {
-  const token = accessToken || getAccessToken();
+  const token = accessToken || await getValidToken().catch(() => getAccessToken());
   const { url, anonKey } = getSupabaseConfig();
   const res = await fetch(`${url}/rest/v1/profiles?select=role&id=eq.${userId}`, {
     headers: { apikey: anonKey, Authorization: `Bearer ${token}` },
@@ -335,7 +335,7 @@ export function onAuthStateChange(callback: (user: User | null) => void) {
 
 // ── User Management (Admin) ───────────────────────────────────
 export async function getProfiles(): Promise<Profile[]> {
-  const token = getAccessToken();
+  const token = await getValidToken().catch(() => getAccessToken());
   const { url, anonKey } = getSupabaseConfig();
   const res = await fetch(`${url}/rest/v1/rpc/get_all_profiles_admin`, {
     headers: { apikey: anonKey, Authorization: `Bearer ${token}` },
@@ -348,7 +348,7 @@ export async function getProfiles(): Promise<Profile[]> {
 }
 
 export async function updateUserRole(userId: string, newRole: string): Promise<void> {
-  const token = getAccessToken();
+  const token = await getValidToken().catch(() => getAccessToken());
   const { url, anonKey } = getSupabaseConfig();
   const res = await fetch(`${url}/rest/v1/rpc/update_user_role_admin`, {
     method: "POST",

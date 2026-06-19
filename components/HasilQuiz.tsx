@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { useSearchParams, useParams, useRouter } from "next/navigation";
 import { ChevronLeft, Download, Award, AlertTriangle, RefreshCw } from "lucide-react";
 import { getCourseById } from "@/services/courses";
-import { areAllQuizzesPassed, getQuizIdsByCourse } from "@/services/quizzes";
+import { areAllQuizzesPassed } from "@/services/quizzes";
 import { completeCourse } from "@/services/userCourses";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -54,24 +54,61 @@ export default function HasilQuiz() {
   const certificateRef = useRef<HTMLDivElement>(null);
 
   const handleDownloadPDF = async () => {
-    if (!certificateRef.current) return;
     setIsDownloading(true);
 
     try {
-      const html2pdf = (await import("html2pdf.js")).default;
+      const { default: jsPDF } = await import("jspdf");
 
-      const options = {
-        margin: 0,
-        filename: `Sertifikat_${displayName.replace(/\s+/g, "_")}.pdf`,
-        image: { type: "jpeg", quality: 0.98 },
-        html2canvas: {
-          scale: 2,
-          useCORS: true,
-        },
-        jsPDF: { unit: "px", format: [940, 665], orientation: "landscape" },
-      };
+      const el = certificateRef.current!;
+      const elRect = el.getBoundingClientRect();
+      const nameEl = el.querySelector("h3")!;
+      const dateEl = el.querySelector("time")!;
 
-      await html2pdf().set(options).from(certificateRef.current).save();
+      const nameRect = nameEl.getBoundingClientRect();
+      const dateRect = dateEl.getBoundingClientRect();
+
+      const nameY = (nameRect.top - elRect.top + nameRect.height / 2) / elRect.height;
+      const dateY = (dateRect.top - elRect.top + dateRect.height / 2) / elRect.height;
+      const nameFontSize = parseFloat(getComputedStyle(nameEl).fontSize);
+      const dateFontSize = parseFloat(getComputedStyle(dateEl).fontSize);
+
+      const templateImg = await new Promise<HTMLImageElement>((resolve, reject) => {
+        const i = new Image();
+        i.onload = () => resolve(i);
+        i.onerror = () => reject(new Error("Gagal memuat template"));
+        i.src = "/images/SERTIFIKAT%20OMAH%20NALAR%20(COURSE).png";
+      });
+
+      const pdfW = elRect.width;
+      const pdfH = elRect.height;
+      const scale = 2;
+      const canvas = document.createElement("canvas");
+      canvas.width = pdfW * scale;
+      canvas.height = pdfH * scale;
+      const ctx = canvas.getContext("2d")!;
+
+      ctx.drawImage(templateImg, 0, 0, canvas.width, canvas.height);
+
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillStyle = "#1E293B";
+      ctx.font = `900 ${nameFontSize * scale}px sans-serif`;
+      ctx.fillText(displayName, canvas.width / 2, canvas.height * (nameY + 0.01));
+
+      ctx.fillStyle = "#6B7280";
+      ctx.font = `500 ${dateFontSize * scale}px sans-serif`;
+      ctx.fillText(
+        `${new Date().toLocaleDateString("id-ID", {
+          weekday: "long", day: "numeric", month: "long", year: "numeric",
+        })}, ${new Date().toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })} WIB`,
+        canvas.width / 2,
+        canvas.height * (dateY + 0.01)
+      );
+
+      const imgData = canvas.toDataURL("image/jpeg", 0.98);
+      const pdf = new jsPDF({ unit: "px", format: [pdfW, pdfH], orientation: "landscape" });
+      pdf.addImage(imgData, "JPEG", 0, 0, pdfW, pdfH);
+      pdf.save(`Sertifikat_${displayName.replace(/\s+/g, "_")}.pdf`);
     } catch (error) {
       console.error("Gagal mengunduh PDF:", error);
     } finally {
@@ -121,37 +158,51 @@ export default function HasilQuiz() {
             <div className="w-full max-w-[940px] shadow-2xl rounded-2xl overflow-hidden border border-gray-200 bg-white">
               <div
                 ref={certificateRef}
-                className="relative w-full aspect-[940/665] bg-white select-none flex flex-col justify-center items-center p-12 text-center overflow-hidden"
-                style={{
-                  backgroundImage: `url('https://images.unsplash.com/photo-1579546929518-9e396f3cc809?auto=format&fit=crop&q=80&w=1200')`,
-                  backgroundSize: "cover",
-                  backgroundPosition: "center",
-                }}
+                className="relative w-full bg-white select-none"
+                style={{ aspectRatio: "4000/2828" }}
               >
-                <div className="absolute inset-6 border-4 border-double border-brand-900/10 pointer-events-none rounded-lg" />
+                <img
+                  src="/images/SERTIFIKAT%20OMAH%20NALAR%20(COURSE).png"
+                  alt=""
+                  className="absolute inset-0 w-full h-full object-cover"
+                />
 
-                <h2 className="text-3xl md:text-4xl font-serif font-bold text-[#1E293B] tracking-wide mb-2 uppercase">
-                  {t.certificateTitle}
-                </h2>
-                <p className="text-xs md:text-sm text-gray-500 font-medium tracking-widest uppercase mb-10">
-                  {t.certificateTo}
-                </p>
+                <div className="absolute inset-0 z-10 text-center">
+                  <h3
+                    className="font-black"
+                    style={{
+                      position: "absolute",
+                      left: "50%",
+                      top: "50%",
+                      transform: "translate(-50%, -50%)",
+                      color: "#1E293B",
+                      fontSize: "clamp(1.2rem, 3.5vw, 3rem)",
+                      letterSpacing: "0.05em",
+                      width: "80%",
+                    }}
+                  >
+                    {displayName}
+                  </h3>
 
-                <h3 className="text-4xl md:text-5xl font-sans font-black text-brand-700 tracking-wider border-b-2 border-brand-700/30 pb-2 px-8 min-w-[300px]">
-                  {displayName}
-                </h3>
-
-                <p className="text-xs md:text-sm text-gray-600 font-medium max-w-md leading-relaxed mt-8">
-                  {t.certificateDesc} <br />
-                  <strong className="text-brand-900 font-bold">{courseTitle}</strong>
-                </p>
-
-                <div className="mt-12 flex flex-col items-center">
-                  <span className="text-[10px] text-gray-400 uppercase tracking-widest">{t.certificateBy}</span>
-                  <span className="font-bold text-sm text-[#4A4763] tracking-wide mt-1">{t.certificateAcademy}</span>
-                  <span className="text-[9px] text-gray-400 mt-0.5">
-                    {new Date().toLocaleDateString("id-ID", { month: "long", year: "numeric" })}
-                  </span>
+                  <time
+                    className="font-medium"
+                    style={{
+                      position: "absolute",
+                      left: "50%",
+                      top: "82%",
+                      transform: "translateX(-50%)",
+                      color: "#6B7280",
+                      fontSize: "clamp(0.5rem, 1.1vw, 0.8rem)",
+                    }}
+                  >
+                    {new Date().toLocaleDateString("id-ID", {
+                      weekday: "long",
+                      day: "numeric",
+                      month: "long",
+                      year: "numeric",
+                    })}
+                    , {new Date().toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })} WIB
+                  </time>
                 </div>
               </div>
             </div>

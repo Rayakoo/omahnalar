@@ -30,9 +30,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <div className="flex items-center gap-3 mb-10 pl-2">
               <button
                 onClick={() => router.push("/")}
-                className="w-10 h-10 bg-[#4D455D] rounded-xl flex items-center justify-center text-white font-bold text-xl shadow-sm hover:bg-[#3d364a] transition-colors"
+                className="w-10 h-10 rounded-xl flex items-center justify-center overflow-hidden shadow-sm hover:opacity-80 transition-opacity"
               >
-                Ω
+                <img src="/images/logo_omah.png" alt="Omah Nalar" className="w-full h-full object-cover" />
               </button>
               <span className="font-bold text-gray-800 text-lg tracking-wide">Omah Nalar</span>
             </div>

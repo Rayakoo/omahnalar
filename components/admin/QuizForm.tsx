@@ -3,6 +3,8 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Trash2, Save, Plus } from "lucide-react";
+import { transformImageUrl } from "@/lib/image";
+import RichTextEditor from "./RichTextEditor";
 import { createQuiz, updateQuiz, deleteQuiz } from "@/services/quizzes";
 import { getNextGlobalUrutanAndIncrement } from "@/services/courses";
 import type { Quiz } from "@/services/quizzes";
@@ -13,12 +15,13 @@ interface QuestionState {
   text: string;
   options: string[];
   correctAnswer: string;
+  imageUrl: string;
 }
 
 interface QuizFormProps {
   courseId: string;
   quizData?: Quiz | null;
-  existingQuestions?: { id: string; question_text: string; options: string[]; correct_answer: string; urutan: number }[];
+  existingQuestions?: { id: string; question_text: string; options: string[]; correct_answer: string; urutan: number; image_url?: string | null }[];
   onSuccess?: () => void;
 }
 
@@ -55,19 +58,20 @@ export default function QuizForm({ courseId, quizData, existingQuestions, onSucc
             id: i + 1,
             tempId: q.id,
             text: q.question_text,
-            options: q.options.length >= 4 ? q.options : ["", "", "", ""],
+            options: q.options.length >= 2 ? q.options : ["", ""],
             correctAnswer,
+            imageUrl: q.image_url || "",
           };
         })
       );
     } else {
-      setQuestions([{ id: 1, tempId: genTempId(), text: "", options: ["", "", "", ""], correctAnswer: "" }]);
+      setQuestions([{ id: 1, tempId: genTempId(), text: "", options: ["", ""], correctAnswer: "", imageUrl: "" }]);
     }
   }, [existingQuestions]);
 
   const handleAddQuestion = () => {
     const newId = questions.length + 1;
-    setQuestions([...questions, { id: newId, tempId: genTempId(), text: "", options: ["", "", "", ""], correctAnswer: "" }]);
+    setQuestions([...questions, { id: newId, tempId: genTempId(), text: "", options: ["", ""], correctAnswer: "", imageUrl: "" }]);
   };
 
   const handleRemoveQuestion = (id: number) => {
@@ -100,13 +104,33 @@ export default function QuizForm({ courseId, quizData, existingQuestions, onSucc
     ));
   };
 
+  const handleAddOption = (qId: number) => {
+    setQuestions(questions.map((q) =>
+      q.id === qId ? { ...q, options: [...q.options, ""] } : q
+    ));
+  };
+
+  const handleRemoveOption = (qId: number, optIdx: number) => {
+    setQuestions(questions.map((q) => {
+      if (q.id !== qId) return q;
+      if (q.options.length <= 2) return q;
+      const removed = q.options[optIdx];
+      const newOptions = q.options.filter((_, i) => i !== optIdx);
+      const correctAnswer = q.correctAnswer === removed ? "" : q.correctAnswer;
+      return { ...q, options: newOptions, correctAnswer };
+    }));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (saving) return;
     if (!title) { alert("Judul quiz wajib diisi."); return; }
 
-    const emptyQuestion = questions.find((q) => !q.text || q.options.some((o) => !o));
-    if (emptyQuestion) { alert("Semua soal dan pilihan jawaban harus diisi."); return; }
+    const invalidQuestion = questions.find((q) => {
+      if (!q.text || q.options.length < 2 || q.options.some((o) => !o)) return true;
+      return false;
+    });
+    if (invalidQuestion) { alert("Setiap soal minimal 2 pilihan jawaban dan semua harus diisi."); return; }
     const noCorrectAnswer = questions.find((q) => !q.correctAnswer);
     if (noCorrectAnswer) { alert("Pilih jawaban benar untuk setiap soal."); return; }
 
@@ -137,6 +161,7 @@ export default function QuizForm({ courseId, quizData, existingQuestions, onSucc
             options: q.options,
             correct_answer: q.correctAnswer,
             urutan: i,
+            image_url: q.imageUrl || null,
           });
         } else {
           submittedIds.add(q.tempId);
@@ -145,6 +170,7 @@ export default function QuizForm({ courseId, quizData, existingQuestions, onSucc
             options: q.options,
             correct_answer: q.correctAnswer,
             urutan: i,
+            image_url: q.imageUrl || null,
           });
         }
       }
@@ -195,12 +221,11 @@ export default function QuizForm({ courseId, quizData, existingQuestions, onSucc
 
         <div>
           <label className="block text-sm font-medium text-gray-600 mb-2">Deskripsi (opsional)</label>
-          <textarea
+          <RichTextEditor
             value={description}
-            onChange={(e) => setDescription(e.target.value)}
+            onChange={setDescription}
             placeholder="Petunjuk atau informasi tambahan"
-            rows={3}
-            className="w-full bg-white border border-gray-200 rounded-xl p-4 text-sm focus:outline-none focus:border-[#9792EC] shadow-sm resize-none placeholder-gray-300"
+            minHeight={120}
           />
         </div>
 
@@ -231,12 +256,30 @@ export default function QuizForm({ courseId, quizData, existingQuestions, onSucc
                 className="w-full bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-[#9792EC] placeholder-gray-300"
               />
 
+              <div>
+                <input
+                  type="text"
+                  value={q.imageUrl}
+                  onChange={(e) => setQuestions(questions.map((x) => x.id === q.id ? { ...x, imageUrl: e.target.value } : x))}
+                  placeholder="URL gambar (opsional, untuk ditampilkan di soal)"
+                  className="w-full bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-[#9792EC] placeholder-gray-300"
+                />
+                {q.imageUrl && (
+                  <img
+                    src={transformImageUrl(q.imageUrl)}
+                    alt="Preview"
+                    className="mt-2 max-h-32 rounded-lg object-contain border border-gray-200"
+                    onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+                  />
+                )}
+              </div>
+
               <div className="space-y-3">
                 {q.options.map((opt, optIdx) => {
                   const letter = String.fromCharCode(65 + optIdx);
                   const isCorrect = q.correctAnswer === opt;
                   return (
-                    <div key={letter} className="flex items-center gap-4">
+                    <div key={letter} className="flex items-center gap-2">
                       <input
                         type="text"
                         value={opt}
@@ -254,9 +297,28 @@ export default function QuizForm({ courseId, quizData, existingQuestions, onSucc
                       >
                         {isCorrect && <div className="w-3 h-3 bg-[#2C2C2C] rounded-full" />}
                       </button>
+                      {q.options.length > 2 && (
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveOption(q.id, optIdx)}
+                          className="text-red-400 hover:text-red-600 text-xs font-bold shrink-0 w-5"
+                          title="Hapus pilihan jawaban"
+                        >
+                          ✕
+                        </button>
+                      )}
                     </div>
                   );
                 })}
+                {q.options.length < 6 && (
+                  <button
+                    type="button"
+                    onClick={() => handleAddOption(q.id)}
+                    className="text-xs font-bold text-[#9792EC] hover:text-[#524D85] transition-colors mt-1"
+                  >
+                    + Tambah pilihan
+                  </button>
+                )}
               </div>
             </div>
           ))}

@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, Loader2, AlertTriangle } from "lucide-react";
 import { getQuizWithQuestions, upsertQuizResult, type QuizQuestion } from "@/services/quizzes";
+import { transformImageUrl } from "@/lib/image";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { id, en } from "@/data/translations";
@@ -159,6 +160,17 @@ export default function QuizPage() {
             )}
           </div>
 
+          {currentQuestion.image_url && (
+            <div className="mb-4 rounded-xl overflow-hidden border border-gray-200 bg-brand-50">
+              <img
+                src={transformImageUrl(currentQuestion.image_url)}
+                alt="Gambar soal"
+                className="w-full max-h-64 object-contain mx-auto"
+                onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+              />
+            </div>
+          )}
+
           <p className="text-base md:text-lg font-bold text-brand-900 mb-6">
             {currentQuestion.question_text}
           </p>
@@ -309,6 +321,9 @@ export default function QuizPage() {
             status={modalStatus}
             onNext={handleModalNext}
             isLast={isLastQuestion}
+            question={currentQuestion.question_text}
+            selectedAnswer={selectedAnswers[currentQuestion.id]}
+            correctAnswer={currentQuestion.correct_answer}
           />
         )}
       </AnimatePresence>

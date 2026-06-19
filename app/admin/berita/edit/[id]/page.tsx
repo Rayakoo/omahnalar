@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { ArrowLeft, Save, Plus, X } from "lucide-react";
 import { getBeritaById, updateBerita, type Berita } from "@/services/berita";
+import RichTextEditor from "@/components/admin/RichTextEditor";
 
 type ImageInput = { url: string; is_thumbnail: boolean };
 
@@ -148,11 +149,10 @@ export default function EditBerita() {
 
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-1">Konten <span className="text-red-500">*</span></label>
-            <textarea
-              rows={10}
+            <RichTextEditor
               value={form.content}
-              onChange={(e) => update("content", e.target.value)}
-              className="w-full px-4 py-3 bg-white border border-[#D9D7EC] rounded-xl focus:outline-none focus:ring-1 focus:ring-purple-500 text-sm text-gray-900 resize-none"
+              onChange={(v) => update("content", v)}
+              placeholder="Tulis konten berita di sini..."
             />
           </div>
 

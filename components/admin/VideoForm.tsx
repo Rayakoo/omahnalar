@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Trash2, Save } from "lucide-react";
+import RichTextEditor from "./RichTextEditor";
 import {
   createCourseVideo,
   updateCourseVideo,
@@ -92,12 +93,11 @@ export default function VideoForm({ courseId, videoData, onSuccess }: VideoFormP
 
         <div>
           <label className="block text-sm font-medium text-gray-600 mb-2">Deskripsi (opsional)</label>
-          <textarea
+          <RichTextEditor
             value={description}
-            onChange={(e) => setDescription(e.target.value)}
+            onChange={setDescription}
             placeholder="Petunjuk atau informasi tambahan"
-            rows={4}
-            className="w-full bg-white border border-gray-200 rounded-xl p-4 text-sm focus:outline-none focus:border-[#9792EC] shadow-sm resize-none placeholder-gray-300"
+            minHeight={120}
           />
         </div>
 

@@ -1,4 +1,4 @@
-import { getAccessToken } from "@/lib/supabaseClient";
+import { getAccessToken, getValidToken } from "@/lib/supabaseClient";
 
 export type ProductImage = { url: string; is_thumbnail: boolean };
 
@@ -79,7 +79,7 @@ export async function createProduct(input: CreateProductInput) {
   };
 
   const { url, anonKey } = getSupabaseConfig();
-  const token = getAccessToken();
+  const token = await getValidToken().catch(() => getAccessToken());
   const res = await fetch(`${url}/rest/v1/products`, {
     method: "POST",
     headers: {
@@ -104,7 +104,7 @@ export async function updateProduct(
   updates: Partial<Pick<Product, "name" | "slug" | "description" | "price" | "whatsapp_number" | "image_url" | "is_published">>
 ) {
   const { url, anonKey } = getSupabaseConfig();
-  const token = getAccessToken();
+  const token = await getValidToken().catch(() => getAccessToken());
   const res = await fetch(`${url}/rest/v1/products?id=eq.${id}`, {
     method: "PATCH",
     headers: {
@@ -126,7 +126,7 @@ export async function updateProduct(
 
 export async function deleteProduct(id: string) {
   const { url, anonKey } = getSupabaseConfig();
-  const token = getAccessToken();
+  const token = await getValidToken().catch(() => getAccessToken());
   const res = await fetch(`${url}/rest/v1/products?id=eq.${id}`, {
     method: "DELETE",
     headers: {

@@ -2,13 +2,14 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Trash2, Save, Bold, Italic, Underline, List, Link } from "lucide-react";
+import { Trash2, Save } from "lucide-react";
 import {
   createCourseMaterial,
   updateCourseMaterial,
   getNextGlobalUrutanAndIncrement,
   type CourseMaterial,
 } from "@/services/courses";
+import RichTextEditor from "./RichTextEditor";
 
 interface ModuleFormProps {
   courseId: string;
@@ -92,26 +93,11 @@ export default function ModuleForm({ courseId, moduleData, onSuccess }: ModuleFo
 
         <div>
           <label className="block text-sm font-medium text-gray-600 mb-2">Isi Modul</label>
-          <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm focus-within:border-[#9792EC] transition-all">
-            <div className="bg-[#F7F9FC] border-b border-gray-100 px-4 py-2.5 flex items-center justify-between text-gray-500">
-              <div className="flex items-center gap-4">
-                <button type="button" className="hover:text-[#2C2C2C] transition-colors"><Bold className="w-4 h-4" /></button>
-                <button type="button" className="hover:text-[#2C2C2C] transition-colors"><Italic className="w-4 h-4" /></button>
-                <button type="button" className="hover:text-[#2C2C2C] transition-colors"><Underline className="w-4 h-4" /></button>
-                <button type="button" className="hover:text-[#2C2C2C] transition-colors"><List className="w-4 h-4" /></button>
-                <button type="button" className="hover:text-[#2C2C2C] transition-colors"><Link className="w-4 h-4" /></button>
-              </div>
-              <span className="text-xs text-gray-400 font-mono">{content.length}/{maxChars}</span>
-            </div>
-            <textarea
-              placeholder="Tulis materi di sini..."
-              maxLength={maxChars}
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              rows={8}
-              className="w-full p-4 text-sm focus:outline-none resize-none placeholder-gray-300 text-gray-700"
-            />
-          </div>
+          <RichTextEditor
+            value={content}
+            onChange={setContent}
+            placeholder="Tulis materi di sini..."
+          />
         </div>
 
         <div className="flex items-center justify-center gap-4 pt-6">

@@ -1,4 +1,4 @@
-import { getAccessToken } from "@/lib/supabaseClient";
+import { getAccessToken, getValidToken } from "@/lib/supabaseClient";
 
 export type ImageUrl = { url: string; is_thumbnail: boolean };
 
@@ -75,7 +75,7 @@ export async function createProgram(input: CreateProgramInput) {
   console.log("[createProgram] payload:", JSON.stringify(payload, null, 2));
 
   const { url, anonKey } = getSupabaseConfig();
-  const token = getAccessToken();
+  const token = await getValidToken().catch(() => getAccessToken());
   const res = await fetch(`${url}/rest/v1/programs`, {
     method: "POST",
     headers: {
@@ -118,7 +118,7 @@ export async function updateProgram(
   updates: Partial<Pick<Program, "slug" | "title" | "tag" | "period" | "location" | "image_url" | "video_url" | "tagline" | "descriptions" | "target" | "goals">>
 ) {
   const { url, anonKey } = getSupabaseConfig();
-  const token = getAccessToken();
+  const token = await getValidToken().catch(() => getAccessToken());
   const res = await fetch(`${url}/rest/v1/programs?id=eq.${id}`, {
     method: "PATCH",
     headers: {
@@ -140,7 +140,7 @@ export async function updateProgram(
 
 export async function deleteProgram(id: string) {
   const { url, anonKey } = getSupabaseConfig();
-  const token = getAccessToken();
+  const token = await getValidToken().catch(() => getAccessToken());
   const res = await fetch(`${url}/rest/v1/programs?id=eq.${id}`, {
     method: "DELETE",
     headers: {

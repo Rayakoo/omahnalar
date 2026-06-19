@@ -159,9 +159,10 @@ export default function MateriDetail() {
                   <FileText className="w-3.5 h-3.5" /> {t.modulBacaan}
                 </div>
                 <h2 className="text-xl md:text-2xl font-bold text-brand-900 mb-4">{activeSection.data.title}</h2>
-                <p className="text-sm md:text-base text-brand-900/80 font-normal whitespace-pre-line">
-                  {activeSection.data.content}
-                </p>
+                <div
+                  className="text-sm md:text-base text-brand-900/80 font-normal leading-relaxed prose prose-sm max-w-none"
+                  dangerouslySetInnerHTML={{ __html: activeSection.data.content }}
+                />
               </div>
             ) : null}
           </div>

@@ -1,4 +1,4 @@
-import { getSupabase, getAccessToken } from "@/lib/supabaseClient";
+import { getSupabase, getAccessToken, getValidToken } from "@/lib/supabaseClient";
 
 // ── Quizzes ──────────────────────────────────────────────────
 export type Quiz = {
@@ -38,7 +38,7 @@ export async function createQuiz(input: {
   description?: string;
   urutan?: number;
 }) {
-  const token = getAccessToken();
+  const token = await getValidToken().catch(() => getAccessToken());
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/quizzes?select=*`,
     {
@@ -65,7 +65,7 @@ export async function updateQuiz(
   id: string,
   updates: Partial<Pick<Quiz, "title" | "description" | "urutan">>
 ) {
-  const token = getAccessToken();
+  const token = await getValidToken().catch(() => getAccessToken());
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/quizzes?id=eq.${id}&select=*`,
     {
@@ -89,7 +89,7 @@ export async function updateQuiz(
 }
 
 export async function deleteQuiz(id: string) {
-  const token = getAccessToken();
+  const token = await getValidToken().catch(() => getAccessToken());
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/quizzes?id=eq.${id}`,
     {
@@ -115,6 +115,7 @@ export type QuizQuestion = {
   correct_answer: string;
   urutan: number;
   created_at: string;
+  image_url: string | null;
 };
 
 export async function getQuizQuestions(quizId: string) {
@@ -134,8 +135,9 @@ export async function createQuizQuestion(input: {
   options: string[];
   correct_answer: string;
   urutan?: number;
+  image_url?: string | null;
 }) {
-  const token = getAccessToken();
+  const token = await getValidToken().catch(() => getAccessToken());
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/quiz_questions?select=*`,
     {
@@ -160,9 +162,9 @@ export async function createQuizQuestion(input: {
 
 export async function updateQuizQuestion(
   id: string,
-  updates: Partial<Pick<QuizQuestion, "question_text" | "options" | "correct_answer" | "urutan">>
+  updates: Partial<Pick<QuizQuestion, "question_text" | "options" | "correct_answer" | "urutan" | "image_url">>
 ) {
-  const token = getAccessToken();
+  const token = await getValidToken().catch(() => getAccessToken());
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/quiz_questions?id=eq.${id}&select=*`,
     {
@@ -186,7 +188,7 @@ export async function updateQuizQuestion(
 }
 
 export async function deleteQuizQuestion(id: string) {
-  const token = getAccessToken();
+  const token = await getValidToken().catch(() => getAccessToken());
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/quiz_questions?id=eq.${id}`,
     {
@@ -230,7 +232,7 @@ export async function submitQuizResult(input: {
   const total = questions.length;
   const passed = score / total >= 0.75;
 
-  const token = getAccessToken();
+  const token = await getValidToken().catch(() => getAccessToken());
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/user_quiz_results?select=*`,
     {
@@ -287,7 +289,7 @@ export async function upsertQuizResult(input: {
   const total = questions.length;
   const passed = score / total >= 0.75;
 
-  const token = getAccessToken();
+  const token = await getValidToken().catch(() => getAccessToken());
 
   // Check existing result
   const existingRes = await fetch(
@@ -346,7 +348,7 @@ export async function upsertQuizResult(input: {
 
 // ── Check if all quizzes in a course are passed ──────────────
 export async function areAllQuizzesPassed(userId: string, courseId: string) {
-  const token = getAccessToken();
+  const token = await getValidToken().catch(() => getAccessToken());
   const headers = { apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, Authorization: `Bearer ${token}` };
 
   // Get all quiz IDs for this course

@@ -1,4 +1,4 @@
-import { getAccessToken } from "@/lib/supabaseClient";
+import { getAccessToken, getValidToken } from "@/lib/supabaseClient";
 
 export type UserCourse = {
   id: string;
@@ -28,16 +28,16 @@ function getSupabaseConfig() {
   return { url, anonKey };
 }
 
-function authHeaders(): Record<string, string> {
+async function authHeaders(): Promise<Record<string, string>> {
   const { anonKey } = getSupabaseConfig();
   const headers: Record<string, string> = { apikey: anonKey };
-  try { headers.Authorization = `Bearer ${getAccessToken()}`; } catch {}
+  try { headers.Authorization = `Bearer ${await getValidToken().catch(() => getAccessToken())}`; } catch {}
   return headers;
 }
 
 async function supabaseGet<T>(path: string): Promise<T> {
   const { url } = getSupabaseConfig();
-  const res = await fetch(`${url}${path}`, { headers: authHeaders() });
+  const res = await fetch(`${url}${path}`, { headers: await authHeaders() });
   if (!res.ok) {
     const errText = await res.text();
     throw new Error(`Supabase GET failed: ${res.status} ${errText}`);
@@ -47,7 +47,8 @@ async function supabaseGet<T>(path: string): Promise<T> {
 
 async function supabasePost<T>(path: string, body: unknown): Promise<T> {
   const { url } = getSupabaseConfig();
-  const headers = { ...authHeaders(), "Content-Type": "application/json", Prefer: "return=representation" };
+  const ah = await authHeaders();
+  const headers = { ...ah, "Content-Type": "application/json", Prefer: "return=representation" };
   const res = await fetch(`${url}${path}`, { method: "POST", headers, body: JSON.stringify(body) });
   if (!res.ok) {
     const errText = await res.text();
@@ -60,7 +61,8 @@ async function supabasePost<T>(path: string, body: unknown): Promise<T> {
 
 async function supabasePatch<T>(path: string, body: unknown): Promise<T> {
   const { url } = getSupabaseConfig();
-  const headers = { ...authHeaders(), "Content-Type": "application/json", Prefer: "return=representation" };
+  const ah = await authHeaders();
+  const headers = { ...ah, "Content-Type": "application/json", Prefer: "return=representation" };
   const res = await fetch(`${url}${path}`, { method: "PATCH", headers, body: JSON.stringify(body) });
   if (!res.ok) {
     const errText = await res.text();

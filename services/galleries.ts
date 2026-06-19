@@ -1,4 +1,4 @@
-import { getAccessToken } from "@/lib/supabaseClient";
+import { getAccessToken, getValidToken } from "@/lib/supabaseClient";
 
 export type Gallery = {
   id: string;
@@ -36,7 +36,7 @@ export async function getGalleries(limit = 15) {
 
 export async function createGallery(url: string) {
   const { url: baseUrl, anonKey } = getSupabaseConfig();
-  const token = getAccessToken();
+  const token = await getValidToken().catch(() => getAccessToken());
   const res = await fetch(`${baseUrl}/rest/v1/galleries`, {
     method: "POST",
     headers: {
@@ -58,7 +58,7 @@ export async function createGallery(url: string) {
 
 export async function deleteGallery(id: string) {
   const { url, anonKey } = getSupabaseConfig();
-  const token = getAccessToken();
+  const token = await getValidToken().catch(() => getAccessToken());
   const res = await fetch(`${url}/rest/v1/galleries?id=eq.${id}`, {
     method: "DELETE",
     headers: {

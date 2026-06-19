@@ -41,13 +41,14 @@ export default function CoursePage() {
     { id: "default-ortu", name: "Orang Tua", slug: "orang-tua" },
     { id: "default-guru", name: "Guru", slug: "guru" },
     { id: "default-murid", name: "Murid", slug: "murid" },
+    { id: "default-umum", name: "Umum", slug: "umum" },
   ];
   const [categories, setCategories] = useState<Category[]>(defaultCats);
   const [levels, setLevels] = useState<EducationLevel[]>([]);
   const [userStats, setUserStats] = useState<UserStats>({ total: 0, completed: 0, inProgress: 0 });
   const [userCourseList, setUserCourseList] = useState<(UserCourse & { course: CourseWithRelations })[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<string>("Orang Tua");
+  const [activeTab, setActiveTab] = useState<string>("Semua");
   const [search, setSearch] = useState("");
 
   useEffect(() => {
@@ -61,10 +62,7 @@ export default function CoursePage() {
         setCourses(c);
         if (cats.length > 0) setCategories(cats);
         if (lvs.length > 0) setLevels(lvs);
-        const storyCatNames = new Set(["Puisi", "Pengalaman", "Curhat", "Opini", "Tips", "Inspirasi"]);
-        const courseCats = cats.filter((cat) => !storyCatNames.has(cat.name));
-        if (courseCats.length > 0) setActiveTab(courseCats[0].name);
-        else if (cats.length > 0) setActiveTab(cats[0].name);
+        setActiveTab("Semua");
       } catch {
         // silently fail
       } finally {
@@ -105,12 +103,18 @@ export default function CoursePage() {
 
   const courseCats = useMemo(() => {
     const storyCatNames = new Set(["Puisi", "Pengalaman", "Curhat", "Opini", "Tips", "Inspirasi"]);
-    return categories.filter((c) => !storyCatNames.has(c.name));
+    const filtered = categories.filter((c) => !storyCatNames.has(c.name));
+    return filtered;
   }, [categories]);
+
+  const tabList = useMemo(() => {
+    const semua: Category = { id: "semua", name: "Semua", slug: "semua" };
+    return [semua, ...courseCats];
+  }, [courseCats]);
 
   const filteredCourses = useMemo(() => {
     let result = courses;
-    if (activeTab) {
+    if (activeTab && activeTab !== "Semua") {
       result = result.filter((c) => c.category?.name === activeTab);
     }
     if (search.trim()) {
@@ -320,10 +324,10 @@ export default function CoursePage() {
 
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-10">
           <div className="flex items-center gap-3 p-1.5 bg-white rounded-2xl shadow-inner border border-gray-100 flex-wrap">
-            {courseCats.length === 0 ? (
+            {tabList.length === 0 ? (
               <span className="px-4 py-2 text-sm text-brand-700/50 font-semibold">{t.noCategory}</span>
             ) : (
-              courseCats.map((cat) => {
+              tabList.map((cat) => {
                 const isSelected = activeTab === cat.name;
                 return (
                   <button
@@ -407,7 +411,7 @@ export default function CoursePage() {
               </div>
             </div>
 
-            {levels.map((level) => {
+            {activeTab === "Murid" && levels.map((level) => {
               const levelCourses = coursesByLevel[level.name];
               if (!levelCourses || levelCourses.length === 0) return null;
               return <SchoolCarousel key={level.id} level={level} courses={levelCourses} seed={seed} onStartCourse={handleStartCourse} />;

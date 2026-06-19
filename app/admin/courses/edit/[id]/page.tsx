@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { ArrowLeft, Save } from "lucide-react";
 import { getCourseById, getCategories, getEducationLevels, updateCourse, type CourseWithRelations, type Category, type EducationLevel } from "@/services/courses";
+import RichTextEditor from "@/components/admin/RichTextEditor";
 
 export default function EditCourse() {
   const router = useRouter();
@@ -94,11 +95,10 @@ export default function EditCourse() {
 
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-1">Deskripsi</label>
-            <textarea
-              rows={5}
+            <RichTextEditor
               value={form.description}
-              onChange={(e) => setForm((prev) => ({ ...prev, description: e.target.value }))}
-              className="w-full px-4 py-3 bg-white border border-[#D9D7EC] rounded-xl focus:outline-none focus:ring-1 focus:ring-purple-500 text-sm text-gray-900 resize-none"
+              onChange={(v) => setForm((prev) => ({ ...prev, description: v }))}
+              placeholder="Deskripsi course"
             />
           </div>
 

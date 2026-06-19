@@ -11,9 +11,12 @@ interface QuizResultModalProps {
   status: "correct" | "wrong";
   onNext: () => void;
   isLast: boolean;
+  question?: string;
+  selectedAnswer?: string;
+  correctAnswer?: string;
 }
 
-export default function QuizResultModal({ isOpen, status, onNext, isLast }: QuizResultModalProps) {
+export default function QuizResultModal({ isOpen, status, onNext, isLast, question, selectedAnswer, correctAnswer }: QuizResultModalProps) {
   const { locale } = useLanguage();
   const t = locale === "id" ? id.omahBelajar : en.omahBelajar;
   const common = locale === "id" ? id.common : en.common;
@@ -49,22 +52,29 @@ export default function QuizResultModal({ isOpen, status, onNext, isLast }: Quiz
           {isCorrect ? t.kamuBenar : t.kurangTepat}
         </h3>
 
-        <p className="text-xs md:text-sm text-brand-900/80 font-medium leading-relaxed mb-6 max-w-[320px]">
-          {isCorrect ? t.pesanBenar : t.pesanSalah}
-        </p>
-
-        <div className="w-full bg-[#FFF9EE] border border-[#FCE5BF] rounded-2xl p-4 text-left flex flex-col gap-1.5 mb-6 shadow-inner">
-          <div className="flex items-center gap-1.5 text-amber-600 font-extrabold text-[10px] md:text-xs uppercase tracking-wider">
-            <Zap className="w-3.5 h-3.5 fill-amber-500 text-amber-500 stroke-[2.5]" />
-            <span>{t.pelajaranPenting}</span>
+        {question && (
+          <div className="w-full bg-white/60 rounded-xl p-3 mb-4 text-left border border-brand-100/50">
+            <p className="text-xs font-semibold text-brand-700/60 mb-1">{t.soalCounter.replace("{current}", "").replace("{total}", "").trim()}</p>
+            <p className="text-sm font-bold text-brand-900 leading-snug">{question}</p>
           </div>
-          <p className="text-[10px] md:text-xs text-brand-700/80 leading-relaxed font-normal">
-            {isCorrect ? t.kontenBenar : t.kontenSalah}
-          </p>
-          {!isCorrect && (
-            <p className="text-[9px] md:text-[10px] text-rose-500/70 font-semibold mt-1">
-              {t.statistik}
-            </p>
+        )}
+
+        <div className="w-full flex flex-col gap-2 mb-5">
+          {selectedAnswer && (
+            <div className={`flex items-center justify-between rounded-xl px-4 py-3 text-sm font-medium ${
+              isCorrect
+                ? "bg-emerald-100/80 text-emerald-800"
+                : "bg-rose-100/80 text-rose-800"
+            }`}>
+              <span>{t.jawabanMu || "Jawabanmu"}:</span>
+              <span className="font-bold">{selectedAnswer}</span>
+            </div>
+          )}
+          {!isCorrect && correctAnswer && (
+            <div className="flex items-center justify-between rounded-xl px-4 py-3 text-sm font-medium bg-emerald-100/80 text-emerald-800">
+              <span>{t.jawabanBenar}:</span>
+              <span className="font-bold">{correctAnswer}</span>
+            </div>
           )}
         </div>
 

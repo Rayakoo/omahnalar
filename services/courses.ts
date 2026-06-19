@@ -1,4 +1,4 @@
-import { getSupabase, getAccessToken } from "@/lib/supabaseClient";
+import { getSupabase, getAccessToken, getValidToken } from "@/lib/supabaseClient";
 
 // ── Categories & Levels ──────────────────────────────────────
 export type Category = { id: string; name: string; slug: string };
@@ -56,7 +56,7 @@ export async function getCoursesByCategory(categorySlug: string) {
 }
 
 export async function getCourseById(id: string) {
-  const token = getAccessToken();
+  const token = await getValidToken().catch(() => getAccessToken());
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/courses?id=eq.${id}&select=*,category:categories(*),education_level:education_levels(*)`,
     { headers: { apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, Authorization: `Bearer ${token}` } }
@@ -80,7 +80,7 @@ export type CreateCourseInput = {
 };
 
 export async function createCourse(input: CreateCourseInput) {
-  const token = getAccessToken();
+  const token = await getValidToken().catch(() => getAccessToken());
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/courses?select=*,category:categories(*),education_level:education_levels(*)`,
     {
@@ -107,7 +107,7 @@ export async function updateCourse(
   id: string,
   updates: Partial<Pick<Course, "title" | "description" | "category_id" | "education_level_id" | "thumbnail_url" | "is_published">>
 ) {
-  const token = getAccessToken();
+  const token = await getValidToken().catch(() => getAccessToken());
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/courses?id=eq.${id}&select=*,category:categories(*),education_level:education_levels(*)`,
     {
@@ -131,7 +131,7 @@ export async function updateCourse(
 }
 
 export async function deleteCourse(id: string) {
-  const token = getAccessToken();
+  const token = await getValidToken().catch(() => getAccessToken());
   const res = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/courses?id=eq.${id}`, {
     method: "DELETE",
     headers: { apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, Authorization: `Bearer ${token}` },
@@ -169,7 +169,7 @@ export async function createCourseVideo(input: {
   video_url: string;
   urutan?: number;
 }) {
-  const token = getAccessToken();
+  const token = await getValidToken().catch(() => getAccessToken());
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/course_videos?select=*`,
     {
@@ -196,7 +196,7 @@ export async function updateCourseVideo(
   id: string,
   updates: Partial<Pick<CourseVideo, "title" | "video_url" | "urutan">>
 ) {
-  const token = getAccessToken();
+  const token = await getValidToken().catch(() => getAccessToken());
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/course_videos?id=eq.${id}&select=*`,
     {
@@ -220,7 +220,7 @@ export async function updateCourseVideo(
 }
 
 export async function deleteCourseVideo(id: string) {
-  const token = getAccessToken();
+  const token = await getValidToken().catch(() => getAccessToken());
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/course_videos?id=eq.${id}`,
     {
@@ -264,7 +264,7 @@ export async function createCourseMaterial(input: {
   content: string;
   urutan?: number;
 }) {
-  const token = getAccessToken();
+  const token = await getValidToken().catch(() => getAccessToken());
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/course_materials?select=*`,
     {
@@ -291,7 +291,7 @@ export async function updateCourseMaterial(
   id: string,
   updates: Partial<Pick<CourseMaterial, "title" | "content" | "urutan">>
 ) {
-  const token = getAccessToken();
+  const token = await getValidToken().catch(() => getAccessToken());
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/course_materials?id=eq.${id}&select=*`,
     {
@@ -315,7 +315,7 @@ export async function updateCourseMaterial(
 }
 
 export async function deleteCourseMaterial(id: string) {
-  const token = getAccessToken();
+  const token = await getValidToken().catch(() => getAccessToken());
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/course_materials?id=eq.${id}`,
     {
@@ -334,7 +334,7 @@ export async function deleteCourseMaterial(id: string) {
 
 // ── Global urutan counter (jumlah_isi) ──────────────────────────
 export async function getNextGlobalUrutanAndIncrement(courseId: string) {
-  const token = getAccessToken();
+  const token = await getValidToken().catch(() => getAccessToken());
   const getRes = await fetch(
     `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/courses?id=eq.${courseId}&select=jumlah_isi`,
     { headers: { apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, Authorization: `Bearer ${token}` } }

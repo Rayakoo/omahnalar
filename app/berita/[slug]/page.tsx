@@ -128,9 +128,10 @@ export default function BeritaDetail() {
         )}
 
         {/* Content */}
-        <div className="prose prose-sm md:prose-base max-w-none text-brand-700/80 leading-relaxed whitespace-pre-wrap">
-          {berita.content}
-        </div>
+        <div
+          className="prose prose-sm md:prose-base max-w-none text-brand-700/80 leading-relaxed"
+          dangerouslySetInnerHTML={{ __html: berita.content }}
+        />
 
         {/* Additional images */}
         {images.length > 1 && (
