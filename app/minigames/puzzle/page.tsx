@@ -303,8 +303,9 @@ export default function PuzzlePage() {
                 <button
                   onClick={() => {
                     setCompletedPuzzle(true);
-                    if (puzzleStartRef.current !== null) {
-                      setAllPuzzleTimes((prev) => [...prev, Date.now() - puzzleStartRef.current]);
+                    const startTime = puzzleStartRef.current;
+                    if (startTime !== null) {
+                      setAllPuzzleTimes((prev) => [...prev, Date.now() - startTime]);
                     }
                     setTimeout(() => setShowCompletion(true), 300);
                   }}
