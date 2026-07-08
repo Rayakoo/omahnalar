@@ -2,10 +2,11 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Trash2, Save, Plus } from "lucide-react";
+import { Trash2, Save, Plus, Upload } from "lucide-react";
 import { transformImageUrl } from "@/lib/image";
 import RichTextEditor from "./RichTextEditor";
 import { createQuiz, updateQuiz, deleteQuiz } from "@/services/quizzes";
+import FileUploader from "@/components/FileUploader";
 import { getNextGlobalUrutanAndIncrement } from "@/services/courses";
 import type { Quiz } from "@/services/quizzes";
 
@@ -257,13 +258,16 @@ export default function QuizForm({ courseId, quizData, existingQuestions, onSucc
               />
 
               <div>
-                <input
-                  type="text"
-                  value={q.imageUrl}
-                  onChange={(e) => setQuestions(questions.map((x) => x.id === q.id ? { ...x, imageUrl: e.target.value } : x))}
-                  placeholder="URL gambar (opsional, untuk ditampilkan di soal)"
-                  className="w-full bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-[#9792EC] placeholder-gray-300"
-                />
+                <div className="flex items-start gap-2">
+                  <input
+                    type="text"
+                    value={q.imageUrl}
+                    onChange={(e) => setQuestions(questions.map((x) => x.id === q.id ? { ...x, imageUrl: e.target.value } : x))}
+                    placeholder="URL gambar (opsional, untuk ditampilkan di soal)"
+                    className="flex-1 w-full bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-[#9792EC] placeholder-gray-300"
+                  />
+                  <FileUploader onUploadComplete={(url) => setQuestions(questions.map((x) => x.id === q.id ? { ...x, imageUrl: url } : x))} />
+                </div>
                 {q.imageUrl && (
                   <img
                     src={transformImageUrl(q.imageUrl)}

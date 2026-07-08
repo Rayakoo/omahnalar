@@ -11,7 +11,9 @@ import {
   FileText,
   Save,
   Send,
+  Upload,
 } from "lucide-react";
+import FileUploader from "@/components/FileUploader";
 import {
   getCourseById,
   getCategories,
@@ -241,6 +243,7 @@ export default function EditCoursePage() {
                   className="w-full bg-white border border-gray-200 rounded-xl pl-10 pr-4 py-3 text-sm focus:outline-none focus:border-[#9792EC] shadow-sm"
                 />
               </div>
+              <FileUploader onUploadComplete={(url) => setThumbnailUrl(url)} />
               {thumbnailUrl && (
                 <img
                   src={thumbnailUrl}

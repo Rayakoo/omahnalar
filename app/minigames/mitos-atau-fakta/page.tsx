@@ -6,6 +6,9 @@ import { useRouter } from "next/navigation";
 import { MITOS_FAKTA_QUESTIONS, type MitosFaktaQuestion } from "@/data/mitosFaktaQuestions";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { id, en } from "@/data/translations";
+import PlayerNamePrompt from "@/components/PlayerNamePrompt";
+import { usePlayerName } from "@/contexts/PlayerNameContext";
+import { saveMinigameResult } from "@/services/minigames";
 
 type AnswerType = "MITOS" | "FAKTA";
 type GamePhase = "welcome" | "playing" | "finished";
@@ -35,6 +38,8 @@ export default function MitosAtauFaktaPage() {
   const t = locale === "id" ? id.mitosFakta : en.mitosFakta;
   const common = locale === "id" ? id.common : en.common;
   const min = locale === "id" ? id.minigames : en.minigames;
+  const { playerName } = usePlayerName();
+  const [showNamePrompt, setShowNamePrompt] = useState(false);
   const [phase, setPhase] = useState<GamePhase>("welcome");
   const [countdown, setCountdown] = useState<number | null>(null);
   const [countdownKey, setCountdownKey] = useState(0);
@@ -49,12 +54,19 @@ export default function MitosAtauFaktaPage() {
   const [showConfetti, setShowConfetti] = useState(false);
   const [timeLeft, setTimeLeft] = useState(TIME_LIMIT);
   const [isTimeout, setIsTimeout] = useState(false);
+  const [elapsedMs, setElapsedMs] = useState(0);
+  const startTimeRef = useRef<number | null>(null);
 
   const questions = MITOS_FAKTA_QUESTIONS;
   const currentQuestion = questions[currentIndex];
   const totalQuestions = questions.length;
 
   const handleStart = useCallback(() => {
+    setShowNamePrompt(true);
+  }, []);
+
+  const handleNameConfirm = useCallback(() => {
+    setShowNamePrompt(false);
     setCountdown(3);
     setCountdownKey((k) => k + 1);
   }, []);
@@ -64,6 +76,8 @@ export default function MitosAtauFaktaPage() {
     if (countdown < 0) {
       setCountdown(null);
       setPhase("playing");
+      startTimeRef.current = Date.now();
+      setElapsedMs(0);
       setCurrentIndex(0);
       setAnswers(new Array(totalQuestions).fill(null));
       setScore(0);
@@ -111,6 +125,16 @@ export default function MitosAtauFaktaPage() {
     }, 0);
 
     if (currentIndex >= totalQuestions - 1) {
+      const wrong = totalQuestions - correctCount;
+      const timeMs = startTimeRef.current ? Date.now() - startTimeRef.current : 0;
+      saveMinigameResult({
+        player_name: playerName || "Unknown",
+        minigame: "mitos-atau-fakta",
+        score: correctCount,
+        total: totalQuestions,
+        time_ms: timeMs,
+        wrong,
+      });
       setPhase("finished");
       if (correctCount / totalQuestions >= 0.6) {
         setTimeout(() => setShowConfetti(true), 500);
@@ -126,7 +150,7 @@ export default function MitosAtauFaktaPage() {
     setShowExplanation(false);
     setTimeLeft(TIME_LIMIT);
     setIsTimeout(false);
-  }, [currentIndex, totalQuestions, answers, selected, questions]);
+  }, [currentIndex, totalQuestions, answers, selected, questions, playerName]);
 
   // Timer
   useEffect(() => {
@@ -144,6 +168,16 @@ export default function MitosAtauFaktaPage() {
     return () => clearInterval(interval);
   }, [phase, revealed, currentIndex]);
 
+  useEffect(() => {
+    if (phase !== "playing") return;
+    const id = setInterval(() => {
+      if (startTimeRef.current !== null) {
+        setElapsedMs(Date.now() - startTimeRef.current);
+      }
+    }, 200);
+    return () => clearInterval(id);
+  }, [phase]);
+
   // Timer color
   const timerPct = timeLeft / TIME_LIMIT;
   const timerColor =
@@ -156,6 +190,10 @@ export default function MitosAtauFaktaPage() {
   const timerPulse = timerPct <= 0.25 ? "animate-[timer-pulse_1s_ease-in-out_infinite]" : "";
   const circumference = 188;
   const offset = circumference - timerPct * circumference;
+
+  if (showNamePrompt) {
+    return <PlayerNamePrompt onStart={handleNameConfirm} />;
+  }
 
   if (countdown !== null) {
     return <CountdownOverlay value={countdown} key={countdownKey} />;

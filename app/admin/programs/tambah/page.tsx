@@ -4,6 +4,7 @@ import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Save, Plus, X } from "lucide-react";
 import { createProgram } from "@/services/programs";
+import FileUploader from "@/components/FileUploader";
 
 type ImageInput = { url: string; is_thumbnail: boolean };
 
@@ -205,6 +206,7 @@ export default function TambahProgram() {
                   placeholder="https://example.com/gambar.jpg"
                   className="flex-1 px-4 py-3 bg-white border border-[#D9D7EC] rounded-xl focus:outline-none focus:ring-1 focus:ring-purple-500 placeholder-gray-400 text-sm text-gray-900"
                 />
+                <FileUploader onUploadComplete={(url) => updateImageUrl(idx, url)} />
                 <button
                   type="button"
                   onClick={() => setImageAsThumbnail(idx)}
@@ -240,6 +242,7 @@ export default function TambahProgram() {
                   placeholder="https://youtube.com/watch?v=... atau https://drive.google.com/file/d/..."
                   className="flex-1 px-4 py-3 bg-white border border-[#D9D7EC] rounded-xl focus:outline-none focus:ring-1 focus:ring-purple-500 placeholder-gray-400 text-sm text-gray-900"
                 />
+                <FileUploader onUploadComplete={(url) => updateVideoUrl(idx, url)} accept="video/*" label="Upload Video" />
                 <button type="button" onClick={() => removeVideo(idx)} className="text-red-400 hover:text-red-600 mt-3">
                   <X className="w-4 h-4" />
                 </button>

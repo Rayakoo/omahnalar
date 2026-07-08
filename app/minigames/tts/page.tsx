@@ -6,6 +6,9 @@ import { useRouter } from "next/navigation";
 import { CROSSWORD_CLUES, GRID_ROWS, GRID_COLS, buildGrid, type Clue } from "@/data/crosswordData";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { id, en } from "@/data/translations";
+import PlayerNamePrompt from "@/components/PlayerNamePrompt";
+import { usePlayerName } from "@/contexts/PlayerNameContext";
+import { saveMinigameResult } from "@/services/minigames";
 
 type GamePhase = "welcome" | "playing" | "finished";
 
@@ -82,6 +85,8 @@ export default function TTSPage() {
   const { locale } = useLanguage();
   const t = locale === "id" ? id.tts : en.tts;
   const common = locale === "id" ? id.common : en.common;
+  const { playerName } = usePlayerName();
+  const [showNamePrompt, setShowNamePrompt] = useState(false);
   const [phase, setPhase] = useState<GamePhase>("welcome");
   const [countdown, setCountdown] = useState<number | null>(null);
   const [countdownKey, setCountdownKey] = useState(0);
@@ -200,6 +205,14 @@ export default function TTSPage() {
         if (startTimeRef.current !== null) {
           setFinalTimeMs(Date.now() - startTimeRef.current);
         }
+        saveMinigameResult({
+          player_name: playerName || "Unknown",
+          minigame: "tts",
+          score: completed.size,
+          total: totalClues,
+          time_ms: startTimeRef.current ? Date.now() - startTimeRef.current : 0,
+          wrong: totalClues - completed.size,
+        });
         setTimeout(() => setShowCompletion(true), 600);
         return;
       }
@@ -286,6 +299,11 @@ export default function TTSPage() {
   );
 
   const handleStart = useCallback(() => {
+    setShowNamePrompt(true);
+  }, []);
+
+  const handleNameConfirm = useCallback(() => {
+    setShowNamePrompt(false);
     setCountdown(3);
     setCountdownKey((k) => k + 1);
   }, []);
@@ -349,6 +367,10 @@ export default function TTSPage() {
       focusFirstCell(CROSSWORD_CLUES[0]);
     }
   }, [focusFirstCell]);
+
+  if (showNamePrompt) {
+    return <PlayerNamePrompt onStart={handleNameConfirm} />;
+  }
 
   if (countdown !== null) {
     return <CountdownOverlay value={countdown} key={countdownKey} />;
@@ -618,6 +640,15 @@ export default function TTSPage() {
                   if (startTimeRef.current !== null) {
                     setFinalTimeMs(Date.now() - startTimeRef.current);
                   }
+                  const timeMs = startTimeRef.current ? Date.now() - startTimeRef.current : 0;
+                  saveMinigameResult({
+                    player_name: playerName || "Unknown",
+                    minigame: "tts",
+                    score: completedClues.size,
+                    total: totalClues,
+                    time_ms: timeMs,
+                    wrong: totalClues - completedClues.size,
+                  });
                   setPhase("finished");
                   setTimeout(() => setShowCompletion(false), 100);
                 }}
@@ -676,8 +707,6 @@ export default function TTSPage() {
       {/* Finished result screen */}
       {phase === "finished" && (
         <ResultScreen
-          correctLetters={finishLetterCorrect}
-          totalLetters={finishLetterTotal}
           totalClues={totalClues}
           completedClues={completedClues.size}
           finalTimeMs={finalTimeMs}
@@ -799,16 +828,12 @@ function WelcomeScreen({
 }
 
 function ResultScreen({
-  correctLetters,
-  totalLetters,
   totalClues,
   completedClues,
   finalTimeMs,
   onRestart,
   onBack,
 }: {
-  correctLetters: number;
-  totalLetters: number;
   totalClues: number;
   completedClues: number;
   finalTimeMs: number;
@@ -822,21 +847,21 @@ function ResultScreen({
   const [showItems, setShowItems] = useState(false);
 
   const allComplete = completedClues === totalClues;
-  const pct = totalLetters > 0 ? Math.round((correctLetters / totalLetters) * 100) : 0;
+  const pct = totalClues > 0 ? Math.round((completedClues / totalClues) * 100) : 0;
 
   useEffect(() => {
     const t1 = setTimeout(() => {
       let n = 0;
-      const step = Math.max(1, correctLetters / 30);
+      const step = Math.max(1, completedClues / 30);
       const interval = setInterval(() => {
-        n = Math.min(n + step, correctLetters);
+        n = Math.min(n + step, completedClues);
         setAnimScore(Math.round(n));
-        if (n >= correctLetters) clearInterval(interval);
+        if (n >= completedClues) clearInterval(interval);
       }, 40);
     }, 300);
     const t2 = setTimeout(() => setShowItems(true), 800);
     return () => { clearTimeout(t1); clearTimeout(t2); };
-  }, [correctLetters]);
+  }, [completedClues]);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
@@ -854,7 +879,7 @@ function ResultScreen({
                 strokeLinecap="round"
                 style={{
                   strokeDasharray: 283,
-                  strokeDashoffset: 283 - (correctLetters / totalLetters) * 283,
+                  strokeDashoffset: 283 - (completedClues / totalClues) * 283,
                   transition: "stroke-dashoffset 1.5s cubic-bezier(0.4, 0, 0.2, 1)",
                 }}
               />
@@ -862,7 +887,7 @@ function ResultScreen({
             <div className="absolute inset-0 flex flex-col items-center justify-center">
               <span className="text-3xl">{allComplete ? "🎉" : pct >= 60 ? "👍" : "💪"}</span>
               <span className="font-bold text-3xl text-brand-900 leading-none">{animScore}</span>
-              <span className="text-brand-700/60 text-xs">{t.dari} {totalLetters}</span>
+              <span className="text-brand-700/60 text-xs">{t.dari} {totalClues}</span>
             </div>
           </div>
           <h2 className="text-2xl font-bold text-brand-900 mb-1">

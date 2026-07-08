@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { ShieldCheck, Phone, Scale, Users, UploadCloud, ArrowUpRight } from "lucide-react";
+import { ShieldCheck, Phone, Scale, Users, UploadCloud, ArrowUpRight, Loader2, X } from "lucide-react";
 import CustomDatePicker from "@/components/CustomDatePicker";
 import { createReport, getReportByTicket } from "@/services/reports";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { id, en } from "@/data/translations";
+import { uploadToGarage } from "@/services/garage";
 
 export default function TanyaNalarPage() {
   const router = useRouter();
@@ -34,6 +35,8 @@ export default function TanyaNalarPage() {
   const [images, setImages] = useState<string[]>([]);
   const [category, setCategory] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Cek status
   const [cekEmail, setCekEmail] = useState("");
@@ -255,11 +258,60 @@ export default function TanyaNalarPage() {
               </div>
 
               <div>
-                <div className="border-2 border-dashed border-gray-200 rounded-2xl bg-[#FFFDF9] p-8 text-center flex flex-col items-center justify-center cursor-pointer hover:border-[#736A9C] transition-colors">
-                  <UploadCloud className="w-10 h-10 mb-2 text-gray-500" />
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  onChange={async (e) => {
+                    const files = e.target.files;
+                    if (!files?.length) return;
+                    setUploadingImage(true);
+                    try {
+                      for (const file of Array.from(files)) {
+                        const url = await uploadToGarage(file);
+                        if (url) setImages((prev) => [...prev, url]);
+                      }
+                    } finally {
+                      setUploadingImage(false);
+                      if (fileInputRef.current) fileInputRef.current.value = "";
+                    }
+                  }}
+                  className="hidden"
+                />
+                <div
+                  onClick={() => fileInputRef.current?.click()}
+                  className="border-2 border-dashed border-gray-200 rounded-2xl bg-[#FFFDF9] p-8 text-center flex flex-col items-center justify-center cursor-pointer hover:border-[#736A9C] transition-colors"
+                >
+                  {uploadingImage ? (
+                    <Loader2 className="w-10 h-10 mb-2 text-gray-500 animate-spin" />
+                  ) : (
+                    <UploadCloud className="w-10 h-10 mb-2 text-gray-500" />
+                  )}
                   <p className="text-xs font-medium text-gray-700">{t.uploadArea}</p>
                   <p className="text-[10px] text-gray-400 mt-1">{t.uploadHint}</p>
                 </div>
+                {images.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mt-3">
+                    {images.map((imgUrl, idx) => (
+                      <div key={idx} className="relative group">
+                        <img
+                          src={imgUrl}
+                          alt={`Upload ${idx + 1}`}
+                          className="w-20 h-20 rounded-lg object-cover border border-gray-200"
+                          onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setImages(images.filter((_, i) => i !== idx))}
+                          className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
               <button

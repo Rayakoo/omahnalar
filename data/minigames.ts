@@ -30,4 +30,14 @@ export const MINIGAMES: Minigame[] = [
     color: "#7C78A8",
     slug: "/minigames/mitos-atau-fakta",
   },
+  {
+    id: "puzzle",
+    title: "Puzzle Edukasi",
+    description: "Susun potongan puzzle dengan drag and drop untuk mengungkap fakta menarik seputar kesehatan reproduksi.",
+    titleEn: "Educational Puzzle",
+    descriptionEn: "Arrange puzzle pieces by drag and drop to reveal interesting facts about reproductive health.",
+    icon: "🧩",
+    color: "#6BBF8A",
+    slug: "/minigames/puzzle",
+  },
 ];

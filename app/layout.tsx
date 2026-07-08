@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import LayoutShell from "@/components/LayoutShell";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { LanguageProvider } from "@/contexts/LanguageContext";
+import { PlayerNameProvider } from "@/contexts/PlayerNameContext";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -54,7 +55,9 @@ export default function RootLayout({
       <body className="min-h-screen bg-page-50 font-sans text-brand-900 flex flex-col">
         <LanguageProvider>
           <AuthProvider>
-            <LayoutShell>{children}</LayoutShell>
+            <PlayerNameProvider>
+              <LayoutShell>{children}</LayoutShell>
+            </PlayerNameProvider>
           </AuthProvider>
         </LanguageProvider>
       </body>

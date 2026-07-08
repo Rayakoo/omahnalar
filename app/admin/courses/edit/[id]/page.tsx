@@ -2,9 +2,10 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useRouter, useParams } from "next/navigation";
-import { ArrowLeft, Save } from "lucide-react";
+import { ArrowLeft, Save, Upload } from "lucide-react";
 import { getCourseById, getCategories, getEducationLevels, updateCourse, type CourseWithRelations, type Category, type EducationLevel } from "@/services/courses";
 import RichTextEditor from "@/components/admin/RichTextEditor";
+import FileUploader from "@/components/FileUploader";
 
 export default function EditCourse() {
   const router = useRouter();
@@ -104,13 +105,16 @@ export default function EditCourse() {
 
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-1">Thumbnail <span className="text-gray-400 font-normal text-xs">(opsional)</span></label>
-            <input
-              type="url"
-              value={form.thumbnail_url}
-              onChange={(e) => setForm((prev) => ({ ...prev, thumbnail_url: e.target.value }))}
-              placeholder="https://example.com/gambar.jpg"
-              className="w-full px-4 py-3 bg-white border border-[#D9D7EC] rounded-xl focus:outline-none focus:ring-1 focus:ring-purple-500 placeholder-gray-400 text-sm text-gray-900"
-            />
+            <div className="flex items-start gap-2">
+              <input
+                type="url"
+                value={form.thumbnail_url}
+                onChange={(e) => setForm((prev) => ({ ...prev, thumbnail_url: e.target.value }))}
+                placeholder="https://example.com/gambar.jpg"
+                className="flex-1 px-4 py-3 bg-white border border-[#D9D7EC] rounded-xl focus:outline-none focus:ring-1 focus:ring-purple-500 placeholder-gray-400 text-sm text-gray-900"
+              />
+              <FileUploader onUploadComplete={(url) => setForm((prev) => ({ ...prev, thumbnail_url: url }))} />
+            </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

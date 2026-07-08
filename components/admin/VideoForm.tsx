@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Trash2, Save } from "lucide-react";
+import { Trash2, Save, Upload } from "lucide-react";
 import RichTextEditor from "./RichTextEditor";
 import {
   createCourseVideo,
@@ -10,6 +10,7 @@ import {
   getNextGlobalUrutanAndIncrement,
   type CourseVideo,
 } from "@/services/courses";
+import FileUploader from "@/components/FileUploader";
 
 interface VideoFormProps {
   courseId: string;
@@ -103,13 +104,16 @@ export default function VideoForm({ courseId, videoData, onSuccess }: VideoFormP
 
         <div>
           <label className="block text-sm font-medium text-gray-600 mb-2">Link Video (YouTube/Google Drive)</label>
-          <input
-            type="url"
-            value={videoUrl}
-            onChange={(e) => setVideoUrl(e.target.value)}
-            placeholder="https://www.youtube.com/watch..."
-            className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#9792EC] shadow-sm placeholder-gray-300"
-          />
+          <div className="flex items-start gap-2">
+            <input
+              type="url"
+              value={videoUrl}
+              onChange={(e) => setVideoUrl(e.target.value)}
+              placeholder="https://www.youtube.com/watch..."
+              className="flex-1 w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#9792EC] shadow-sm placeholder-gray-300"
+            />
+            <FileUploader onUploadComplete={(url) => setVideoUrl(url)} accept="video/*" label="Upload Video" />
+          </div>
         </div>
 
         <div className="flex items-center justify-center gap-4 pt-6">

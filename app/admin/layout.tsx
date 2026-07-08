@@ -12,6 +12,7 @@ const NAV_ITEMS = [
   { label: "Kelola Produk", href: "/admin/produk" },
   { label: "Dokumentasi", href: "/admin/galleries" },
   { label: "Kelola Admin", href: "/admin/users" },
+  { label: "Minigames", href: "/admin/minigames" },
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {

@@ -2,9 +2,10 @@
 
 import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Save } from "lucide-react";
+import { ArrowLeft, Save, Upload } from "lucide-react";
 import { createGallery } from "@/services/galleries";
 import { transformImageUrl } from "@/lib/image";
+import FileUploader from "@/components/FileUploader";
 
 export default function TambahGalleries() {
   const router = useRouter();
@@ -48,13 +49,16 @@ export default function TambahGalleries() {
         <div className="bg-[#EBEAF6]/60 border border-[#D9D7EC] rounded-2xl p-6 space-y-5">
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-1">URL Gambar <span className="text-red-500">*</span></label>
-            <input
-              type="url"
-              value={url}
-              onChange={(e) => setUrl(e.target.value)}
-              placeholder="https://drive.google.com/file/d/... atau https://example.com/gambar.jpg"
-              className="w-full px-4 py-3 bg-white border border-[#D9D7EC] rounded-xl focus:outline-none focus:ring-1 focus:ring-purple-500 placeholder-gray-400 text-sm text-gray-900"
-            />
+            <div className="flex items-start gap-2">
+              <input
+                type="url"
+                value={url}
+                onChange={(e) => setUrl(e.target.value)}
+                placeholder="https://drive.google.com/file/d/... atau https://example.com/gambar.jpg"
+                className="flex-1 px-4 py-3 bg-white border border-[#D9D7EC] rounded-xl focus:outline-none focus:ring-1 focus:ring-purple-500 placeholder-gray-400 text-sm text-gray-900"
+              />
+              <FileUploader onUploadComplete={(url) => setUrl(url)} />
+            </div>
             <p className="text-[10px] text-gray-400 mt-1">Gunakan link Google Drive atau URL gambar langsung.</p>
           </div>
 

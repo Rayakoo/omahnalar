@@ -6,6 +6,7 @@ import { ArrowLeft, Save, FileText, Plus, X } from "lucide-react";
 import { createProduct } from "@/services/products";
 import { useAuth } from "@/contexts/AuthContext";
 import RichTextEditor from "@/components/admin/RichTextEditor";
+import FileUploader from "@/components/FileUploader";
 
 type ImageInput = { url: string; is_thumbnail: boolean };
 
@@ -162,6 +163,7 @@ export default function TambahProduk() {
                   placeholder="https://drive.google.com/file/d/..."
                   className="flex-1 px-4 py-3 bg-white border border-[#D9D7EC] rounded-xl focus:outline-none focus:ring-1 focus:ring-purple-500 placeholder-gray-400 text-sm text-gray-900"
                 />
+                <FileUploader onUploadComplete={(url) => updateImageUrl(idx, url)} />
                 <button
                   type="button"
                   onClick={() => setImageAsThumbnail(idx)}
