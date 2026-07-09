@@ -210,10 +210,12 @@ export default function MateriDetail() {
                   {materiTab === "file" && activeSection.data.file_url && (
                     (() => {
                       const rawUrl = activeSection.data.file_url;
-                      const url = getProxiedUrl(rawUrl) || rawUrl;
+                      const proxied = getProxiedUrl(rawUrl);
+                      const url = proxied || rawUrl;
+                      const absUrl = url.startsWith("/") ? `${window.location.origin}${url}` : url;
                       const isPdf = url?.match(/\.pdf(\?|$)/i);
                       if (isPdf) {
-                        const viewerUrl = `https://docs.google.com/viewer?url=${encodeURIComponent(url)}&embedded=true`;
+                        const viewerUrl = `https://docs.google.com/viewer?url=${encodeURIComponent(absUrl)}&embedded=true`;
                         return (
                           <iframe
                             src={viewerUrl}

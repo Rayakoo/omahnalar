@@ -2,8 +2,11 @@ const GARAGE_WEB_HOST = "bucket-utama.web.43.156.104.232.sslip.io";
 
 export function getProxiedUrl(url: string | null | undefined): string | undefined {
   if (!url) return undefined;
-  if (url.includes(GARAGE_WEB_HOST) && url.match(/\.(mp4|webm)(\?|$)/i)) {
-    return `/api/video-proxy?url=${encodeURIComponent(url)}`;
+  if (url.includes(GARAGE_WEB_HOST)) {
+    if (url.match(/\.(mp4|webm)(\?|$)/i)) {
+      return `/api/video-proxy?url=${encodeURIComponent(url)}`;
+    }
+    return `/api/image-proxy?url=${encodeURIComponent(url)}`;
   }
   return url;
 }
