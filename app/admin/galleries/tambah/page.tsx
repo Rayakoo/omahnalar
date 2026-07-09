@@ -67,7 +67,7 @@ export default function TambahGalleries() {
               <img
                 src={transformImageUrl(url)}
                 alt="Preview"
-                className="w-full h-48 object-cover"
+                className="w-full h-48 object-contain bg-gray-100"
                 onError={(e) => {
                   (e.currentTarget as HTMLImageElement).style.display = "none";
                 }}

@@ -298,7 +298,7 @@ export default function TanyaNalarPage() {
                         <img
                           src={imgUrl}
                           alt={`Upload ${idx + 1}`}
-                          className="w-20 h-20 rounded-lg object-cover border border-gray-200"
+                          className="w-20 h-20 rounded-lg object-contain bg-gray-100 border border-gray-200"
                           onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
                         />
                         <button

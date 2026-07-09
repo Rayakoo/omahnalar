@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Trash2, Save } from "lucide-react";
+import { Trash2, Save, Upload } from "lucide-react";
 import {
   createCourseMaterial,
   updateCourseMaterial,
@@ -10,6 +10,7 @@ import {
   type CourseMaterial,
 } from "@/services/courses";
 import RichTextEditor from "./RichTextEditor";
+import FileUploader from "@/components/FileUploader";
 
 interface ModuleFormProps {
   courseId: string;
@@ -22,9 +23,9 @@ export default function ModuleForm({ courseId, moduleData, onSuccess }: ModuleFo
   const isNew = !moduleData;
   const [title, setTitle] = useState(moduleData?.title ?? "");
   const [content, setContent] = useState(moduleData?.content ?? "");
+  const [fileUrl, setFileUrl] = useState(moduleData?.file_url ?? "");
   const [nextUrutan, setNextUrutan] = useState(1);
   const [saving, setSaving] = useState(false);
-  const maxChars = 1000;
 
   useEffect(() => {
     if (!isNew) return;
@@ -47,10 +48,11 @@ export default function ModuleForm({ courseId, moduleData, onSuccess }: ModuleFo
           course_id: courseId,
           title,
           content,
+          file_url: fileUrl || undefined,
           urutan: nextUrutan,
         });
       } else {
-        await updateCourseMaterial(moduleData.id, { title, content });
+        await updateCourseMaterial(moduleData.id, { title, content, file_url: fileUrl || undefined });
       }
       onSuccess ? onSuccess() : router.push(`/admin/course/${courseId}`);
     } catch (err) {
@@ -98,6 +100,21 @@ export default function ModuleForm({ courseId, moduleData, onSuccess }: ModuleFo
             onChange={setContent}
             placeholder="Tulis materi di sini..."
           />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-600 mb-2">File Pendukung <span className="text-gray-400 font-normal text-xs">(opsional)</span></label>
+          <div className="flex items-start gap-2">
+            <input
+              type="url"
+              value={fileUrl}
+              onChange={(e) => setFileUrl(e.target.value)}
+              placeholder="https://example.com/file.pdf"
+              className="flex-1 w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#9792EC] shadow-sm placeholder-gray-300"
+            />
+            <FileUploader onUploadComplete={(url) => setFileUrl(url)} accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip,.rar,.txt" label="Upload File" />
+          </div>
+          <p className="text-[10px] text-gray-400 mt-1">Link Google Drive atau upload file langsung (PDF, DOC, ZIP, dll).</p>
         </div>
 
         <div className="flex items-center justify-center gap-4 pt-6">

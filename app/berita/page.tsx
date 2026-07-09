@@ -109,7 +109,7 @@ export default function BeritaPage() {
                       <img
                         src={imgUrl}
                         alt={b.title}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        className="w-full h-full object-contain bg-gray-100 group-hover:scale-105 transition-transform duration-500"
                         onError={(e) => {
                           (e.currentTarget as HTMLImageElement).style.display = "none";
                         }}

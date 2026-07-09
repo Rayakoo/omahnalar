@@ -231,7 +231,7 @@ export default function CoursePage() {
                         <img
                           src={transformImageUrl(course.thumbnail_url)}
                           alt={course.title}
-                          className="w-full h-full object-cover"
+                          className="w-full h-full object-contain bg-gray-100"
                         />
                       ) : (
                         <div
@@ -291,7 +291,7 @@ export default function CoursePage() {
                         <img
                           src={transformImageUrl(course.thumbnail_url)}
                           alt={course.title}
-                          className="w-full h-full object-cover"
+                          className="w-full h-full object-contain bg-gray-100"
                         />
                       ) : (
                         <div
@@ -381,7 +381,7 @@ export default function CoursePage() {
                         <img
                           src={transformImageUrl(course.thumbnail_url)}
                           alt={course.title}
-                          className="w-full h-full object-cover"
+                          className="w-full h-full object-contain bg-gray-100"
                         />
                       ) : (
                         <div
@@ -477,7 +477,7 @@ function SchoolCarousel({ level, courses, seed, onStartCourse }: { level: Educat
                   <img
                     src={transformImageUrl(course.thumbnail_url)}
                     alt={course.title}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-contain bg-gray-100"
                   />
                 ) : (
                   <div

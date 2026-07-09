@@ -26,7 +26,14 @@ export type Course = {
   thumbnail_url: string | null;
   is_published: boolean;
   jumlah_isi: number;
+  course_type: "self_paced" | "interactive" | "unsolved_case";
   created_at: string;
+};
+
+export const COURSE_TYPE_LABELS: Record<string, string> = {
+  self_paced: "Self Paced",
+  interactive: "Interactive",
+  unsolved_case: "Unsolved Case",
 };
 
 export type CourseWithRelations = Course & {
@@ -75,6 +82,7 @@ export type CreateCourseInput = {
   description?: string;
   category_id: string;
   education_level_id: string;
+  course_type?: "self_paced" | "interactive" | "unsolved_case";
   thumbnail_url?: string;
   is_published?: boolean;
 };
@@ -105,7 +113,7 @@ export async function createCourse(input: CreateCourseInput) {
 
 export async function updateCourse(
   id: string,
-  updates: Partial<Pick<Course, "title" | "description" | "category_id" | "education_level_id" | "thumbnail_url" | "is_published">>
+  updates: Partial<Pick<Course, "title" | "description" | "category_id" | "education_level_id" | "course_type" | "thumbnail_url" | "is_published">>
 ) {
   const token = await getValidToken().catch(() => getAccessToken());
   const res = await fetch(
@@ -243,6 +251,7 @@ export type CourseMaterial = {
   course_id: string;
   title: string;
   content: string;
+  file_url: string | null;
   urutan: number;
   created_at: string;
 };
@@ -262,6 +271,7 @@ export async function createCourseMaterial(input: {
   course_id: string;
   title: string;
   content: string;
+  file_url?: string;
   urutan?: number;
 }) {
   const token = await getValidToken().catch(() => getAccessToken());
@@ -289,7 +299,7 @@ export async function createCourseMaterial(input: {
 
 export async function updateCourseMaterial(
   id: string,
-  updates: Partial<Pick<CourseMaterial, "title" | "content" | "urutan">>
+  updates: Partial<Pick<CourseMaterial, "title" | "content" | "file_url" | "urutan">>
 ) {
   const token = await getValidToken().catch(() => getAccessToken());
   const res = await fetch(

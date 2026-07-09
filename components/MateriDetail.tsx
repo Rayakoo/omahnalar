@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { ChevronLeft, Play, FileText, HelpCircle, CheckCircle2, Clock, BookOpen, BarChart } from "lucide-react";
+import { ChevronLeft, Play, FileText, HelpCircle, CheckCircle2, Clock, BookOpen, BarChart, Download, File as FileIcon } from "lucide-react";
 import { getCourseById, getCourseSections, type CourseWithRelations, type CourseSection } from "@/services/courses";
 import { getQuizById, getQuizIdsByCourse, getUserQuizResults } from "@/services/quizzes";
 import { getUserCourse, enrollCourse, updateProgress } from "@/services/userCourses";
@@ -11,6 +11,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { id, en } from "@/data/translations";
 import { getVideoEmbedUrl } from "@/lib/video";
+import { getProxiedUrl } from "@/services/garage";
 
 function sectionIcon(type: string) {
   switch (type) {
@@ -33,8 +34,8 @@ export default function MateriDetail() {
   const [course, setCourse] = useState<CourseWithRelations | null>(null);
   const [sections, setSections] = useState<CourseSection[]>([]);
   const [activeIdx, setActiveIdx] = useState(0);
-  const [activeTab, setActiveTab] = useState<"overview" | "notes">("overview");
   const [completedIds, setCompletedIds] = useState<string[]>([]);
+  const [materiTab, setMateriTab] = useState<"materi" | "file">("materi");
   const [loading, setLoading] = useState(true);
   const userUrutan = useRef(0);
 
@@ -91,6 +92,7 @@ export default function MateriDetail() {
 
   const handleSectionClick = async (idx: number) => {
     const sec = sections[idx];
+    setMateriTab("materi");
     if (user) {
       try {
         const dbUc = await getUserCourse(user.id, courseId);
@@ -126,7 +128,7 @@ export default function MateriDetail() {
           <img src="/images/logo_omah.png" alt="Omah Nalar" className="h-10 w-auto" />
         </Link>
         <button
-          onClick={() => router.push("/omah-belajar")}
+          onClick={() => router.push(`/omah-belajar/${courseId}`)}
           className="flex items-center gap-1 bg-brand-900 text-white px-5 py-2 rounded-xl text-sm font-medium hover:bg-brand-700 transition-all active:scale-95 shadow-sm"
         >
           <ChevronLeft className="w-4 h-4" />
@@ -136,86 +138,132 @@ export default function MateriDetail() {
 
       <main className="max-w-7xl mx-auto px-4 md:px-6 py-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 flex flex-col gap-6">
-          <div className="w-full bg-gray-200 rounded-3xl overflow-hidden aspect-video shadow-md relative border border-gray-200/50">
+          <div className={`w-full bg-gray-200 rounded-3xl shadow-md relative border border-gray-200/50 ${activeSection?.type === "materi" ? "" : "overflow-hidden aspect-video"}`}>
             {!activeSection ? (
               <div className="w-full h-full flex items-center justify-center text-brand-700/60 text-sm bg-white">
                 {t.pilihMateri}
               </div>
             ) : activeSection.type === "video" ? (
-              <iframe
-                className="w-full h-full"
-                src={(() => {
-                  const embed = getVideoEmbedUrl(activeSection.data.video_url);
-                  const base = embed || `https://www.youtube.com/embed/${activeSection.data.video_url}`;
-                  return base.includes("youtube.com/embed") ? `${base}?autoplay=1` : base;
-                })()}
-                title={activeSection.data.title}
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-              />
+              (() => {
+                const rawUrl = activeSection.data.video_url;
+                const url = getProxiedUrl(rawUrl) || rawUrl;
+                const isMp4 = url?.match(/\.(mp4|webm)(\?|$)/i) || rawUrl?.includes("bucket-utama.web.43.156.104.232.sslip.io");
+                if (isMp4) {
+                  return (
+                    <video
+                      className="w-full h-full object-contain bg-black"
+                      src={url}
+                      controls
+                    />
+                  );
+                }
+                const embed = getVideoEmbedUrl(url);
+                const base = embed || `https://www.youtube.com/embed/${url}`;
+                const src = base.includes("youtube.com/embed") ? `${base}?autoplay=1` : base;
+                return (
+                  <iframe
+                    className="w-full h-full"
+                    src={src}
+                    title={activeSection.data.title}
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                  />
+                );
+              })()
             ) : activeSection.type === "materi" ? (
-              <div className="w-full h-full bg-white p-8 md:p-12 overflow-y-auto flex flex-col justify-center items-start leading-relaxed">
-                <div className="bg-brand-100 text-brand-700 text-xs font-bold px-3 py-1 rounded-md mb-4 flex items-center gap-1">
-                  <FileText className="w-3.5 h-3.5" /> {t.modulBacaan}
+              <div className="w-full bg-white rounded-3xl flex flex-col leading-relaxed">
+                <div className="p-6 md:p-10 pb-0">
+                  <h2 className="text-xl md:text-2xl font-bold text-brand-900 mb-4">{activeSection.data.title}</h2>
+                  {activeSection.data.content && activeSection.data.file_url && (
+                    <div className="bg-brand-700/20 p-1 rounded-2xl flex items-center w-full mb-6">
+                      <button
+                        onClick={() => setMateriTab("materi")}
+                        className={`flex-1 py-2.5 text-center text-sm font-bold rounded-xl transition-all flex items-center justify-center gap-2 ${
+                          materiTab === "materi" ? "bg-white text-brand-900 shadow-sm" : "text-brand-900/60 hover:text-brand-900"
+                        }`}
+                      >
+                        <FileText className="w-4 h-4" />
+                        {locale === "id" ? "Materi" : "Text"}
+                      </button>
+                      <button
+                        onClick={() => setMateriTab("file")}
+                        className={`flex-1 py-2.5 text-center text-sm font-bold rounded-xl transition-all flex items-center justify-center gap-2 ${
+                          materiTab === "file" ? "bg-white text-brand-900 shadow-sm" : "text-brand-900/60 hover:text-brand-900"
+                        }`}
+                      >
+                        <FileIcon className="w-4 h-4" />
+                        {locale === "id" ? "File" : "File"}
+                      </button>
+                    </div>
+                  )}
                 </div>
-                <h2 className="text-xl md:text-2xl font-bold text-brand-900 mb-4">{activeSection.data.title}</h2>
-                <div
-                  className="text-sm md:text-base text-brand-900/80 font-normal leading-relaxed prose prose-sm max-w-none"
-                  dangerouslySetInnerHTML={{ __html: activeSection.data.content }}
-                />
+                <div className="px-6 md:px-10 pb-6 md:pb-10 overflow-y-auto max-h-[60vh]">
+                  {materiTab === "materi" && activeSection.data.content && (
+                    <div
+                      className="text-sm md:text-base text-brand-900/80 font-normal leading-relaxed prose prose-sm max-w-none"
+                      dangerouslySetInnerHTML={{ __html: activeSection.data.content }}
+                    />
+                  )}
+                  {materiTab === "materi" && !activeSection.data.content && activeSection.data.file_url && (
+                    <div className="text-sm text-gray-500 italic">{locale === "id" ? "Tidak ada teks materi." : "No text content."}</div>
+                  )}
+                  {materiTab === "file" && activeSection.data.file_url && (
+                    (() => {
+                      const rawUrl = activeSection.data.file_url;
+                      const url = getProxiedUrl(rawUrl) || rawUrl;
+                      const isPdf = url?.match(/\.pdf(\?|$)/i);
+                      if (isPdf) {
+                        const viewerUrl = `https://docs.google.com/viewer?url=${encodeURIComponent(url)}&embedded=true`;
+                        return (
+                          <iframe
+                            src={viewerUrl}
+                            className="w-full h-[70vh] rounded-xl border border-gray-200"
+                            title={locale === "id" ? "Pratinjau File" : "File Preview"}
+                          />
+                        );
+                      }
+                      return (
+                        <a
+                          href={url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-2 px-5 py-3 bg-brand-900 text-white text-sm font-bold rounded-xl hover:bg-brand-700 transition-all shadow-sm"
+                        >
+                          <Download className="w-4 h-4" />
+                          {locale === "id" ? "Download File" : "Download File"}
+                        </a>
+                      );
+                    })()
+                  )}
+                </div>
               </div>
             ) : null}
           </div>
 
           <div className="w-full">
-            <div className="bg-brand-700/20 p-1 rounded-2xl flex items-center w-full mb-6">
-              <button
-                onClick={() => setActiveTab("overview")}
-                className={`flex-1 py-2.5 text-center text-sm font-bold rounded-xl transition-all ${
-                  activeTab === "overview" ? "bg-white text-brand-900 shadow-sm" : "text-brand-900/60 hover:text-brand-900"
-                }`}
-              >
-                {t.overviewTab}
-              </button>
-              <button
-                onClick={() => setActiveTab("notes")}
-                className={`flex-1 py-2.5 text-center text-sm font-bold rounded-xl transition-all ${
-                  activeTab === "notes" ? "bg-white text-brand-900 shadow-sm" : "text-brand-900/60 hover:text-brand-900"
-                }`}
-              >
-                {t.notesTab}
-              </button>
+            <div className="flex flex-col gap-6">
+              <div className="flex flex-wrap items-center gap-6 text-xs md:text-sm text-brand-900/80 bg-white/50 border border-gray-100 p-4 rounded-2xl shadow-sm">
+                <div className="flex items-center gap-2">
+                  <Clock className="w-4 h-4 text-brand-700" />
+                  <span>{t.totalMateri} <strong className="font-bold text-brand-900">{sections.length}</strong></span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <BookOpen className="w-4 h-4 text-brand-700" />
+                  <span>{t.selesaiStat} <strong className="font-bold text-brand-900">{completedIds.length}</strong></span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <BarChart className="w-4 h-4 text-brand-700" />
+                  <span>{t.progressStat} <strong className="font-bold text-brand-900">{Math.round((completedIds.length / Math.max(sections.length, 1)) * 100)}%</strong></span>
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <h3 className="text-base font-bold text-brand-900">{course?.title}</h3>
+                <p className="text-sm text-brand-900/70 leading-relaxed font-normal">
+                  {course?.description || t.noDesc}
+                </p>
+              </div>
             </div>
-
-            {activeTab === "overview" ? (
-              <div className="flex flex-col gap-6">
-                <div className="flex flex-wrap items-center gap-6 text-xs md:text-sm text-brand-900/80 bg-white/50 border border-gray-100 p-4 rounded-2xl shadow-sm">
-                  <div className="flex items-center gap-2">
-                    <Clock className="w-4 h-4 text-brand-700" />
-                    <span>{t.totalMateri} <strong className="font-bold text-brand-900">{sections.length}</strong></span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <BookOpen className="w-4 h-4 text-brand-700" />
-                    <span>{t.selesaiStat} <strong className="font-bold text-brand-900">{completedIds.length}</strong></span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <BarChart className="w-4 h-4 text-brand-700" />
-                    <span>{t.progressStat} <strong className="font-bold text-brand-900">{Math.round((completedIds.length / Math.max(sections.length, 1)) * 100)}%</strong></span>
-                  </div>
-                </div>
-
-                <div className="flex flex-col gap-2">
-                  <h3 className="text-base font-bold text-brand-900">{course?.title}</h3>
-                  <p className="text-sm text-brand-900/70 leading-relaxed font-normal">
-                    {course?.description || t.noDesc}
-                  </p>
-                </div>
-              </div>
-            ) : (
-              <div className="p-4 bg-white rounded-2xl text-sm text-gray-500 italic">
-                {t.notesPlaceholder}
-              </div>
-            )}
           </div>
         </div>
 

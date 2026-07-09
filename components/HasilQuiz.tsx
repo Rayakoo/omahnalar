@@ -133,7 +133,7 @@ export default function HasilQuiz() {
           <span className="font-bold text-sm bg-brand-900 text-white px-4 py-1.5 rounded-full ml-2 shadow-sm">{t.hasilTitle}</span>
         </div>
         <button
-          onClick={() => router.push(`/omah-belajar/${courseId}`)}
+          onClick={() => router.push(`/omah-belajar/${courseId}/materi`)}
           className="flex items-center gap-1 bg-brand-900 text-white px-5 py-2 rounded-xl text-sm font-medium hover:bg-brand-700 transition-all active:scale-95 shadow-sm"
         >
           <ChevronLeft className="w-4 h-4" /> {common.back}
@@ -243,7 +243,7 @@ export default function HasilQuiz() {
             </p>
             <div className="w-full h-[1px] bg-emerald-200/60 my-2" />
             <button
-              onClick={() => router.push(`/omah-belajar/${courseId}`)}
+              onClick={() => router.push(`/omah-belajar/${courseId}/materi`)}
               className="flex items-center gap-1 bg-emerald-600 text-white px-6 py-2.5 rounded-xl text-sm font-bold hover:bg-emerald-700 transition-all shadow-sm"
             >
               {t.lanjutMateri}
@@ -268,7 +268,7 @@ export default function HasilQuiz() {
             <div className="w-full h-[1px] bg-rose-200/60 my-2" />
 
             <button
-              onClick={() => router.push(`/omah-belajar/${courseId}`)}
+              onClick={() => router.push(`/omah-belajar/${courseId}/materi`)}
               className="text-xs font-bold text-rose-600 hover:text-rose-800 transition-colors bg-white border border-rose-200 px-4 py-2 rounded-xl shadow-sm"
             >
               {t.cobaUlang}

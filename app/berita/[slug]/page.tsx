@@ -94,7 +94,7 @@ export default function BeritaDetail() {
             <img
               src={transformImageUrl(images[0].url)}
               alt={berita.title}
-              className="w-full h-full object-cover"
+              className="w-full h-full object-contain bg-gray-100"
               onError={(e) => {
                 (e.currentTarget as HTMLImageElement).style.display = "none";
                 const parent = (e.currentTarget as HTMLImageElement).parentElement;
@@ -143,7 +143,7 @@ export default function BeritaDetail() {
                   <img
                     src={transformImageUrl(img.url)}
                     alt={`${berita.title} ${idx + 2}`}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-contain bg-gray-100"
                     onError={(e) => {
                       (e.currentTarget as HTMLImageElement).style.display = "none";
                     }}

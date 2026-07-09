@@ -189,7 +189,7 @@ export default function ProgramDetail() {
                   <img
                     src={img.url}
                     alt={`${prog.title} ${idx + 1}`}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-contain bg-gray-100"
                     onError={(e) => {
                       (e.currentTarget as HTMLImageElement).style.display = "none";
                       const parent = (e.currentTarget as HTMLImageElement).parentElement;

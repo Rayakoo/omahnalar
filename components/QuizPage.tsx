@@ -115,7 +115,7 @@ export default function QuizPage() {
           <p className="text-lg font-bold mb-2">{t.belumSoal}</p>
           <p className="text-sm text-brand-900/70 mb-6">{t.belumSoalDesc}</p>
           <button
-            onClick={() => router.push(`/omah-belajar/${courseId}`)}
+            onClick={() => router.push(`/omah-belajar/${courseId}/materi`)}
             className="bg-brand-900 text-white px-6 py-2.5 rounded-xl text-sm font-bold hover:bg-brand-700 transition-all"
           >
             {t.kembaliCourse}
@@ -134,7 +134,7 @@ export default function QuizPage() {
       <nav className="bg-secondary-200 px-6 py-4 flex items-center justify-between shadow-sm">
         <span className="font-bold text-lg">{t.kuisNav}</span>
         <button
-          onClick={() => router.push(`/omah-belajar/${courseId}`)}
+          onClick={() => router.push(`/omah-belajar/${courseId}/materi`)}
           className="flex items-center gap-1 bg-brand-900 text-white px-5 py-2 rounded-xl text-sm font-medium hover:bg-brand-700 transition-all active:scale-95 shadow-sm"
         >
           <ChevronLeft className="w-4 h-4" /> {common.back}

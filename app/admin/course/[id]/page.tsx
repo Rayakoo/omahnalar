@@ -39,6 +39,7 @@ export default function EditCoursePage() {
 
   const [selectedRole, setSelectedRole] = useState("");
   const [selectedLevel, setSelectedLevel] = useState("");
+  const [courseType, setCourseType] = useState<"self_paced" | "interactive" | "unsolved_case">("self_paced");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [thumbnailUrl, setThumbnailUrl] = useState("");
@@ -79,6 +80,7 @@ export default function EditCoursePage() {
         setDescription(course.description ?? "");
         setSelectedRole(course.category_id);
         setSelectedLevel(course.education_level_id);
+        setCourseType(course.course_type);
         setThumbnailUrl(course.thumbnail_url ?? "");
         setCourseTitle(course.title);
         setVideos(vids);
@@ -102,6 +104,7 @@ export default function EditCoursePage() {
         description: description || undefined,
         category_id: selectedRole,
         education_level_id: selectedLevel,
+        course_type: courseType,
         thumbnail_url: thumbnailUrl || undefined,
         is_published: publish,
       };
@@ -229,6 +232,29 @@ export default function EditCoursePage() {
             </div>
           </div>
 
+          {/* Tipe Course */}
+          <div>
+            <label className="block text-sm font-medium text-gray-600 mb-2">Tipe Course</label>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              {[
+                { value: "self_paced" as const, label: "Self Paced", desc: "Belajar mandiri sesuai kecepatan sendiri" },
+                { value: "interactive" as const, label: "Interactive", desc: "Sesi interaktif dengan pendamping" },
+                { value: "unsolved_case" as const, label: "Unsolved Case", desc: "Studi kasus yang belum terpecahkan" },
+              ].map((type) => (
+                <div
+                  key={type.value}
+                  onClick={() => setCourseType(type.value)}
+                  className={`border-2 rounded-xl p-4 cursor-pointer transition-all ${
+                    courseType === type.value ? "border-[#9792EC] bg-[#F4F3FF]" : "border-gray-200 bg-white"
+                  }`}
+                >
+                  <h4 className="font-bold text-sm">{type.label}</h4>
+                  <p className="text-xs text-gray-400 mt-1">{type.desc}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
           {/* Thumbnail Course (URL) */}
           <div>
             <label className="block text-sm font-medium text-gray-600 mb-2">Thumbnail course</label>
@@ -248,7 +274,7 @@ export default function EditCoursePage() {
                 <img
                   src={thumbnailUrl}
                   alt="Preview"
-                  className="w-16 h-16 rounded-xl object-cover border border-gray-200 shrink-0"
+                  className="w-16 h-16 rounded-xl object-contain bg-gray-100 border border-gray-200 shrink-0"
                   onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
                 />
               )}

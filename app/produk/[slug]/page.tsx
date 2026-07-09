@@ -86,7 +86,7 @@ export default function ProdukDetail() {
                 <img
                   src={transformImageUrl(images[selectedImage].url)}
                   alt={produk.name}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-contain bg-gray-100"
                   onError={(e) => {
                     (e.currentTarget as HTMLImageElement).style.display = "none";
                   }}
@@ -110,7 +110,7 @@ export default function ProdukDetail() {
                     <img
                       src={transformImageUrl(img.url)}
                       alt={`${produk.name} ${idx + 1}`}
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-contain bg-gray-100"
                       onError={(e) => {
                         (e.currentTarget as HTMLImageElement).style.display = "none";
                       }}
