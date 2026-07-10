@@ -3,10 +3,11 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { ChevronLeft, Play, FileText, HelpCircle, CheckCircle2, Clock, BookOpen, BarChart, Download, File as FileIcon } from "lucide-react";
+import { ChevronLeft, Play, FileText, HelpCircle, CheckCircle2, Clock, BookOpen, BarChart, Download, File as FileIcon, Gamepad2 } from "lucide-react";
 import { getCourseById, getCourseSections, type CourseWithRelations, type CourseSection } from "@/services/courses";
 import { getQuizById, getQuizIdsByCourse, getUserQuizResults } from "@/services/quizzes";
 import { getUserCourse, enrollCourse, updateProgress } from "@/services/userCourses";
+import { getCourseMinigames, MINIGAME_TYPE_LABELS, type CourseMinigame } from "@/services/course-minigames";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { id, en } from "@/data/translations";
@@ -18,6 +19,7 @@ function sectionIcon(type: string) {
     case "video": return Play;
     case "materi": return FileText;
     case "quiz": return HelpCircle;
+    case "minigame": return Gamepad2;
     default: return FileText;
   }
 }
@@ -37,18 +39,21 @@ export default function MateriDetail() {
   const [completedIds, setCompletedIds] = useState<string[]>([]);
   const [materiTab, setMateriTab] = useState<"materi" | "file">("materi");
   const [loading, setLoading] = useState(true);
+  const [mgList, setMgList] = useState<CourseMinigame[]>([]);
   const userUrutan = useRef(0);
 
   useEffect(() => {
     if (!courseId) return;
     const fetchData = async () => {
       try {
-        const [c, secs] = await Promise.all([
+        const [c, secs, mgs] = await Promise.all([
           getCourseById(courseId),
           getCourseSections(courseId),
+          getCourseMinigames(courseId).catch(() => [] as CourseMinigame[]),
         ]);
         setCourse(c);
         setSections(secs);
+        setMgList(mgs);
 
         // Restore user progress
         if (user) {
@@ -108,6 +113,8 @@ export default function MateriDetail() {
     if (sec.type === "quiz") {
       const quiz = await getQuizById(sec.data.id);
       router.push(`/omah-belajar/${courseId}/${quiz.id}`);
+    } else if (sec.type === "minigame") {
+      router.push(`/omah-belajar/${courseId}/minigame/${sec.data.id}`);
     } else {
       setActiveIdx(idx);
     }
@@ -267,6 +274,30 @@ export default function MateriDetail() {
               </div>
             </div>
           </div>
+
+          {/* Minigame cards for interactive courses (shown when not viewing a minigame) */}
+          {course?.course_type === "interactive" && activeSection?.type !== "minigame" && mgList.length > 0 && (
+            <div className="bg-white rounded-3xl border border-gray-100 p-6 shadow-sm">
+              <h3 className="text-base font-bold text-brand-900 mb-4">Minigame</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                {mgList.map((mg) => (
+                  <button
+                    key={mg.id}
+                    onClick={() => router.push(`/omah-belajar/${courseId}/minigame/${mg.id}`)}
+                    className="bg-[#FFF0F5] border border-[#FFC0D5] rounded-xl p-4 text-left hover:bg-[#FFE8EF] transition-colors shadow-sm"
+                  >
+                    <div className="flex items-center gap-2 mb-1">
+                      <Gamepad2 className="w-4 h-4 text-[#E75480] shrink-0" />
+                      <span className="text-xs font-bold text-gray-700">{mg.title}</span>
+                    </div>
+                    <span className="text-[10px] text-gray-400 font-medium block">
+                      {MINIGAME_TYPE_LABELS[mg.type as keyof typeof MINIGAME_TYPE_LABELS] || mg.type}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="w-full">

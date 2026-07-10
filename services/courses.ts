@@ -374,15 +374,25 @@ export async function getNextGlobalUrutanAndIncrement(courseId: string) {
 export type CourseSection =
   | { type: "video"; data: CourseVideo }
   | { type: "materi"; data: CourseMaterial }
-  | { type: "quiz"; data: { id: string; title: string; description: string | null; urutan: number } };
+  | { type: "quiz"; data: { id: string; title: string; description: string | null; urutan: number } }
+  | { type: "minigame"; data: { id: string; title: string; type: string; urutan: number } };
 
 export async function getCourseSections(courseId: string) {
-  const [videos, materials, quizzes] = await Promise.all([
+  const [videos, materials, quizzes, minigames] = await Promise.all([
     getCourseVideos(courseId),
     getCourseMaterials(courseId),
     getSupabase()
       .from("quizzes")
       .select("id, title, description, urutan")
+      .eq("course_id", courseId)
+      .order("urutan", { ascending: true })
+      .then(({ data, error }) => {
+        if (error) throw error;
+        return data;
+      }),
+    getSupabase()
+      .from("course_minigames")
+      .select("id, title, type, urutan")
       .eq("course_id", courseId)
       .order("urutan", { ascending: true })
       .then(({ data, error }) => {
@@ -395,6 +405,7 @@ export async function getCourseSections(courseId: string) {
     ...videos.map((v) => ({ type: "video" as const, data: v })),
     ...materials.map((m) => ({ type: "materi" as const, data: m })),
     ...quizzes.map((q) => ({ type: "quiz" as const, data: q })),
+    ...minigames.map((m) => ({ type: "minigame" as const, data: m })),
   ];
 
   sections.sort((a, b) => a.data.urutan - b.data.urutan);

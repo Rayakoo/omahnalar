@@ -9,9 +9,11 @@ import {
   Plus,
   Video,
   FileText,
+  Gamepad2,
   Save,
   Send,
   Upload,
+  Trash2,
 } from "lucide-react";
 import FileUploader from "@/components/FileUploader";
 import {
@@ -30,6 +32,7 @@ import {
   type CourseMaterial,
 } from "@/services/courses";
 import { getQuizzesByCourse, type Quiz } from "@/services/quizzes";
+import { getCourseMinigames, deleteCourseMinigame, MINIGAME_TYPE_LABELS, type CourseMinigame } from "@/services/course-minigames";
 
 export default function EditCoursePage() {
   const router = useRouter();
@@ -49,6 +52,7 @@ export default function EditCoursePage() {
   const [videos, setVideos] = useState<CourseVideo[]>([]);
   const [materials, setMaterials] = useState<CourseMaterial[]>([]);
   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
+  const [minigames, setMinigames] = useState<CourseMinigame[]>([]);
   const [courseTitle, setCourseTitle] = useState("Mengenal Kesehatan Reproduksi Dasar");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -74,8 +78,9 @@ export default function EditCoursePage() {
       getCourseVideos(courseId),
       getCourseMaterials(courseId),
       getQuizzesByCourse(courseId),
+      getCourseMinigames(courseId),
     ])
-      .then(([course, vids, mats, quiz]) => {
+      .then(([course, vids, mats, quiz, mgs]) => {
         setTitle(course.title);
         setDescription(course.description ?? "");
         setSelectedRole(course.category_id);
@@ -86,6 +91,7 @@ export default function EditCoursePage() {
         setVideos(vids);
         setMaterials(mats);
         setQuizzes(quiz);
+        setMinigames(mgs);
       })
       .catch(() => router.push("/admin/courses"))
       .finally(() => setLoading(false));
@@ -405,6 +411,68 @@ export default function EditCoursePage() {
                   </button>
                 </div>
               </div>
+
+              {/* Kolom Minigame (hanya untuk interactive) */}
+              {courseType === "interactive" && (
+                <div className="space-y-3 pt-4">
+                  <h3 className="font-bold text-base text-[#2C2C2C]">Daftar Minigame</h3>
+                  <div className="space-y-2">
+                    {minigames.length === 0 ? (
+                      <p className="text-sm text-gray-400 italic">Belum ada minigame.</p>
+                    ) : (
+                      minigames
+                        .sort((a, b) => a.urutan - b.urutan)
+                        .map((mg) => (
+                          <div
+                            key={mg.id}
+                            onClick={() => router.push(`/admin/course/${courseId}/minigame/${mg.id}`)}
+                            className="flex items-center justify-between bg-[#FFF0F5] border border-[#FFC0D5] rounded-xl p-4 shadow-sm cursor-pointer hover:bg-[#FFE8EF] transition-colors"
+                          >
+                            <div className="flex items-center gap-3">
+                              <div className="p-2 bg-white rounded-lg border border-gray-100 text-[#E75480]">
+                                <Gamepad2 className="w-4 h-4" />
+                              </div>
+                              <div>
+                                <h4 className="text-xs font-bold text-gray-700">{mg.title}</h4>
+                                <span className="text-[10px] text-gray-400 font-medium">
+                                  {MINIGAME_TYPE_LABELS[mg.type as keyof typeof MINIGAME_TYPE_LABELS] || mg.type}
+                                </span>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <button
+                                type="button"
+                                onClick={async (e) => {
+                                  e.stopPropagation();
+                                  if (!window.confirm(`Hapus minigame "${mg.title}"? Semua data soal di dalamnya akan hilang.`)) return;
+                                  try {
+                                    await deleteCourseMinigame(mg.id);
+                                    setMinigames(prev => prev.filter(m => m.id !== mg.id));
+                                  } catch {
+                                    alert("Gagal menghapus minigame");
+                                  }
+                                }}
+                                className="p-1.5 rounded-lg text-red-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                              <button type="button" className="text-gray-400 hover:text-gray-600" onClick={(e) => { e.stopPropagation(); router.push(`/admin/course/${courseId}/minigame/${mg.id}`); }}>
+                                <MoreVertical className="w-4 h-4" />
+                              </button>
+                            </div>
+                          </div>
+                        ))
+                    )}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => router.push(`/admin/course/${courseId}/minigame/new`)}
+                    className="inline-flex items-center gap-1 bg-[#E75480] text-white text-xs font-semibold px-3 py-2 rounded-lg hover:bg-[#D0436E] transition-colors"
+                  >
+                    <Plus className="w-3 h-3" /> Tambah Minigame Baru
+                  </button>
+                </div>
+              )}
             </>
           )}
 

@@ -217,7 +217,7 @@ export default function TTSPage() {
         return;
       }
 
-      if (char && grid[row][col].answer === char) {
+      if (char) {
         const next = getNextCell(row, col, clue);
         if (next) {
           setFocusCell(next);
@@ -229,7 +229,7 @@ export default function TTSPage() {
             focusFirstCell(nextClue);
           }
         }
-      } else if (!char) {
+      } else {
         const prev = getPrevCell(row, col, clue);
         if (prev) setFocusCell(prev);
       }
