@@ -207,7 +207,7 @@ export default function MateriDetail() {
                 <div className="px-6 md:px-10 pb-6 md:pb-10 overflow-y-auto max-h-[60vh]">
                   {materiTab === "materi" && activeSection.data.content && (
                     <div
-                      className="text-sm md:text-base text-brand-900/80 font-normal leading-relaxed prose prose-sm max-w-none"
+                      className="text-sm md:text-base text-brand-900/80 font-normal leading-relaxed prose prose-sm max-w-none [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_li]:my-1 [&_a]:text-blue-600 [&_a]:underline [&_a]:hover:text-blue-800"
                       dangerouslySetInnerHTML={{ __html: activeSection.data.content }}
                     />
                   )}

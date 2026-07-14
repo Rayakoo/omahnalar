@@ -1,10 +1,15 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useRouter, useParams } from "next/navigation";
+import { Reorder } from "framer-motion";
 import {
   ArrowLeft,
+  ArrowUp,
+  ArrowDown,
+  GripVertical,
   Image,
+  Loader2,
   MoreVertical,
   Plus,
   Video,
@@ -24,6 +29,8 @@ import {
   updateCourse,
   getCourseVideos,
   getCourseMaterials,
+  updateCourseVideo,
+  updateCourseMaterial,
   type Category,
   type EducationLevel,
   type CreateCourseInput,
@@ -31,8 +38,8 @@ import {
   type CourseVideo,
   type CourseMaterial,
 } from "@/services/courses";
-import { getQuizzesByCourse, type Quiz } from "@/services/quizzes";
-import { getCourseMinigames, deleteCourseMinigame, MINIGAME_TYPE_LABELS, type CourseMinigame } from "@/services/course-minigames";
+import { getQuizzesByCourse, updateQuiz, type Quiz } from "@/services/quizzes";
+import { getCourseMinigames, deleteCourseMinigame, updateCourseMinigame, MINIGAME_TYPE_LABELS, type CourseMinigame } from "@/services/course-minigames";
 
 export default function EditCoursePage() {
   const router = useRouter();
@@ -56,6 +63,23 @@ export default function EditCoursePage() {
   const [courseTitle, setCourseTitle] = useState("Mengenal Kesehatan Reproduksi Dasar");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [savingOrder, setSavingOrder] = useState(false);
+
+  const orderedItems = useMemo(() => {
+    const combined: {
+      type: "video" | "materi" | "quiz" | "minigame";
+      id: string;
+      title: string;
+      urutan: number;
+    }[] = [
+      ...videos.map((v) => ({ type: "video" as const, id: v.id, title: v.title, urutan: v.urutan })),
+      ...materials.map((m) => ({ type: "materi" as const, id: m.id, title: m.title, urutan: m.urutan })),
+      ...quizzes.map((q) => ({ type: "quiz" as const, id: q.id, title: q.title, urutan: q.urutan })),
+      ...minigames.map((g) => ({ type: "minigame" as const, id: g.id, title: g.title, urutan: g.urutan })),
+    ];
+    combined.sort((a, b) => a.urutan - b.urutan);
+    return combined;
+  }, [videos, materials, quizzes, minigames]);
 
   useEffect(() => {
     Promise.all([getCategories(), getEducationLevels()])
@@ -473,6 +497,188 @@ export default function EditCoursePage() {
                   </button>
                 </div>
               )}
+            </>
+          )}
+
+          {/* ── Urutan Konten (drag-and-drop) ── */}
+          {!isNew && (
+            <>
+              <hr className="border-[#E2E0FF] my-2" />
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <h3 className="font-bold text-base text-[#2C2C2C]">Urutan Konten</h3>
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      setSavingOrder(true);
+                      try {
+                        const updates = orderedItems.map((item, i) => ({ ...item, urutan: i }));
+                        await Promise.all(
+                          updates.map(({ type, id, urutan }) => {
+                            switch (type) {
+                              case "video": return updateCourseVideo(id, { urutan });
+                              case "materi": return updateCourseMaterial(id, { urutan });
+                              case "quiz": return updateQuiz(id, { urutan });
+                              case "minigame": return updateCourseMinigame(id, { urutan });
+                            }
+                          })
+                        );
+                        const [vids, mats, quiz, mgs] = await Promise.all([
+                          getCourseVideos(courseId),
+                          getCourseMaterials(courseId),
+                          getQuizzesByCourse(courseId),
+                          getCourseMinigames(courseId),
+                        ]);
+                        setVideos(vids);
+                        setMaterials(mats);
+                        setQuizzes(quiz);
+                        setMinigames(mgs);
+                      } catch (err) {
+                        alert(err instanceof Error ? err.message : "Gagal menyimpan urutan");
+                      } finally {
+                        setSavingOrder(false);
+                      }
+                    }}
+                    disabled={savingOrder}
+                    className="flex items-center gap-1 px-4 py-1.5 text-xs font-semibold text-white bg-[#4D455D] hover:bg-[#3d364a] rounded-xl transition-colors disabled:opacity-50"
+                  >
+                    {savingOrder ? (
+                      <Loader2 className="w-3 h-3 animate-spin" />
+                    ) : (
+                      <Save className="w-3 h-3" />
+                    )}
+                    Simpan Urutan
+                  </button>
+                </div>
+                <p className="text-xs text-gray-400">Seret & lepas item untuk mengatur urutan konten.</p>
+                {orderedItems.length === 0 ? (
+                  <p className="text-sm text-gray-400 italic">Belum ada konten.</p>
+                ) : (
+                  <Reorder.Group
+                    axis="y"
+                    values={orderedItems}
+                    onReorder={(reordered) => {
+                      const typeOrder = ["video", "materi", "quiz", "minigame"];
+                      const newUrutan = reordered.map((item, i) => ({ ...item, urutan: i }));
+
+                      const newVideos = newUrutan
+                        .filter((i) => i.type === "video")
+                        .map((i) => ({ ...videos.find((v) => v.id === i.id)!, urutan: i.urutan }));
+                      const newMaterials = newUrutan
+                        .filter((i) => i.type === "materi")
+                        .map((i) => ({ ...materials.find((m) => m.id === i.id)!, urutan: i.urutan }));
+                      const newQuizzes = newUrutan
+                        .filter((i) => i.type === "quiz")
+                        .map((i) => ({ ...quizzes.find((q) => q.id === i.id)!, urutan: i.urutan }));
+                      const newMinigames = newUrutan
+                        .filter((i) => i.type === "minigame")
+                        .map((i) => ({ ...minigames.find((g) => g.id === i.id)!, urutan: i.urutan }));
+
+                      setVideos(newVideos);
+                      setMaterials(newMaterials);
+                      setQuizzes(newQuizzes);
+                      setMinigames(newMinigames);
+                    }}
+                    className="space-y-1.5"
+                  >
+                    {orderedItems.map((item) => (
+                      <Reorder.Item
+                        key={`${item.type}-${item.id}`}
+                        value={item}
+                        layout
+                        whileDrag={{ scale: 1.02, boxShadow: "0 4px 20px rgba(0,0,0,0.1)" }}
+                        className="flex items-center gap-3 bg-[#F7F6FF] border border-[#E2E0FF] rounded-xl px-4 py-2.5 shadow-sm cursor-grab active:cursor-grabbing origin-top"
+                        style={{ listStyle: "none" }}
+                      >
+                        <GripVertical className="w-4 h-4 text-gray-300 shrink-0 cursor-grab active:cursor-grabbing" />
+                        <span className="w-5 h-5 rounded-full bg-[#FFEAC2] text-[10px] font-bold text-[#F5C469] flex items-center justify-center shrink-0">
+                          {orderedItems.indexOf(item) + 1}
+                        </span>
+                        <span className={`text-[10px] font-semibold uppercase shrink-0 ${
+                          item.type === "video" ? "text-blue-500" :
+                          item.type === "materi" ? "text-green-600" :
+                          item.type === "quiz" ? "text-amber-600" :
+                          "text-pink-500"
+                        }`}>
+                          {item.type === "video" ? "Video" :
+                           item.type === "materi" ? "Materi" :
+                           item.type === "quiz" ? "Kuis" :
+                           "Game"}
+                        </span>
+                        <span className="text-sm text-gray-700 truncate flex-1">{item.title}</span>
+                        <div className="flex items-center gap-1 shrink-0">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const idx = orderedItems.indexOf(item);
+                              if (idx === 0) return;
+                              const prev = orderedItems[idx - 1];
+                              const next = [...orderedItems];
+                              next[idx] = prev;
+                              next[idx - 1] = item;
+                              const newUrutan = next.map((i, n) => ({ ...i, urutan: n }));
+                              const newVideos = newUrutan
+                                .filter((i) => i.type === "video")
+                                .map((i) => ({ ...videos.find((v) => v.id === i.id)!, urutan: i.urutan }));
+                              const newMaterials = newUrutan
+                                .filter((i) => i.type === "materi")
+                                .map((i) => ({ ...materials.find((m) => m.id === i.id)!, urutan: i.urutan }));
+                              const newQuizzes = newUrutan
+                                .filter((i) => i.type === "quiz")
+                                .map((i) => ({ ...quizzes.find((q) => q.id === i.id)!, urutan: i.urutan }));
+                              const newMinigames = newUrutan
+                                .filter((i) => i.type === "minigame")
+                                .map((i) => ({ ...minigames.find((g) => g.id === i.id)!, urutan: i.urutan }));
+                              setVideos(newVideos);
+                              setMaterials(newMaterials);
+                              setQuizzes(newQuizzes);
+                              setMinigames(newMinigames);
+                            }}
+                            disabled={orderedItems.indexOf(item) === 0}
+                            className="p-1 bg-[#3A3852] text-white rounded-lg hover:bg-[#4E4B6E] transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                            title="Naik"
+                          >
+                            <ArrowUp className="w-3 h-3" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const idx = orderedItems.indexOf(item);
+                              if (idx === orderedItems.length - 1) return;
+                              const nextItem = orderedItems[idx + 1];
+                              const next = [...orderedItems];
+                              next[idx] = nextItem;
+                              next[idx + 1] = item;
+                              const newUrutan = next.map((i, n) => ({ ...i, urutan: n }));
+                              const newVideos = newUrutan
+                                .filter((i) => i.type === "video")
+                                .map((i) => ({ ...videos.find((v) => v.id === i.id)!, urutan: i.urutan }));
+                              const newMaterials = newUrutan
+                                .filter((i) => i.type === "materi")
+                                .map((i) => ({ ...materials.find((m) => m.id === i.id)!, urutan: i.urutan }));
+                              const newQuizzes = newUrutan
+                                .filter((i) => i.type === "quiz")
+                                .map((i) => ({ ...quizzes.find((q) => q.id === i.id)!, urutan: i.urutan }));
+                              const newMinigames = newUrutan
+                                .filter((i) => i.type === "minigame")
+                                .map((i) => ({ ...minigames.find((g) => g.id === i.id)!, urutan: i.urutan }));
+                              setVideos(newVideos);
+                              setMaterials(newMaterials);
+                              setQuizzes(newQuizzes);
+                              setMinigames(newMinigames);
+                            }}
+                            disabled={orderedItems.indexOf(item) === orderedItems.length - 1}
+                            className="p-1 bg-[#3A3852] text-white rounded-lg hover:bg-[#4E4B6E] transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                            title="Turun"
+                          >
+                            <ArrowDown className="w-3 h-3" />
+                          </button>
+                        </div>
+                      </Reorder.Item>
+                    ))}
+                  </Reorder.Group>
+                )}
+              </div>
             </>
           )}
 

@@ -129,7 +129,7 @@ export default function BeritaDetail() {
 
         {/* Content */}
         <div
-          className="prose prose-sm md:prose-base max-w-none text-brand-700/80 leading-relaxed"
+          className="prose prose-sm md:prose-base max-w-none text-brand-700/80 leading-relaxed [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_li]:my-1 [&_a]:text-blue-600 [&_a]:underline [&_a]:hover:text-blue-800"
           dangerouslySetInnerHTML={{ __html: berita.content }}
         />
 

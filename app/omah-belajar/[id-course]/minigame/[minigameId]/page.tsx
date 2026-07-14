@@ -246,7 +246,7 @@ function DrawingCanvas({ drawings }: { drawings: Drawing[] }) {
                 <span className="text-xs text-brand-700/50 w-4">{brushSize}</span>
               </div>
               <button onClick={clearCanvas}
-                className="text-xs text-brand-700/50 hover:text-brand-700 transition-colors px-3 py-1.5 rounded-lg hover:bg-brand-100/30"
+                className="text-xs text-white font-semibold bg-red-500 hover:bg-red-600 transition-colors px-3 py-1.5 rounded-lg shadow-sm"
               >Hapus Gambar</button>
               <button onClick={() => alert("Gambar telah disimpan!")}
                 className="ml-auto px-5 py-2.5 rounded-xl font-bold text-xs text-white transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] shadow-md"
