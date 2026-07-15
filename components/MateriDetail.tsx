@@ -38,6 +38,7 @@ export default function MateriDetail() {
   const [activeIdx, setActiveIdx] = useState(0);
   const [completedIds, setCompletedIds] = useState<string[]>([]);
   const [materiTab, setMateriTab] = useState<"materi" | "file">("materi");
+  const [fileLoading, setFileLoading] = useState(false);
   const [loading, setLoading] = useState(true);
   const [mgList, setMgList] = useState<CourseMinigame[]>([]);
   const userUrutan = useRef(0);
@@ -97,7 +98,16 @@ export default function MateriDetail() {
 
   const handleSectionClick = async (idx: number) => {
     const sec = sections[idx];
-    setMateriTab("materi");
+    if (sec.type === "materi") {
+      if (sec.data.file_url) setFileLoading(true);
+      if (!sec.data.content && sec.data.file_url) {
+        setMateriTab("file");
+      } else {
+        setMateriTab("materi");
+      }
+    } else {
+      setMateriTab("materi");
+    }
     if (user) {
       try {
         const dbUc = await getUserCourse(user.id, courseId);
@@ -181,19 +191,21 @@ export default function MateriDetail() {
               <div className="w-full bg-white rounded-3xl flex flex-col leading-relaxed">
                 <div className="p-6 md:p-10 pb-0">
                   <h2 className="text-xl md:text-2xl font-bold text-brand-900 mb-4">{activeSection.data.title}</h2>
-                  {activeSection.data.content && activeSection.data.file_url && (
+                  {activeSection.data.file_url && (
                     <div className="bg-brand-700/20 p-1 rounded-2xl flex items-center w-full mb-6">
+                      {activeSection.data.content && (
+                        <button
+                          onClick={() => setMateriTab("materi")}
+                          className={`flex-1 py-2.5 text-center text-sm font-bold rounded-xl transition-all flex items-center justify-center gap-2 ${
+                            materiTab === "materi" ? "bg-white text-brand-900 shadow-sm" : "text-brand-900/60 hover:text-brand-900"
+                          }`}
+                        >
+                          <FileText className="w-4 h-4" />
+                          {locale === "id" ? "Materi" : "Text"}
+                        </button>
+                      )}
                       <button
-                        onClick={() => setMateriTab("materi")}
-                        className={`flex-1 py-2.5 text-center text-sm font-bold rounded-xl transition-all flex items-center justify-center gap-2 ${
-                          materiTab === "materi" ? "bg-white text-brand-900 shadow-sm" : "text-brand-900/60 hover:text-brand-900"
-                        }`}
-                      >
-                        <FileText className="w-4 h-4" />
-                        {locale === "id" ? "Materi" : "Text"}
-                      </button>
-                      <button
-                        onClick={() => setMateriTab("file")}
+                        onClick={() => { setMateriTab("file"); setFileLoading(true); }}
                         className={`flex-1 py-2.5 text-center text-sm font-bold rounded-xl transition-all flex items-center justify-center gap-2 ${
                           materiTab === "file" ? "bg-white text-brand-900 shadow-sm" : "text-brand-900/60 hover:text-brand-900"
                         }`}
@@ -219,18 +231,46 @@ export default function MateriDetail() {
                       const rawUrl = activeSection.data.file_url;
                       const proxied = getProxiedUrl(rawUrl);
                       const url = proxied || rawUrl;
-                      const absUrl = url.startsWith("/") ? `${window.location.origin}${url}` : url;
-                      const isPdf = url?.match(/\.pdf(\?|$)/i);
-                      if (isPdf) {
-                        const viewerUrl = `https://docs.google.com/viewer?url=${encodeURIComponent(absUrl)}&embedded=true`;
+
+                      const googleDriveId = rawUrl.match(/\/file\/d\/([^/?#]+)/)?.[1];
+                      const isPdf = rawUrl?.match(/\.pdf(\?|$)/i) || url?.match(/\.pdf(\?|$)/i);
+
+                      if (googleDriveId) {
                         return (
-                          <iframe
-                            src={viewerUrl}
-                            className="w-full h-[70vh] rounded-xl border border-gray-200"
-                            title={locale === "id" ? "Pratinjau File" : "File Preview"}
-                          />
+                          <div className="relative">
+                            {fileLoading && (
+                              <div className="absolute inset-0 flex items-center justify-center bg-white/80 rounded-xl z-10">
+                                <div className="w-8 h-8 border-4 border-brand-900 border-t-transparent rounded-full animate-spin" />
+                              </div>
+                            )}
+                            <iframe
+                              src={`https://drive.google.com/file/d/${googleDriveId}/preview`}
+                              className="w-full h-[70vh] rounded-xl border border-gray-200"
+                              title="File Preview"
+                              onLoad={() => setFileLoading(false)}
+                            />
+                          </div>
                         );
                       }
+
+                      if (isPdf) {
+                        return (
+                          <div className="relative">
+                            {fileLoading && (
+                              <div className="absolute inset-0 flex items-center justify-center bg-white/80 rounded-xl z-10">
+                                <div className="w-8 h-8 border-4 border-brand-900 border-t-transparent rounded-full animate-spin" />
+                              </div>
+                            )}
+                            <iframe
+                              src={url}
+                              className="w-full h-[70vh] rounded-xl border border-gray-200"
+                              title="File Preview"
+                              onLoad={() => setFileLoading(false)}
+                            />
+                          </div>
+                        );
+                      }
+
                       return (
                         <a
                           href={url}

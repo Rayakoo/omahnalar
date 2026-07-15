@@ -7,6 +7,7 @@ import FileUploader from "@/components/FileUploader";
 import TtsGridEditor, { type TtsCellData } from "@/components/tts-grid-editor";
 import FindWordGridEditor, { type FindWordItem } from "@/components/findword-grid-editor";
 import { buildRandomFillGrid } from "@/lib/grid-utils";
+import { getNextGlobalUrutanAndIncrement } from "@/services/courses";
 import {
   getMinigameById, getTtsClues, getFindWords, getTrueFalseItems,
   getDrawings, getFillBlanks, getMatchPairs,
@@ -58,8 +59,14 @@ export default function MinigameFormPage() {
     items: Omit<MatchPairItem, "id" | "match_pairs_id" | "created_at">[];
   }[]>([]);
 
+  const [nextUrutan, setNextUrutan] = useState(1);
   const [loaded, setLoaded] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
+
+  useEffect(() => {
+    if (!isNew) return;
+    getNextGlobalUrutanAndIncrement(courseId).then(setNextUrutan).catch(() => {});
+  }, [courseId, isNew]);
 
   useEffect(() => {
     if (isNew) {
@@ -161,7 +168,7 @@ export default function MinigameFormPage() {
     try {
       let mg: CourseMinigame;
       if (isNew) {
-        mg = await createCourseMinigame({ course_id: courseId, title, type });
+        mg = await createCourseMinigame({ course_id: courseId, title, type, urutan: nextUrutan });
       } else {
         await updateCourseMinigame(minigameId, { title, type });
         mg = await getMinigameById(minigameId);
