@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { ChevronLeft, Play, FileText, HelpCircle, CheckCircle2, Clock, BookOpen, BarChart, Download, File as FileIcon, Gamepad2 } from "lucide-react";
@@ -13,6 +13,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { id, en } from "@/data/translations";
 import { getVideoEmbedUrl } from "@/lib/video";
 import { getProxiedUrl } from "@/services/garage";
+import { saveCourseDuration } from "@/services/userCourses";
 
 function sectionIcon(type: string) {
   switch (type) {
@@ -41,6 +42,10 @@ export default function MateriDetail() {
   const [fileLoading, setFileLoading] = useState(false);
   const [loading, setLoading] = useState(true);
   const [mgList, setMgList] = useState<CourseMinigame[]>([]);
+  const [courseElapsed, setCourseElapsed] = useState(0);
+  const courseAccumulatedRef = useRef(0);
+  const courseSessionStartRef = useRef<number | null>(null);
+  const [timerReady, setTimerReady] = useState(false);
   const userUrutan = useRef(0);
 
   useEffect(() => {
@@ -83,6 +88,12 @@ export default function MateriDetail() {
             }
             setCompletedIds(passedIds);
           }
+
+          // Init course timer
+          courseAccumulatedRef.current = uc?.total_duration_seconds ?? 0;
+          courseSessionStartRef.current = Date.now();
+          setCourseElapsed(courseAccumulatedRef.current);
+          setTimerReady(true);
         }
       } catch {
         // silently fail
@@ -95,6 +106,50 @@ export default function MateriDetail() {
 
   const activeSection = sections[activeIdx];
   const courseTitle = course?.title || "";
+
+  const saveTimer = useCallback(() => {
+    if (!user || courseSessionStartRef.current === null) return;
+    const now = Date.now();
+    const sessionSeconds = Math.floor((now - courseSessionStartRef.current) / 1000);
+    if (sessionSeconds < 1) return;
+    courseAccumulatedRef.current += sessionSeconds;
+    courseSessionStartRef.current = now;
+    saveCourseDuration(user.id, courseId, courseAccumulatedRef.current).catch(() => {});
+  }, [user, courseId]);
+
+  useEffect(() => {
+    if (!timerReady || !user) return;
+
+    const interval = setInterval(() => {
+      if (courseSessionStartRef.current !== null) {
+        setCourseElapsed(courseAccumulatedRef.current + Math.floor((Date.now() - courseSessionStartRef.current) / 1000));
+      }
+    }, 1000);
+
+    const autoSave = setInterval(() => saveTimer(), 10000);
+
+    const handleVisibility = () => {
+      if (document.hidden) {
+        saveTimer();
+      } else {
+        courseSessionStartRef.current = Date.now();
+      }
+    };
+    document.addEventListener("visibilitychange", handleVisibility);
+
+    const handleBeforeUnload = () => {
+      saveTimer();
+    };
+    window.addEventListener("beforeunload", handleBeforeUnload);
+
+    return () => {
+      clearInterval(interval);
+      clearInterval(autoSave);
+      document.removeEventListener("visibilitychange", handleVisibility);
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+      saveTimer();
+    };
+  }, [timerReady, user, courseId, saveTimer]);
 
   const handleSectionClick = async (idx: number) => {
     const sec = sections[idx];
@@ -121,9 +176,11 @@ export default function MateriDetail() {
       }
     }
     if (sec.type === "quiz") {
+      saveTimer();
       const quiz = await getQuizById(sec.data.id);
       router.push(`/omah-belajar/${courseId}/${quiz.id}`);
     } else if (sec.type === "minigame") {
+      saveTimer();
       router.push(`/omah-belajar/${courseId}/minigame/${sec.data.id}`);
     } else {
       setActiveIdx(idx);
@@ -144,13 +201,21 @@ export default function MateriDetail() {
         <Link href="/" className="flex items-center gap-2">
           <img src="/images/logo_omah.png" alt="Omah Nalar" className="h-10 w-auto" />
         </Link>
-        <button
-          onClick={() => router.push(`/omah-belajar/${courseId}`)}
-          className="flex items-center gap-1 bg-brand-900 text-white px-5 py-2 rounded-xl text-sm font-medium hover:bg-brand-700 transition-all active:scale-95 shadow-sm"
-        >
-          <ChevronLeft className="w-4 h-4" />
-          {common.back}
-        </button>
+        <div className="flex items-center gap-3">
+          {user && (
+            <span className="bg-brand-900/10 text-brand-900 text-xs font-bold px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-sm">
+              <Clock className="w-3 h-3" />
+              {String(Math.floor(courseElapsed / 3600)).padStart(2, "0")}:{String(Math.floor((courseElapsed % 3600) / 60)).padStart(2, "0")}:{String(courseElapsed % 60).padStart(2, "0")}
+            </span>
+          )}
+          <button
+            onClick={() => router.push(`/omah-belajar/${courseId}`)}
+            className="flex items-center gap-1 bg-brand-900 text-white px-5 py-2 rounded-xl text-sm font-medium hover:bg-brand-700 transition-all active:scale-95 shadow-sm"
+          >
+            <ChevronLeft className="w-4 h-4" />
+            {common.back}
+          </button>
+        </div>
       </nav>
 
       <main className="max-w-7xl mx-auto px-4 md:px-6 py-8 grid grid-cols-1 lg:grid-cols-3 gap-8">

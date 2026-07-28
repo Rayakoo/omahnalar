@@ -40,6 +40,7 @@ import {
 } from "@/services/courses";
 import { getQuizzesByCourse, updateQuiz, type Quiz } from "@/services/quizzes";
 import { getCourseMinigames, deleteCourseMinigame, updateCourseMinigame, MINIGAME_TYPE_LABELS, type CourseMinigame } from "@/services/course-minigames";
+import UnsolvedCaseEditor from "@/components/admin/UnsolvedCaseEditor";
 
 export default function EditCoursePage() {
   const router = useRouter();
@@ -314,7 +315,10 @@ export default function EditCoursePage() {
           {/* ── SEKSI DINAMIS (hanya jika course sudah dibuat) ── */}
           {!isNew && (
             <>
-              {/* Daftar Modul */}
+              {courseType === "unsolved_case" ? (
+                <UnsolvedCaseEditor courseId={courseId} courseTitle={title} />
+              ) : (
+              <>{/* Daftar Modul */}
               <div className="space-y-3">
                 <h3 className="font-bold text-base text-[#2C2C2C]">Daftar Modul</h3>
                 <div className="space-y-2">
@@ -497,11 +501,12 @@ export default function EditCoursePage() {
                   </button>
                 </div>
               )}
-            </>
+            </>)}
+          </>
           )}
 
           {/* ── Urutan Konten (drag-and-drop) ── */}
-          {!isNew && (
+          {!isNew && courseType !== "unsolved_case" && (
             <>
               <hr className="border-[#E2E0FF] my-2" />
               <div className="space-y-3">

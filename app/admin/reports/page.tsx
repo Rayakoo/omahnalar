@@ -1,0 +1,370 @@
+"use client";
+
+import { useEffect, useState, useMemo } from "react";
+import {
+  Search, Users, BookOpen, Award, BarChart3, Clock,
+  ChevronDown, ChevronUp, X, CheckCircle2, AlertCircle,
+} from "lucide-react";
+
+function fmtDuration(seconds: number): string {
+  if (!seconds) return "-";
+  const h = Math.floor(seconds / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
+  const s = seconds % 60;
+  if (h > 0) return `${h}h ${m}m`;
+  if (m > 0) return `${m}m ${s}s`;
+  return `${s}s`;
+}
+
+type ReportUser = {
+  id: string;
+  name: string;
+  role: string;
+  created_at: string;
+  enrollments: {
+    course_id: string;
+    course_title: string;
+    course_jumlah_isi: number;
+    current_urutan: number;
+    is_completed: boolean;
+    completed_at: string | null;
+    total_duration_seconds: number;
+  }[];
+  quizResults: {
+    quiz_id: string;
+    quiz_title: string;
+    course_title: string;
+    score: number;
+    total: number;
+    passed: boolean;
+    duration_seconds: number;
+    created_at: string;
+  }[];
+};
+
+export default function AdminReportsPage() {
+  const [users, setUsers] = useState<ReportUser[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const token = (() => {
+      try {
+        const key = Object.keys(localStorage).find((k) => k.startsWith("sb-") && k.endsWith("-auth-token"));
+        if (!key) return null;
+        const session = JSON.parse(localStorage.getItem(key) || "{}");
+        return session?.access_token || null;
+      } catch { return null; }
+    })();
+
+    const headers: Record<string, string> = {};
+    if (token) headers["Authorization"] = `Bearer ${token}`;
+
+    fetch("/api/admin/reports", { headers })
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.error) {
+          setError(data.error);
+          return;
+        }
+        if (data.errors?.length) {
+          console.warn("API warnings:", data.errors);
+        }
+        setUsers(data.users || []);
+      })
+      .catch((err) => setError(err.message || "Gagal memuat data"))
+      .finally(() => setLoading(false));
+  }, []);
+
+  const filtered = useMemo(() => {
+    return users.filter((u) => {
+      if (search && !u.name.toLowerCase().includes(search.toLowerCase())) return false;
+      return true;
+    });
+  }, [users, search]);
+
+  const stats = useMemo(() => {
+    const total = users.length;
+    const enrolled = users.filter((u) => u.enrollments.length > 0).length;
+    const completed = users.filter((u) => u.enrollments.some((e) => e.is_completed)).length;
+    const totalEnrollments = users.reduce((s, u) => s + u.enrollments.length, 0);
+    return { total, enrolled, completed, totalEnrollments };
+  }, [users]);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <div className="w-8 h-8 border-4 border-[#4D455D] border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-16">
+        <p className="text-red-600 font-semibold mb-2">Gagal memuat data</p>
+        <p className="text-sm text-gray-500">{error}</p>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <h1 className="text-2xl font-bold text-[#333333] mb-7">Data Course User</h1>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
+        <div className="bg-[#EBEAF6] rounded-2xl p-6 shadow-sm border border-[#D9D7EC]">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-500">Total User</p>
+              <p className="text-4xl font-extrabold text-[#333333] mt-1">{stats.total}</p>
+            </div>
+            <div className="w-12 h-12 bg-white/60 rounded-xl flex items-center justify-center">
+              <Users className="w-6 h-6 text-[#4D455D]" />
+            </div>
+          </div>
+        </div>
+        <div className="bg-[#E5F7F4] rounded-2xl p-6 shadow-sm border border-[#C6EDE6]">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-500">Pernah Belajar</p>
+              <p className="text-4xl font-extrabold text-[#333333] mt-1">{stats.enrolled}</p>
+            </div>
+            <div className="w-12 h-12 bg-white/60 rounded-xl flex items-center justify-center">
+              <BookOpen className="w-6 h-6 text-[#10A37F]" />
+            </div>
+          </div>
+        </div>
+        <div className="bg-[#FEF2DC] rounded-2xl p-6 shadow-sm border border-[#FADFA9]">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-500">Total Enrollment</p>
+              <p className="text-4xl font-extrabold text-[#333333] mt-1">{stats.totalEnrollments}</p>
+            </div>
+            <div className="w-12 h-12 bg-white/60 rounded-xl flex items-center justify-center">
+              <BarChart3 className="w-6 h-6 text-[#E2A955]" />
+            </div>
+          </div>
+        </div>
+        <div className="bg-[#FCEBF3] rounded-2xl p-6 shadow-sm border border-[#F5D1E3]">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-500">Selesai 1+ Course</p>
+              <p className="text-4xl font-extrabold text-[#333333] mt-1">{stats.completed}</p>
+            </div>
+            <div className="w-12 h-12 bg-white/60 rounded-xl flex items-center justify-center">
+              <Award className="w-6 h-6 text-[#D3455B]" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="bg-[#EBEAF6] border border-[#D9D7EC] rounded-2xl shadow-sm overflow-hidden">
+        <div className="p-4 border-b border-[#D9D7EC] flex flex-wrap items-center gap-3">
+          <div className="relative flex-1 min-w-[200px]">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Cari user..."
+              className="w-full pl-9 pr-4 py-2 bg-white border border-[#D9D7EC] rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-[#4D455D]"
+            />
+          </div>
+          <span className="text-xs text-gray-500">{filtered.length} / {users.length} user</span>
+        </div>
+
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="border-b border-[#D9D7EC]">
+                <th className="px-6 py-4 text-sm font-bold text-[#333333] tracking-wider">Nama</th>
+                <th className="px-6 py-4 text-sm font-bold text-[#333333] tracking-wider text-center">Enrolled</th>
+                <th className="px-6 py-4 text-sm font-bold text-[#333333] tracking-wider text-center">Completed</th>
+                <th className="px-6 py-4 text-sm font-bold text-[#333333] tracking-wider text-center">Quiz</th>
+                <th className="px-6 py-4 text-sm font-bold text-[#333333] tracking-wider text-center">Rata-rata Skor</th>
+                <th className="px-6 py-4 text-sm font-bold text-[#333333] tracking-wider text-center">Progress</th>
+                <th className="px-6 py-4"></th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-[#E1DFEF]">
+              {filtered.length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="p-8 text-center text-sm text-gray-500">Tidak ada data user.</td>
+                </tr>
+              ) : (
+                filtered.map((u) => {
+                  const enrolled = u.enrollments.length;
+                  const completed = u.enrollments.filter((e) => e.is_completed).length;
+                  const quizCount = u.quizResults.length;
+                  const avgScore = quizCount > 0
+                    ? Math.round(u.quizResults.reduce((s, r) => s + (r.total > 0 ? (r.score / r.total) * 100 : 0), 0) / quizCount)
+                    : 0;
+                  const isExpanded = expandedId === u.id;
+
+                  return (
+                    <tr
+                      key={u.id}
+                      className={`hover:bg-[#E4E2F2]/50 cursor-pointer transition-colors ${isExpanded ? "bg-[#E4E2F2]" : ""}`}
+                      onClick={() => setExpandedId(isExpanded ? null : u.id)}
+                    >
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-3">
+                          <div className="w-9 h-9 rounded-full bg-[#4D455D] flex items-center justify-center text-xs font-bold text-white shrink-0">
+                            {u.name.charAt(0).toUpperCase()}
+                          </div>
+                          <span className="font-medium text-gray-800">{u.name}</span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-center font-semibold">{enrolled}</td>
+                      <td className="px-6 py-4 text-center font-semibold">{completed}</td>
+                      <td className="px-6 py-4 text-center font-semibold">{quizCount}</td>
+                      <td className="px-6 py-4 text-center">
+                        <span className={`font-bold ${avgScore >= 70 ? "text-green-600" : avgScore >= 40 ? "text-amber-600" : "text-red-600"}`}>
+                          {avgScore}%
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-center">
+                        {enrolled > 0 ? (
+                          <div className="w-20 mx-auto bg-gray-200 rounded-full h-2">
+                            <div
+                              className="bg-[#4D455D] h-2 rounded-full"
+                              style={{ width: `${Math.round((completed / enrolled) * 100)}%` }}
+                            />
+                          </div>
+                        ) : (
+                          <span className="text-gray-400">-</span>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 text-center">
+                        {isExpanded ? (
+                          <ChevronUp className="w-4 h-4 text-gray-400 mx-auto" />
+                        ) : (
+                          <ChevronDown className="w-4 h-4 text-gray-400 mx-auto" />
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {expandedId && (() => {
+        const u = users.find((x) => x.id === expandedId);
+        if (!u) return null;
+        return (
+          <div className="fixed inset-0 z-50 flex items-start justify-center pt-10 pb-10 bg-black/40" onClick={() => setExpandedId(null)}>
+            <div className="bg-white rounded-2xl shadow-xl w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden mx-4" onClick={(e) => e.stopPropagation()}>
+              <div className="shrink-0 p-6 border-b flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-[#4D455D] flex items-center justify-center text-sm font-bold text-white">
+                    {u.name.charAt(0).toUpperCase()}
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-gray-800">{u.name}</h3>
+                    <p className="text-xs text-gray-400">Siswa</p>
+                  </div>
+                </div>
+                <button onClick={() => setExpandedId(null)} className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+                  <X className="w-5 h-5 text-gray-400" />
+                </button>
+              </div>
+
+              <div className="p-6 space-y-8 overflow-y-auto">
+                <div>
+                  <h4 className="font-bold text-gray-700 mb-3 flex items-center gap-2">
+                    <BookOpen className="w-4 h-4 text-[#4D455D]" />
+                    Course ({u.enrollments.length})
+                  </h4>
+                  {u.enrollments.length === 0 ? (
+                    <p className="text-sm text-gray-400 italic">Belum mengambil course apapun</p>
+                  ) : (
+                    <div className="space-y-2">
+                      {u.enrollments.map((e, i) => {
+                        const progress = e.course_jumlah_isi > 0
+                          ? Math.min(100, Math.round((e.current_urutan / e.course_jumlah_isi) * 100))
+                          : 0;
+                        return (
+                          <div key={i} className="flex items-center gap-4 bg-gray-50 rounded-xl px-4 py-3">
+                            <div className={`w-2 h-2 rounded-full shrink-0 ${e.is_completed ? "bg-green-500" : "bg-[#E2A955]"}`} />
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-medium text-gray-800">{e.course_title}</p>
+                              <div className="flex items-center gap-3 mt-1.5">
+                                <div className="flex-1 bg-gray-200 rounded-full h-1.5 max-w-[200px]">
+                                  <div
+                                    className="bg-[#E2A955] h-1.5 rounded-full transition-all"
+                                    style={{ width: `${e.is_completed ? 100 : progress}%` }}
+                                  />
+                                </div>
+                                <span className="text-xs text-gray-500 whitespace-nowrap">
+                                  {e.is_completed ? "Selesai" : `${e.current_urutan}/${e.course_jumlah_isi}`}
+                                </span>
+                              </div>
+                              <span className="text-[10px] text-gray-400 mt-1 flex items-center gap-1">
+                                <Clock className="w-3 h-3" /> {fmtDuration(e.total_duration_seconds)}
+                              </span>
+                            </div>
+                            {e.is_completed && (
+                              <span className="text-xs font-bold text-green-600 bg-green-50 px-3 py-1 rounded-full shrink-0">Selesai</span>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+
+                <div>
+                  <h4 className="font-bold text-gray-700 mb-3 flex items-center gap-2">
+                    <BarChart3 className="w-4 h-4 text-purple-600" />
+                    Hasil Quiz ({u.quizResults.length})
+                  </h4>
+                  {u.quizResults.length === 0 ? (
+                    <p className="text-sm text-gray-400 italic">Belum mengerjakan quiz apapun</p>
+                  ) : (
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-sm">
+                        <thead>
+                          <tr className="border-b text-left">
+                            <th className="px-4 py-2 font-semibold text-gray-600">Course</th>
+                            <th className="px-4 py-2 font-semibold text-gray-600">Quiz</th>
+                            <th className="px-4 py-2 font-semibold text-gray-600 text-center">Skor</th>
+                            <th className="px-4 py-2 font-semibold text-gray-600 text-center">Nilai</th>
+                            <th className="px-4 py-2 font-semibold text-gray-600 text-center">Durasi</th>
+                            <th className="px-4 py-2 font-semibold text-gray-600 text-center">Status</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {u.quizResults.map((r, i) => (
+                            <tr key={i} className="border-b hover:bg-gray-50">
+                              <td className="px-4 py-3 text-xs text-gray-500">{r.course_title}</td>
+                              <td className="px-4 py-3 font-medium text-gray-800">{r.quiz_title}</td>
+                              <td className="px-4 py-3 text-center">{r.score}/{r.total}</td>
+                              <td className="px-4 py-3 text-center font-bold">{r.total > 0 ? Math.round((r.score / r.total) * 100) : 0}%</td>
+                              <td className="px-4 py-3 text-center text-xs text-gray-500">{fmtDuration(r.duration_seconds)}</td>
+                              <td className="px-4 py-3 text-center">
+                                <span className={`inline-flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-full ${r.passed ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>
+                                  {r.passed ? <CheckCircle2 className="w-3 h-3" /> : <AlertCircle className="w-3 h-3" />}
+                                  {r.passed ? "Lulus" : "Tidak Lulus"}
+                                </span>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+    </div>
+  );
+}

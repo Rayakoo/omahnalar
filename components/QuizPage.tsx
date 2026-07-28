@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronLeft, Loader2, AlertTriangle } from "lucide-react";
+import { ChevronLeft, Loader2, AlertTriangle, Clock } from "lucide-react";
 import { getQuizWithQuestions, upsertQuizResult, type QuizQuestion } from "@/services/quizzes";
 import { transformImageUrl } from "@/lib/image";
 import { useAuth } from "@/contexts/AuthContext";
@@ -30,6 +30,8 @@ export default function QuizPage() {
   const [modalStatus, setModalStatus] = useState<"correct" | "wrong">("correct");
   const [loading, setLoading] = useState(false);
   const [errorPopup, setErrorPopup] = useState<string | null>(null);
+  const startTimeRef = useRef(Date.now());
+  const [elapsed, setElapsed] = useState(0);
 
   useEffect(() => {
     if (!quizId) return;
@@ -38,6 +40,13 @@ export default function QuizPage() {
       .catch(() => setErrorPopup(t.gagalSoal))
       .finally(() => setLoadingData(false));
   }, [quizId]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setElapsed(Math.floor((Date.now() - startTimeRef.current) / 1000));
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   const isLastQuestion = currentIdx === questions.length - 1;
 
@@ -76,10 +85,12 @@ export default function QuizPage() {
     if (isLastQuestion) {
       if (user) {
         try {
+          const duration_seconds = Math.floor((Date.now() - startTimeRef.current) / 1000);
           await upsertQuizResult({
             user_id: user.id,
             quiz_id: quizId,
             answers: selectedAnswers,
+            duration_seconds,
           });
         } catch {}
       }
@@ -132,7 +143,13 @@ export default function QuizPage() {
   return (
     <div className="min-h-screen bg-page-50 text-brand-900 flex flex-col">
       <nav className="bg-secondary-200 px-6 py-4 flex items-center justify-between shadow-sm">
-        <span className="font-bold text-lg">{t.kuisNav}</span>
+        <div className="flex items-center gap-3">
+          <span className="font-bold text-lg">{t.kuisNav}</span>
+          <span className="bg-brand-900 text-white text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1.5">
+            <Clock className="w-3 h-3" />
+            {String(Math.floor(elapsed / 60)).padStart(2, "0")}:{String(elapsed % 60).padStart(2, "0")}
+          </span>
+        </div>
         <button
           onClick={() => router.push(`/omah-belajar/${courseId}/materi`)}
           className="flex items-center gap-1 bg-brand-900 text-white px-5 py-2 rounded-xl text-sm font-medium hover:bg-brand-700 transition-all active:scale-95 shadow-sm"

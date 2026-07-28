@@ -21,6 +21,7 @@ export default function TambahProduk() {
     description: "",
     price: "",
     whatsapp_number: "",
+    video_url: "",
   });
   const [images, setImages] = useState<ImageInput[]>([{ url: "", is_thumbnail: true }]);
   const [saving, setSaving] = useState(false);
@@ -69,6 +70,7 @@ export default function TambahProduk() {
         price: parseInt(form.price.replace(/\./g, "")) || 0,
         whatsapp_number: form.whatsapp_number,
         image_url: validImages,
+        video_url: form.video_url || null,
         is_published: publish,
       });
       router.push("/admin/produk");
@@ -144,6 +146,18 @@ export default function TambahProduk() {
                 className="w-full px-4 py-3 bg-white border border-[#D9D7EC] rounded-xl focus:outline-none focus:ring-1 focus:ring-purple-500 placeholder-gray-400 text-sm text-gray-900"
               />
             </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-1">Video Testimoni (Opsional)</label>
+            <input
+              type="url"
+              value={form.video_url}
+              onChange={(e) => update("video_url", e.target.value)}
+              placeholder="https://drive.google.com/file/d/... or https://youtube.com/watch?v=..."
+              className="w-full px-4 py-3 bg-white border border-[#D9D7EC] rounded-xl focus:outline-none focus:ring-1 focus:ring-purple-500 placeholder-gray-400 text-sm text-gray-900"
+            />
+            <p className="text-[10px] text-gray-400 mt-1">Link Google Drive atau YouTube untuk video testimoni pembeli.</p>
           </div>
 
           {/* IMAGES */}

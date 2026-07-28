@@ -9,6 +9,7 @@ export type UserCourse = {
   completed_at: string | null;
   created_at: string;
   updated_at: string;
+  total_duration_seconds?: number;
 };
 
 export type UserQuizResult = {
@@ -18,6 +19,7 @@ export type UserQuizResult = {
   score: number;
   total: number;
   passed: boolean;
+  duration_seconds?: number;
   created_at: string;
 };
 
@@ -126,4 +128,11 @@ export async function getLatestQuizResult(userId: string, quizId: string) {
   } catch {
     return null;
   }
+}
+
+export async function saveCourseDuration(userId: string, courseId: string, total_duration_seconds: number) {
+  return supabasePatch<UserCourse>(
+    `/rest/v1/user_courses?select=*&user_id=eq.${encodeURIComponent(userId)}&course_id=eq.${encodeURIComponent(courseId)}`,
+    { total_duration_seconds }
+  );
 }

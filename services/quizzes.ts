@@ -219,6 +219,7 @@ export async function submitQuizResult(input: {
   user_id: string;
   quiz_id: string;
   answers: Record<string, string>;
+  duration_seconds?: number;
 }) {
   const questions = await getQuizQuestions(input.quiz_id);
   let score = 0;
@@ -249,6 +250,7 @@ export async function submitQuizResult(input: {
         score,
         total,
         passed,
+        duration_seconds: input.duration_seconds,
       }),
     }
   );
@@ -278,6 +280,7 @@ export async function upsertQuizResult(input: {
   user_id: string;
   quiz_id: string;
   answers: Record<string, string>;
+  duration_seconds?: number;
 }) {
   const questions = await getQuizQuestions(input.quiz_id);
   let score = 0;
@@ -317,7 +320,7 @@ export async function upsertQuizResult(input: {
           Authorization: `Bearer ${token}`,
           Prefer: "return=representation",
         },
-        body: JSON.stringify({ score, total, passed }),
+        body: JSON.stringify({ score, total, passed, duration_seconds: input.duration_seconds }),
       }
     );
     if (!res.ok) throw new Error(`Supabase PATCH failed: ${res.status}`);
@@ -335,7 +338,7 @@ export async function upsertQuizResult(input: {
           Authorization: `Bearer ${token}`,
           Prefer: "return=representation",
         },
-        body: JSON.stringify({ user_id: input.user_id, quiz_id: input.quiz_id, score, total, passed }),
+        body: JSON.stringify({ user_id: input.user_id, quiz_id: input.quiz_id, score, total, passed, duration_seconds: input.duration_seconds }),
       }
     );
     if (!res.ok) throw new Error(`Supabase POST failed: ${res.status}`);

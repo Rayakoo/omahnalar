@@ -2,9 +2,10 @@
 
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft, ShoppingCart } from "lucide-react";
+import { ArrowLeft, ShoppingCart, Play } from "lucide-react";
 import { getProductBySlug, type Product, type ProductImage } from "@/services/products";
 import { transformImageUrl } from "@/lib/image";
+import { getVideoEmbedUrl } from "@/lib/video";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { id, en } from "@/data/translations";
 
@@ -86,7 +87,7 @@ export default function ProdukDetail() {
                 <img
                   src={transformImageUrl(images[selectedImage].url)}
                   alt={produk.name}
-                  className="w-full h-full object-contain bg-gray-100"
+                  className="w-full h-full object-cover bg-gray-100"
                   onError={(e) => {
                     (e.currentTarget as HTMLImageElement).style.display = "none";
                   }}
@@ -110,7 +111,7 @@ export default function ProdukDetail() {
                     <img
                       src={transformImageUrl(img.url)}
                       alt={`${produk.name} ${idx + 1}`}
-                      className="w-full h-full object-contain bg-gray-100"
+                      className="w-full h-full object-cover bg-gray-100"
                       onError={(e) => {
                         (e.currentTarget as HTMLImageElement).style.display = "none";
                       }}
@@ -134,6 +135,22 @@ export default function ProdukDetail() {
             <div className="mt-6 prose prose-sm max-w-none text-brand-700/80 leading-relaxed whitespace-pre-wrap">
               {produk.description}
             </div>
+
+            {produk.video_url && getVideoEmbedUrl(produk.video_url) && (
+              <div className="mt-6">
+                <h3 className="text-sm font-bold text-brand-900 mb-3 flex items-center gap-2">
+                  <Play className="w-4 h-4" /> Testimoni Pembeli
+                </h3>
+                <div className="aspect-video rounded-2xl overflow-hidden bg-gray-100 shadow-sm">
+                  <iframe
+                    src={getVideoEmbedUrl(produk.video_url)!}
+                    className="w-full h-full"
+                    allow="autoplay; encrypted-media"
+                    allowFullScreen
+                  />
+                </div>
+              </div>
+            )}
 
             <div className="mt-auto pt-8">
               <button

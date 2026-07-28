@@ -17,6 +17,7 @@ import { getUserCourse, getUserCourses, enrollCourse, type UserCourse } from "@/
 import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { id, en } from "@/data/translations";
+import CourseCard from "@/components/CourseCard";
 
 function seededColor(seed: number, i: number) {
   const colors = ["#F07A94", "#7C78A8", "#6BBF8A", "#FAC775", "#E6E4F9"];
@@ -49,6 +50,7 @@ export default function CoursePage() {
   const [userCourseList, setUserCourseList] = useState<(UserCourse & { course: CourseWithRelations })[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<string>("Semua");
+  const [selectedLevel, setSelectedLevel] = useState<string>("Semua");
   const [search, setSearch] = useState("");
 
   useEffect(() => {
@@ -112,17 +114,27 @@ export default function CoursePage() {
     return [semua, ...courseCats];
   }, [courseCats]);
 
+  const levelOptions = useMemo(() => {
+    const names = levels.map((l) => l.name);
+    const all = ["Semua", ...names];
+    if (!names.includes("Umum")) all.push("Umum");
+    return all;
+  }, [levels]);
+
   const filteredCourses = useMemo(() => {
     let result = courses;
     if (activeTab && activeTab !== "Semua") {
       result = result.filter((c) => c.category?.name === activeTab);
+    }
+    if (selectedLevel && selectedLevel !== "Semua") {
+      result = result.filter((c) => c.education_level?.name === selectedLevel);
     }
     if (search.trim()) {
       const q = search.toLowerCase();
       result = result.filter((c) => c.title.toLowerCase().includes(q));
     }
     return result;
-  }, [courses, activeTab, search]);
+  }, [courses, activeTab, selectedLevel, search]);
 
   const coursesByLevel = useMemo(() => {
     const map: Record<string, CourseWithRelations[]> = {};
@@ -140,6 +152,11 @@ export default function CoursePage() {
     e.preventDefault();
     if (!user) {
       router.push("/login");
+      return;
+    }
+    const course = courses.find((c) => c.id === courseId);
+    if (course?.course_type === "unsolved_case") {
+      router.push(`/unsolved-case/${courseId}`);
       return;
     }
     try {
@@ -217,6 +234,9 @@ export default function CoursePage() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
               {inProgressCourses.map((uc) => {
                 const course = uc.course;
+                if (course.course_type === "unsolved_case") {
+                  return <CourseCard key={uc.id} course={course} />;
+                }
                 const progress = course.jumlah_isi > 0
                   ? Math.round((uc.current_urutan / course.jumlah_isi) * 100)
                   : 0;
@@ -280,6 +300,9 @@ export default function CoursePage() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
               {completedCourses.map((uc) => {
                 const course = uc.course;
+                if (course.course_type === "unsolved_case") {
+                  return <CourseCard key={uc.id} course={course} />;
+                }
                 return (
                   <div
                     key={uc.id}
@@ -365,60 +388,46 @@ export default function CoursePage() {
           </div>
         </div>
 
-        {filteredCourses.length > 0 ? (
-          <>
-            <div className="mb-12">
-              <h2 className="text-base font-bold text-brand-900/80 mb-4">{t.tersediaTitle}</h2>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {filteredCourses.map((course) => (
-                  <div
-                    key={course.id}
-                    onClick={(e) => handleStartCourse(course.id, e)}
-                    className="bg-brand-100 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow flex flex-col cursor-pointer"
+        <div className="mb-4">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
+            <h2 className="text-base font-bold text-brand-900/80">{t.tersediaTitle}</h2>
+            <div className="flex items-center gap-1.5 p-1 bg-white rounded-xl border border-gray-100 shadow-sm overflow-x-auto">
+              {levelOptions.map((level) => {
+                const isSelected = selectedLevel === level;
+                return (
+                  <button
+                    key={level}
+                    onClick={() => setSelectedLevel(level)}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all duration-200 whitespace-nowrap ${
+                      isSelected
+                        ? "bg-brand-200 text-brand-900 shadow-sm"
+                        : "text-brand-700/60 hover:text-brand-900 hover:bg-brand-100/50"
+                    }`}
                   >
-                    <div className="w-full h-36 relative overflow-hidden bg-brand-100">
-                      {course.thumbnail_url ? (
-                        <img
-                          src={transformImageUrl(course.thumbnail_url)}
-                          alt={course.title}
-                          className="w-full h-full object-cover bg-gray-100"
-                        />
-                      ) : (
-                        <div
-                          className="w-full h-full flex items-center justify-center text-white font-bold text-lg"
-                          style={{ backgroundColor: seededColor(seed, parseInt(course.id.slice(0, 8), 36) || 0) }}
-                        >
-                          {course.title.charAt(0)}
-                        </div>
-                      )}
-                    </div>
-                    <div className="p-5 flex flex-col justify-between flex-1">
-                      <div>
-                        <h4 className="text-sm font-bold text-brand-900 leading-snug mb-1">{course.title}</h4>
-                        <p className="text-[11px] text-brand-700/60 font-semibold mb-3">
-                          {course.category?.name ?? 'Unknown'} • {course.education_level?.name ?? 'Unknown'}
-                        </p>
-                        {course.description && (
-                          <p className="text-xs text-brand-700/80 leading-relaxed mb-4 line-clamp-2">{course.description}</p>
-                        )}
-                      </div>
-                      <span className="bg-brand-900 text-white text-[10px] font-bold px-3 py-1.5 rounded-lg w-fit shadow-sm">
-                        {t.mulaiBelajar}
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
+                    {level}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+
+        {filteredCourses.length > 0 ? (
+          <div className="mb-12">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {filteredCourses.map((course) => (
+                <CourseCard key={course.id} course={course} />
+              ))}
             </div>
 
             {activeTab === "Murid" && levels.map((level) => {
               const levelCourses = coursesByLevel[level.name];
               if (!levelCourses || levelCourses.length === 0) return null;
-              return <SchoolCarousel key={level.id} level={level} courses={levelCourses} seed={seed} onStartCourse={handleStartCourse} />;
+              return <SchoolCarousel key={level.id} level={level} courses={levelCourses} seed={seed} />;
             })}
-          </>
+          </div>
         ) : (
-          <div className="text-center py-20">
+          <div className="text-center py-12 mb-8">
             <BookOpen className="w-16 h-16 mx-auto text-brand-700/20 mb-4" />
             <h3 className="text-lg font-bold text-brand-700/60">{t.emptyTitle}</h3>
             <p className="text-sm text-brand-700/40 mt-1">{t.emptyDesc}</p>
@@ -429,7 +438,7 @@ export default function CoursePage() {
   );
 }
 
-function SchoolCarousel({ level, courses, seed, onStartCourse }: { level: EducationLevel; courses: CourseWithRelations[]; seed: number; onStartCourse: (courseId: string, e: React.MouseEvent) => void; }) {
+function SchoolCarousel({ level, courses, seed }: { level: EducationLevel; courses: CourseWithRelations[]; seed: number }) {
   const { locale } = useLanguage();
   const t = locale === "id" ? id.omahBelajar : en.omahBelajar;
   const [index, setIndex] = useState(0);
@@ -466,37 +475,9 @@ function SchoolCarousel({ level, courses, seed, onStartCourse }: { level: Educat
           className="flex transition-transform duration-500 ease-[cubic-bezier(0.25,0.1,0.25,1)]"
           style={{ transform: `translateX(-${index * (cardWidth + gap)}px)`, gap }}
         >
-          {courses.map((course, i) => (
-            <div
-              key={course.id}
-              onClick={(e) => onStartCourse(course.id, e)}
-              className="min-w-[280px] md:min-w-[320px] max-w-[320px] bg-brand-100 rounded-2xl overflow-hidden shadow-sm hover:-translate-y-1 transition-transform duration-200 flex flex-col shrink-0 cursor-pointer"
-            >
-              <div className="w-full h-36 relative overflow-hidden bg-brand-100">
-                {course.thumbnail_url ? (
-                  <img
-                    src={transformImageUrl(course.thumbnail_url)}
-                    alt={course.title}
-                    className="w-full h-full object-cover bg-gray-100"
-                  />
-                ) : (
-                  <div
-                    className="w-full h-full flex items-center justify-center text-white font-bold text-lg"
-                    style={{ backgroundColor: seededColor(seed, i) }}
-                  >
-                    {course.title.charAt(0)}
-                  </div>
-                )}
-              </div>
-              <div className="p-4 flex flex-col justify-between flex-1 gap-4">
-                <div>
-                  <h4 className="text-sm font-bold text-brand-900 leading-snug mb-1">{course.title}</h4>
-                  <p className="text-[11px] text-brand-700/60 font-semibold">{course.category?.name ?? 'Unknown'}</p>
-                </div>
-                <span className="bg-brand-700 text-white text-[10px] font-bold px-2.5 py-1.5 rounded-lg w-fit shadow-sm">
-                  {t.mulaiBtn}
-                </span>
-              </div>
+          {courses.map((course) => (
+            <div key={course.id} className="min-w-[280px] md:min-w-[320px] max-w-[320px] shrink-0">
+              <CourseCard course={course} />
             </div>
           ))}
         </div>

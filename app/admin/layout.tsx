@@ -6,6 +6,7 @@ import AdminGuard from "@/components/AdminGuard";
 
 const NAV_ITEMS = [
   { label: "Daftar Laporan", href: "/admin" },
+  { label: "Data Course User", href: "/admin/reports" },
   { label: "Kelola Course", href: "/admin/courses" },
   { label: "Kelola Program", href: "/admin/programs" },
   { label: "Kelola Berita", href: "/admin/berita" },

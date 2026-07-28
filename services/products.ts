@@ -10,6 +10,7 @@ export type Product = {
   price: number;
   whatsapp_number: string;
   image_url: ProductImage[];
+  video_url: string | null;
   is_published: boolean;
   created_at: string;
   updated_at: string;
@@ -22,6 +23,7 @@ export type CreateProductInput = {
   price: number;
   whatsapp_number: string;
   image_url?: ProductImage[];
+  video_url?: string | null;
   is_published?: boolean;
 };
 
@@ -75,6 +77,7 @@ export async function createProduct(input: CreateProductInput) {
     price: input.price,
     whatsapp_number: input.whatsapp_number,
     image_url: input.image_url ?? [],
+    video_url: input.video_url ?? null,
     is_published: input.is_published ?? false,
   };
 
@@ -101,7 +104,7 @@ export async function createProduct(input: CreateProductInput) {
 
 export async function updateProduct(
   id: string,
-  updates: Partial<Pick<Product, "name" | "slug" | "description" | "price" | "whatsapp_number" | "image_url" | "is_published">>
+  updates: Partial<Pick<Product, "name" | "slug" | "description" | "price" | "whatsapp_number" | "image_url" | "video_url" | "is_published">>
 ) {
   const { url, anonKey } = getSupabaseConfig();
   const token = await getValidToken().catch(() => getAccessToken());

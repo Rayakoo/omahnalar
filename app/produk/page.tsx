@@ -77,7 +77,7 @@ export default function ProdukPage() {
                       <img
                         src={imgUrl}
                         alt={p.name}
-                        className="w-full h-full object-contain bg-gray-100 group-hover:scale-105 transition-transform duration-500"
+                        className="w-full h-full object-cover bg-gray-100 group-hover:scale-105 transition-transform duration-500"
                         onError={(e) => {
                           (e.currentTarget as HTMLImageElement).style.display = "none";
                         }}

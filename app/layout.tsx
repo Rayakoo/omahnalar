@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import LayoutShell from "@/components/LayoutShell";
+import AccessibilityWidget from "@/components/AccessibilityWidget";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { PlayerNameProvider } from "@/contexts/PlayerNameContext";
@@ -57,6 +58,7 @@ export default function RootLayout({
           <AuthProvider>
             <PlayerNameProvider>
               <LayoutShell>{children}</LayoutShell>
+              <AccessibilityWidget />
             </PlayerNameProvider>
           </AuthProvider>
         </LanguageProvider>
