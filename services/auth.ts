@@ -13,6 +13,9 @@ export type Profile = {
   id: string;
   full_name: string;
   role: string;
+  usia: number | null;
+  jenis_kelamin: string | null;
+  tempat_tinggal: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -310,6 +313,66 @@ export async function getUserRole(userId: string, accessToken?: string) {
   if (!res.ok) return "user";
   const data = await res.json();
   return (data?.[0]?.role as string) || "user";
+}
+
+// ── Get Own Profile ──────────────────────────────────────────
+export async function getProfile(userId: string): Promise<Profile | null> {
+  const token = await getValidToken().catch(() => getAccessToken());
+  const { url, anonKey } = getSupabaseConfig();
+  const res = await fetch(`${url}/rest/v1/profiles?select=*&id=eq.${userId}`, {
+    headers: { apikey: anonKey, Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) return null;
+  const data = await res.json();
+  return (data?.[0] as Profile) || null;
+}
+
+// ── Update Own Profile (nama, usia, jenis kelamin, tempat tinggal) ──
+export async function updateProfileData(
+  userId: string,
+  input: { full_name?: string; usia?: number | null; jenis_kelamin?: string | null; tempat_tinggal?: string | null }
+): Promise<Profile> {
+  const token = await getValidToken().catch(() => getAccessToken());
+  const { url, anonKey } = getSupabaseConfig();
+  const headers = {
+    "Content-Type": "application/json",
+    apikey: anonKey,
+    Authorization: `Bearer ${token}`,
+    Prefer: "return=representation",
+  };
+
+  // Coba update baris profil yang sudah ada
+  let res = await fetch(`${url}/rest/v1/profiles?id=eq.${userId}&select=*`, {
+    method: "PATCH",
+    headers,
+    body: JSON.stringify({ ...input, updated_at: new Date().toISOString() }),
+  });
+  let data: Profile[] = res.ok ? await res.json() : [];
+
+  // Baris profil belum ada → insert baru
+  if (!res.ok || !data || data.length === 0) {
+    res = await fetch(`${url}/rest/v1/profiles?select=*`, {
+      method: "POST",
+      headers,
+      body: JSON.stringify({ id: userId, role: "user", ...input, updated_at: new Date().toISOString() }),
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.message || "Update profile failed");
+    }
+    data = await res.json();
+  }
+
+  if (!data || data.length === 0) throw new Error("No data returned");
+
+  // Sinkronkan nama ke auth user_metadata agar navbar ikut ter-update
+  if (input.full_name) {
+    try {
+      await updateProfile({ full_name: input.full_name });
+    } catch {}
+  }
+
+  return data[0] as Profile;
 }
 
 // ── Auth State Listener ──────────────────────────────────────

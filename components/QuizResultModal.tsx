@@ -2,7 +2,7 @@
 
 import React from "react";
 import { motion } from "framer-motion";
-import { CheckCircle2, XCircle, Zap } from "lucide-react";
+import { CheckCircle2, XCircle, Lightbulb } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { id, en } from "@/data/translations";
 
@@ -14,9 +14,10 @@ interface QuizResultModalProps {
   question?: string;
   selectedAnswer?: string;
   correctAnswer?: string;
+  explanation?: string | null;
 }
 
-export default function QuizResultModal({ isOpen, status, onNext, isLast, question, selectedAnswer, correctAnswer }: QuizResultModalProps) {
+export default function QuizResultModal({ isOpen, status, onNext, isLast, question, selectedAnswer, correctAnswer, explanation }: QuizResultModalProps) {
   const { locale } = useLanguage();
   const t = locale === "id" ? id.omahBelajar : en.omahBelajar;
   const common = locale === "id" ? id.common : en.common;
@@ -77,6 +78,19 @@ export default function QuizResultModal({ isOpen, status, onNext, isLast, questi
             </div>
           )}
         </div>
+
+        {explanation && (
+          <div className={`w-full rounded-xl p-4 mb-5 text-left border ${
+            isCorrect ? "bg-emerald-50/80 border-emerald-200/60" : "bg-brand-50 border-brand-200/60"
+          }`}>
+            <p className={`text-xs font-bold uppercase tracking-wide flex items-center gap-1.5 mb-1.5 ${
+              isCorrect ? "text-emerald-600" : "text-brand-700"
+            }`}>
+              <Lightbulb className="w-3.5 h-3.5" /> {t.penjelasanJawaban}
+            </p>
+            <p className="text-sm font-medium text-brand-900/90 leading-relaxed whitespace-pre-line">{explanation}</p>
+          </div>
+        )}
 
         <button
           onClick={onNext}

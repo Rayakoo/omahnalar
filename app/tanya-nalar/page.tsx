@@ -34,6 +34,7 @@ export default function TanyaNalarPage() {
   const [chronology, setChronology] = useState("");
   const [images, setImages] = useState<string[]>([]);
   const [category, setCategory] = useState("");
+  const [consent, setConsent] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -77,6 +78,10 @@ export default function TanyaNalarPage() {
     e.preventDefault();
     if (!email || !selectedDate || !location || !chronology) {
       alert(t.isiSemua);
+      return;
+    }
+    if (!consent) {
+      alert(t.consentRequired);
       return;
     }
     setSubmitting(true);
@@ -258,6 +263,7 @@ export default function TanyaNalarPage() {
               </div>
 
               <div>
+                <label className="block text-sm font-semibold text-[#4C4765] mb-2">{t.uploadOptional}</label>
                 <input
                   ref={fileInputRef}
                   type="file"
@@ -313,6 +319,16 @@ export default function TanyaNalarPage() {
                   </div>
                 )}
               </div>
+
+              <label className="flex items-start gap-3 p-4 bg-[#E5E2F8] rounded-xl cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={consent}
+                  onChange={(e) => setConsent(e.target.checked)}
+                  className="mt-0.5 w-4 h-4 shrink-0 accent-[#4C4765]"
+                />
+                <span className="text-xs text-[#3B3654] leading-relaxed">{t.consentLabel}</span>
+              </label>
 
               <button
                 type="submit"

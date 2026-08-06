@@ -7,13 +7,15 @@ import FileUploader from "@/components/FileUploader";
 import TtsGridEditor, { type TtsCellData } from "@/components/tts-grid-editor";
 import FindWordGridEditor, { type FindWordItem } from "@/components/findword-grid-editor";
 import { buildRandomFillGrid } from "@/lib/grid-utils";
+import { transformImageUrl } from "@/lib/image";
 import { getNextGlobalUrutanAndIncrement } from "@/services/courses";
 import {
   getMinigameById, getTtsClues, getFindWords, getTrueFalseItems,
-  getDrawings, getFillBlanks, getMatchPairs,
+  getDrawings, getFillBlanks, getMatchPairs, getFlashcards,
   createCourseMinigame, updateCourseMinigame,
   saveTtsClues, saveTrueFalseItems,
-  saveDrawings, saveFillBlanks, saveMatchPairs,
+  saveDrawings, saveFillBlanks, saveMatchPairs, saveFlashcards,
+  getFlashcardBackImage,
   MINIGAME_TYPE_LABELS,
   type CourseMinigame, type MinigameType,
   type TtsClue, type TrueFalseItem,
@@ -59,6 +61,10 @@ export default function MinigameFormPage() {
     items: Omit<MatchPairItem, "id" | "match_pairs_id" | "created_at">[];
   }[]>([]);
 
+  // Flashcard
+  const [fcBackImage, setFcBackImage] = useState("");
+  const [flashcards, setFlashcards] = useState<{ front_image_url: string; correct_answer: string; explanation: string; options: string[] }[]>([]);
+
   const [nextUrutan, setNextUrutan] = useState(1);
   const [loaded, setLoaded] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
@@ -82,8 +88,9 @@ export default function MinigameFormPage() {
       getDrawings(minigameId),
       getFillBlanks(minigameId),
       getMatchPairs(minigameId),
+      getFlashcards(minigameId),
     ])
-      .then(([mg, tts, fw, tf, dw, fb, mp]) => {
+      .then(([mg, tts, fw, tf, dw, fb, mp, fc]) => {
         setTitle(mg.title);
         setType(mg.type);
         // Load grid dimensions from settings (find_the_word)
@@ -156,6 +163,11 @@ export default function MinigameFormPage() {
           ...rest,
           items: items.map(({ id, match_pairs_id, ...i }) => i),
         })));
+        setFcBackImage(getFlashcardBackImage((mg.settings || {}) as Record<string, unknown>));
+        setFlashcards(fc.map(({ id, minigame_id, created_at, ...rest }) => ({
+          ...rest,
+          explanation: rest.explanation || "",
+        })));
       })
       .catch(() => router.push(`/admin/course/${courseId}`))
       .finally(() => { setLoading(false); setLoaded(true); });
@@ -205,6 +217,29 @@ export default function MinigameFormPage() {
         case "match_pairs":
           await saveMatchPairs(mg.id, matchPairs);
           break;
+        case "flashcard": {
+          const cardsToSave = flashcards.filter((c) => c.front_image_url.trim() || c.correct_answer.trim());
+          if (cardsToSave.length === 0) {
+            alert("Minimal satu kartu dengan gambar dan jawaban.");
+            setSaving(false);
+            return;
+          }
+          const normalized = cardsToSave.map((c) => ({
+            front_image_url: c.front_image_url,
+            correct_answer: c.correct_answer,
+            explanation: c.explanation || null,
+            options: c.options.map((o) => o.trim()).filter((o) => o !== ""),
+          }));
+          const incomplete = normalized.find((c) => !c.correct_answer || c.options.length < 2 || !c.options.includes(c.correct_answer));
+          if (incomplete) {
+            alert("Setiap kartu harus memiliki jawaban benar yang ditandai dan minimal 2 pilihan jawaban.");
+            setSaving(false);
+            return;
+          }
+          await updateCourseMinigame(mg.id, { settings: { back_image: fcBackImage } });
+          await saveFlashcards(mg.id, normalized);
+          break;
+        }
       }
 
       alert("Minigame berhasil disimpan!");
@@ -521,6 +556,88 @@ export default function MinigameFormPage() {
             </div>
           )}
 
+          {type === "flashcard" && (
+            <div className="space-y-4">
+              <div className="bg-white border border-gray-200 rounded-xl p-4 space-y-3">
+                <h3 className="font-bold text-sm">Gambar Kartu Belakang</h3>
+                <p className="text-xs text-gray-400">Satu gambar untuk bagian belakang semua kartu.</p>
+                <div className="flex gap-2">
+                  <input type="url" value={fcBackImage} onChange={(e) => setFcBackImage(e.target.value)} placeholder="URL gambar kartu belakang" className="flex-1 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm" />
+                  <FileUploader onUploadComplete={(url) => setFcBackImage(url)} />
+                </div>
+                {fcBackImage && (
+                  <img src={transformImageUrl(fcBackImage)} alt="" className="w-40 h-56 object-cover rounded-xl border border-gray-200 bg-gray-50" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
+                )}
+              </div>
+
+              <div className="flex items-center justify-between">
+                <h3 className="font-bold text-base">Daftar Kartu Depan</h3>
+                <button
+                  type="button"
+                  onClick={() => setFlashcards([...flashcards, { front_image_url: "", correct_answer: "", explanation: "", options: ["", ""] }])}
+                  className="inline-flex items-center gap-1 bg-[#3A3852] text-white text-xs font-semibold px-3 py-2 rounded-lg hover:bg-[#4E4B6E]"
+                >
+                  <Plus className="w-3 h-3" /> Tambah Kartu
+                </button>
+              </div>
+
+              {flashcards.map((card, i) => (
+                <div key={i} className="bg-white border border-gray-200 rounded-xl p-4 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-gray-500">Kartu #{i + 1}</span>
+                    <button type="button" onClick={() => setFlashcards(flashcards.filter((_, idx) => idx !== i))} className="text-red-400 hover:text-red-600">
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                  <div>
+                    <label className="text-xs text-gray-500">Gambar Depan</label>
+                    <div className="flex gap-2">
+                      <input type="url" value={card.front_image_url} onChange={(e) => { const c = [...flashcards]; c[i] = { ...c[i], front_image_url: e.target.value }; setFlashcards(c); }} placeholder="URL gambar kartu depan" className="flex-1 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm" />
+                      <FileUploader onUploadComplete={(url) => { const c = [...flashcards]; c[i] = { ...c[i], front_image_url: url }; setFlashcards(c); }} />
+                    </div>
+                    {card.front_image_url && (
+                      <img src={transformImageUrl(card.front_image_url)} alt="" className="mt-2 w-full max-w-xs h-40 object-contain rounded-xl border border-gray-200 bg-gray-50" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="text-xs text-gray-500">Pilihan Jawaban</label>
+                    <div className="space-y-2 mt-1">
+                      {card.options.map((opt, oi) => {
+                        const letter = String.fromCharCode(65 + oi);
+                        const isCorrect = card.correct_answer === opt;
+                        return (
+                          <div key={oi} className="flex items-center gap-2">
+                            <input type="text" value={opt} onChange={(e) => { const c = [...flashcards]; const old = c[i].options[oi]; c[i].options = c[i].options.map((o, x) => x === oi ? e.target.value : o); if (c[i].correct_answer === old) c[i].correct_answer = e.target.value; setFlashcards(c); }} placeholder={`Pilihan ${letter}`} className="flex-1 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm" />
+                            <button type="button" onClick={() => { const c = [...flashcards]; c[i] = { ...c[i], correct_answer: c[i].correct_answer === opt ? "" : opt }; setFlashcards(c); }} className={`w-6 h-6 rounded-full border-2 flex items-center justify-center shrink-0 ${isCorrect ? "border-[#2C2C2C]" : "border-gray-300"}`} title="Tandai sebagai jawaban benar">
+                              {isCorrect && <div className="w-3 h-3 bg-[#2C2C2C] rounded-full" />}
+                            </button>
+                            {card.options.length > 2 && (
+                              <button type="button" onClick={() => { const c = [...flashcards]; const removed = c[i].options[oi]; c[i].options = c[i].options.filter((_, x) => x !== oi); if (c[i].correct_answer === removed) c[i].correct_answer = ""; setFlashcards(c); }} className="text-red-400 hover:text-red-600 text-xs font-bold shrink-0 w-5" title="Hapus pilihan">
+                                ✕
+                              </button>
+                            )}
+                          </div>
+                        );
+                      })}
+                      <button type="button" onClick={() => { const c = [...flashcards]; c[i].options = [...c[i].options, ""]; setFlashcards(c); }} className="text-xs font-bold text-[#9792EC] hover:text-[#524D85] transition-colors mt-1">
+                        + Tambah pilihan
+                      </button>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="text-xs text-gray-500">Penjelasan (opsional)</label>
+                    <textarea value={card.explanation} onChange={(e) => { const c = [...flashcards]; c[i] = { ...c[i], explanation: e.target.value }; setFlashcards(c); }} rows={2} placeholder="Penjelasan jawaban kartu ini" className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm resize-y" />
+                  </div>
+                </div>
+              ))}
+              {flashcards.length === 0 && (
+                <p className="text-sm text-gray-400 italic">Belum ada kartu. Klik "Tambah Kartu" untuk mulai.</p>
+              )}
+            </div>
+          )}
+
           {/* Save + Preview */}
           <div className="flex items-center justify-center gap-4 pt-6">
             <button
@@ -766,6 +883,46 @@ export default function MinigameFormPage() {
                                 </div>
                               ))}
                             </div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  )}
+
+                  {type === "flashcard" && (
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-4 bg-brand-50 rounded-2xl p-4">
+                        {fcBackImage ? (
+                          <img src={transformImageUrl(fcBackImage)} alt="" className="w-28 h-36 object-cover rounded-xl border border-gray-200 shrink-0" />
+                        ) : (
+                          <div className="w-28 h-36 rounded-xl bg-gradient-to-br from-[#4A4763] to-[#7C78A8] flex items-center justify-center shrink-0">
+                            <span className="text-white text-xs font-bold px-2 text-center">Kartu<br />Belakang</span>
+                          </div>
+                        )}
+                        <div>
+                          <p className="text-sm font-bold">Gambar Kartu Belakang</p>
+                          <p className="text-xs text-gray-400 mt-1">Dipakai untuk belakang semua kartu.</p>
+                        </div>
+                      </div>
+                      {flashcards.length === 0 ? (
+                        <p className="text-sm text-gray-400 italic">Belum ada kartu depan.</p>
+                      ) : (
+                        flashcards.map((card, i) => (
+                          <div key={i} className="bg-brand-50 rounded-2xl p-4">
+                            <p className="text-xs font-bold text-gray-500 mb-3">Kartu #{i + 1}</p>
+                            {card.front_image_url && (
+                              <img src={transformImageUrl(card.front_image_url)} alt="" className="w-full max-w-md h-40 object-contain rounded-xl border border-gray-200 bg-gray-50 mb-3" />
+                            )}
+                            <div className="flex flex-wrap gap-2">
+                              {card.options.filter((o) => o.trim() !== "").map((opt, oi) => (
+                                <span key={oi} className={`min-w-[80px] px-3 py-1.5 rounded-lg text-xs font-bold border text-center ${
+                                  card.correct_answer === opt ? "bg-emerald-50 border-emerald-300 text-emerald-700" : "bg-white border-gray-200 text-gray-600"
+                                }`}>
+                                  {opt}
+                                </span>
+                              ))}
+                            </div>
+                            {card.explanation && <p className="text-xs text-gray-400 mt-2">{card.explanation}</p>}
                           </div>
                         ))
                       )}

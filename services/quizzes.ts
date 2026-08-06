@@ -116,6 +116,7 @@ export type QuizQuestion = {
   urutan: number;
   created_at: string;
   image_url: string | null;
+  explanation: string | null;
 };
 
 export async function getQuizQuestions(quizId: string) {
@@ -136,6 +137,7 @@ export async function createQuizQuestion(input: {
   correct_answer: string;
   urutan?: number;
   image_url?: string | null;
+  explanation?: string | null;
 }) {
   const token = await getValidToken().catch(() => getAccessToken());
   const res = await fetch(
@@ -162,7 +164,7 @@ export async function createQuizQuestion(input: {
 
 export async function updateQuizQuestion(
   id: string,
-  updates: Partial<Pick<QuizQuestion, "question_text" | "options" | "correct_answer" | "urutan" | "image_url">>
+  updates: Partial<Pick<QuizQuestion, "question_text" | "options" | "correct_answer" | "urutan" | "image_url" | "explanation">>
 ) {
   const token = await getValidToken().catch(() => getAccessToken());
   const res = await fetch(

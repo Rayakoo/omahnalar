@@ -9,6 +9,8 @@ import { getUnsolvedCase, getHints } from "@/services/unsolvedCase";
 import { getDetectiveName, getConfirmed, getRevealedHints } from "@/lib/unsolvedCaseStorage";
 import type { UnsolvedCase, UnsolvedCaseHint } from "@/types/unsolvedCase";
 import type { CourseWithRelations } from "@/services/courses";
+import { useAuth } from "@/contexts/AuthContext";
+import ProfileIncompleteModal from "@/components/ProfileIncompleteModal";
 
 function TiltCard({ children, className = "" }: { children: React.ReactNode; className?: string }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -49,16 +51,26 @@ const STEPS = [
 export default function UnsolvedCaseLayout({ children }: Props) {
   const params = useParams();
   const pathname = usePathname();
+  const { user, profileComplete, loading: authLoading } = useAuth();
   const courseId = params?.id as string;
   const basePath = `/unsolved-case/${courseId}`;
 
   const [loading, setLoading] = useState(true);
+  const [showProfileGate, setShowProfileGate] = useState(false);
   const [course, setCourse] = useState<CourseWithRelations | null>(null);
   const [unsolvedCase, setUnsolvedCase] = useState<UnsolvedCase | null>(null);
   const [hints, setHints] = useState<UnsolvedCaseHint[]>([]);
   const [detectiveName, setDetectiveNameState] = useState("");
   const [confirmed, setConfirmedState] = useState(false);
   const [revealedHints, setRevealedHintsState] = useState<Set<string>>(new Set());
+
+  const profileIncomplete = !!user && !profileComplete;
+
+  useEffect(() => {
+    if (!loading && !authLoading && user && profileIncomplete) {
+      setShowProfileGate(true);
+    }
+  }, [loading, authLoading, user, profileIncomplete]);
 
   useEffect(() => {
     setDetectiveNameState(getDetectiveName());
@@ -266,6 +278,8 @@ export default function UnsolvedCaseLayout({ children }: Props) {
           </div>
         </div>
       </div>
+
+      <ProfileIncompleteModal open={showProfileGate} block />
     </div>
   );
 }

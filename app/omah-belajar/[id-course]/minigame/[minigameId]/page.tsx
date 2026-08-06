@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useEffect, useRef, useMemo } from "react";
+import { useState, useEffect, useRef, useMemo, type CSSProperties } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { ChevronLeft, CheckCircle2, XCircle } from "lucide-react";
-import { getMinigameById, getTtsClues, getFindWords, getTrueFalseItems, getDrawings, getFillBlanks, getMatchPairs, MINIGAME_TYPE_LABELS, type CourseMinigame, type TtsClue, type FindWord, type TrueFalseItem, type Drawing, type FillBlank, type MatchPairs, type MatchPairItem } from "@/services/course-minigames";
+import { ChevronLeft, CheckCircle2, XCircle, Clock } from "lucide-react";
+import { getMinigameById, getTtsClues, getFindWords, getTrueFalseItems, getDrawings, getFillBlanks, getMatchPairs, getFlashcards, getFlashcardBackImage, MINIGAME_TYPE_LABELS, type CourseMinigame, type TtsClue, type FindWord, type TrueFalseItem, type Drawing, type FillBlank, type MatchPairs, type MatchPairItem, type FlashcardCard } from "@/services/course-minigames";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { transformImageUrl } from "@/lib/image";
 import { buildRandomFillGrid } from "@/lib/grid-utils";
@@ -29,6 +29,7 @@ export default function CourseMinigamePage() {
   const [drawings, setDrawings] = useState<Drawing[]>([]);
   const [fillBlanks, setFillBlanks] = useState<FillBlank[]>([]);
   const [matchPairs, setMatchPairs] = useState<MatchPairs[]>([]);
+  const [flashcards, setFlashcards] = useState<FlashcardCard[]>([]);
   const [fillBlankInputs, setFillBlankInputs] = useState<Record<string, string[]>>({});
   const [fwSel, setFwSel] = useState<{row: number; col: number} | null>(null);
   const [fwFound, setFwFound] = useState<Set<string>>(new Set());
@@ -45,8 +46,9 @@ export default function CourseMinigamePage() {
       getDrawings(minigameId),
       getFillBlanks(minigameId),
       getMatchPairs(minigameId),
+      getFlashcards(minigameId),
     ])
-      .then(([mgData, tts, fw, tf, dw, fb, mp]) => {
+      .then(([mgData, tts, fw, tf, dw, fb, mp, fc]) => {
         setMg(mgData);
         setTtsClues(tts);
         // Find word: load from settings.words first, fallback to table
@@ -76,6 +78,7 @@ export default function CourseMinigamePage() {
         setDrawings(dw);
         setFillBlanks(fb.map((item) => ({ ...item, answers: typeof item.answers === "string" ? JSON.parse(item.answers) : item.answers })));
         setMatchPairs(mp);
+        setFlashcards(fc);
       })
       .catch(() => router.push(`/omah-belajar/${courseId}/materi`))
       .finally(() => setLoading(false));
@@ -680,8 +683,279 @@ function InteractiveMatchPairs({ mp }: { mp: MatchPairs }) {
               ))}
             </div>
           )}
+
+          {mg.type === "flashcard" && (
+            <FlashcardGame backImage={getFlashcardBackImage((mg.settings || {}) as Record<string, unknown>)} cards={flashcards} />
+          )}
         </div>
       </main>
+    </div>
+  );
+}
+
+function FlashcardGame({ backImage, cards }: { backImage: string; cards: FlashcardCard[] }) {
+  const [phase, setPhase] = useState<"shuffle" | "select" | "reveal" | "question" | "done">("shuffle");
+  const [remaining, setRemaining] = useState<number[]>([]);
+  const [currentIdx, setCurrentIdx] = useState<number | null>(null);
+  const [selected, setSelected] = useState<string | null>(null);
+  const [score, setScore] = useState(0);
+  const [secondsLeft, setSecondsLeft] = useState(120);
+
+  useEffect(() => {
+    setRemaining(cards.map((_, i) => i));
+  }, [cards]);
+
+  useEffect(() => {
+    if (phase !== "shuffle") return;
+    const t = setTimeout(() => setPhase("select"), 2000);
+    return () => clearTimeout(t);
+  }, [phase]);
+
+  useEffect(() => {
+    if (phase !== "reveal") return;
+    setSecondsLeft(120);
+    const iv = setInterval(() => setSecondsLeft((s) => s - 1), 1000);
+    return () => clearInterval(iv);
+  }, [phase, currentIdx]);
+
+  useEffect(() => {
+    if (phase === "reveal" && secondsLeft <= 0) {
+      setPhase("question");
+    }
+  }, [phase, secondsLeft]);
+
+  if (cards.length === 0) {
+    return <p className="text-sm text-gray-400 italic">Belum ada kartu.</p>;
+  }
+
+  const current = currentIdx !== null ? cards[currentIdx] : null;
+  const answeredCount = cards.length - remaining.length;
+  const mmss = `${String(Math.floor(secondsLeft / 60)).padStart(2, "0")}:${String(secondsLeft % 60).padStart(2, "0")}`;
+
+  function pickCard(i: number) {
+    setCurrentIdx(i);
+    setSelected(null);
+    setPhase("reveal");
+  }
+
+  function choose(opt: string) {
+    if (selected || !current) return;
+    setSelected(opt);
+    if (opt === current.correct_answer) setScore((s) => s + 1);
+  }
+
+  function nextRound() {
+    if (currentIdx === null) return;
+    const nextRemaining = remaining.filter((i) => i !== currentIdx);
+    if (nextRemaining.length === 0) {
+      setPhase("done");
+      return;
+    }
+    setRemaining(nextRemaining);
+    setCurrentIdx(null);
+    setSelected(null);
+    setPhase("shuffle");
+  }
+
+  function restart() {
+    setRemaining(cards.map((_, i) => i));
+    setCurrentIdx(null);
+    setSelected(null);
+    setScore(0);
+    setPhase("shuffle");
+  }
+
+  return (
+    <div className="flex flex-col items-center">
+      <p className="text-sm font-bold text-brand-900 mb-4">
+        Kartu terjawab: {answeredCount} / {cards.length}
+      </p>
+
+      {/* 1) Animasi shuffle */}
+      {phase === "shuffle" && (
+        <div className="flex flex-col items-center justify-center py-12">
+          <div className="relative w-48 h-60 md:w-56 md:h-68">
+            {Array.from({ length: Math.min(remaining.length || 1, 6) }).map((_, i) => (
+              <div
+                key={i}
+                className="absolute inset-0 rounded-3xl border border-gray-200 shadow-md overflow-hidden will-change-transform"
+                style={{
+                  "--fc-rot": `${((i % 5) - 2) * 5}deg`,
+                  "--fc-x": `${((i % 4) - 1.5) * 18}px`,
+                  "--fc-raise": `${(i % 3) * 12}px`,
+                  "--fc-delay": `${i * 0.11}s`,
+                  animation: "fc-riffle 1.7s cubic-bezier(0.45, 0, 0.55, 1) var(--fc-delay) infinite alternate",
+                } as CSSProperties}
+              >
+                {backImage ? (
+                  <img src={transformImageUrl(backImage)} alt="" className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full bg-gradient-to-br from-[#4A4763] to-[#7C78A8] flex items-center justify-center">
+                    <span className="text-white text-sm font-bold">Kartu Flash</span>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+          <p className="mt-8 text-sm text-brand-700/60 font-medium">Mengacak kartu...</p>
+        </div>
+      )}
+
+      {/* 2) Pilih kartu */}
+      {phase === "select" && (
+        <div className="w-full max-w-3xl">
+          <p className="text-center text-sm text-brand-700/70 mb-6">Pilih satu kartu untuk dibuka</p>
+          <div className="flex flex-wrap justify-center gap-4">
+            {remaining.map((idx) => (
+              <button
+                key={idx}
+                onClick={() => pickCard(idx)}
+                className="w-28 h-36 md:w-32 md:h-40 rounded-2xl overflow-hidden border-2 border-transparent hover:border-brand-400 shadow-md hover:scale-105 hover:shadow-lg transition-all relative"
+              >
+                {backImage ? (
+                  <img src={transformImageUrl(backImage)} alt="" className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full bg-gradient-to-br from-[#4A4763] to-[#7C78A8] flex items-center justify-center">
+                    <span className="text-white text-xl font-bold">?</span>
+                  </div>
+                )}
+                <span className="absolute bottom-1 right-1 bg-black/60 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+                  #{idx + 1}
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* 3) Kartu terpilih + timer 2 menit */}
+      {phase === "reveal" && current && (
+        <div className="w-full max-w-sm">
+          <p className="text-center text-sm font-bold text-brand-900 mb-3">Kartu Terpilih</p>
+          <div className="rounded-3xl overflow-hidden border border-gray-200 shadow-lg bg-white">
+            <div className="h-72 md:h-80 bg-gray-50 flex items-center justify-center p-4">
+              {current.front_image_url ? (
+                <img src={transformImageUrl(current.front_image_url)} alt="" className="max-h-full max-w-full object-contain" />
+              ) : (
+                <p className="text-sm text-gray-400 italic">Tanpa gambar</p>
+              )}
+            </div>
+          </div>
+          <div className="mt-5 flex items-center gap-4">
+            <div className={`flex items-center gap-2 rounded-xl px-4 py-3 border ${secondsLeft <= 10 ? "bg-red-50 border-red-200" : "bg-amber-50 border-amber-200"}`}>
+              <Clock className={`w-4 h-4 ${secondsLeft <= 10 ? "text-red-500" : "text-amber-600"}`} />
+              <span className={`font-mono font-bold text-base ${secondsLeft <= 10 ? "text-red-500" : "text-brand-900"}`}>{mmss}</span>
+            </div>
+            <button
+              onClick={() => setPhase("question")}
+              className="flex-1 py-3 rounded-xl font-bold text-sm text-white transition-all duration-200 hover:scale-[1.01] active:scale-[0.99] shadow-md"
+              style={{ background: "linear-gradient(135deg, #7C78A8, #4A4763)" }}
+            >
+              Sudah Siap Menjawab
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* 4) Pertanyaan */}
+      {phase === "question" && current && (
+        <div className="w-full max-w-sm space-y-3">
+          {current.options.map((opt, oi) => {
+            const letter = String.fromCharCode(65 + oi);
+            let cls = "bg-white border-gray-200 hover:border-brand-300 hover:bg-brand-50";
+            if (selected) {
+              if (opt === current.correct_answer) cls = "bg-emerald-50 border-emerald-400 text-emerald-700";
+              else if (opt === selected) cls = "bg-red-50 border-red-300 text-red-600";
+              else cls = "bg-white border-gray-200 opacity-60";
+            }
+            return (
+              <button
+                key={oi}
+                onClick={() => choose(opt)}
+                disabled={!!selected}
+                className={`w-full flex items-center gap-3 border-2 rounded-xl px-4 py-3 text-left transition-all ${cls}`}
+              >
+                <span className="w-6 h-6 rounded-full bg-gray-100 text-xs font-bold flex items-center justify-center shrink-0">{letter}</span>
+                <span className="text-sm font-semibold flex-1">{opt}</span>
+                {selected && opt === current.correct_answer && <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0" />}
+                {selected && opt === selected && opt !== current.correct_answer && <XCircle className="w-5 h-5 text-red-400 shrink-0" />}
+              </button>
+            );
+          })}
+
+          {selected && (
+            <div className="mt-4">
+              <div className={`rounded-xl p-4 border ${selected === current.correct_answer ? "bg-emerald-50 border-emerald-200" : "bg-red-50 border-red-200"}`}>
+                <p className={`text-sm font-bold ${selected === current.correct_answer ? "text-emerald-700" : "text-red-600"}`}>
+                  {selected === current.correct_answer ? "Benar!" : "Kurang tepat"}
+                </p>
+                <p className="text-xs text-brand-900/70 mt-1">Jawaban benar: <span className="font-bold">{current.correct_answer}</span></p>
+                {current.explanation && <p className="text-xs text-gray-500 mt-2">{current.explanation}</p>}
+              </div>
+              <button
+                onClick={nextRound}
+                className="mt-4 w-full py-3 rounded-xl font-bold text-sm text-white transition-all duration-200 hover:scale-[1.01] active:scale-[0.99] shadow-md"
+                style={{ background: "linear-gradient(135deg, #7C78A8, #4A4763)" }}
+              >
+                {remaining.length - 1 <= 0 ? "Lihat Hasil" : "Kartu Berikutnya"}
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* 5) Hasil */}
+      {phase === "done" && (
+        <div className="w-full max-w-md bg-white rounded-3xl border border-gray-200 shadow-lg p-8 text-center">
+          <div className="text-5xl mb-4">{score === cards.length ? "🏆" : score >= cards.length / 2 ? "🎉" : "💪"}</div>
+          <h2 className="text-2xl font-bold text-brand-900 mb-2">Selesai!</h2>
+          <p className="text-sm text-brand-700/70 mb-6">
+            Kamu menjawab <span className="font-bold text-brand-900">{score}</span> dari <span className="font-bold text-brand-900">{cards.length}</span> kartu dengan benar.
+          </p>
+          <button
+            onClick={restart}
+            className="w-full py-3 rounded-xl font-bold text-sm text-white transition-all duration-200 hover:scale-[1.01] active:scale-[0.99] shadow-md"
+            style={{ background: "linear-gradient(135deg, #7C78A8, #4A4763)" }}
+          >
+            Main Lagi
+          </button>
+        </div>
+      )}
+
+      <style jsx global>{`
+        @keyframes fc-riffle {
+          0% {
+            transform: rotate(0deg) translate(0, 0) scale(1);
+            z-index: 1;
+            filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.12));
+          }
+          18% {
+            transform: rotate(var(--fc-rot)) translate(var(--fc-x), calc(var(--fc-raise) * -1)) scale(1.06);
+            z-index: 3;
+            filter: drop-shadow(0 10px 16px rgba(0, 0, 0, 0.22));
+          }
+          38% {
+            transform: rotate(calc(var(--fc-rot) * -0.9)) translate(calc(var(--fc-x) * -0.8), calc(var(--fc-raise) * 0.9)) scale(0.97);
+            z-index: 1;
+            filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.1));
+          }
+          58% {
+            transform: rotate(calc(var(--fc-rot) * 0.55)) translate(calc(var(--fc-x) * 0.5), calc(var(--fc-raise) * -0.6)) scale(1.03);
+            z-index: 3;
+            filter: drop-shadow(0 8px 14px rgba(0, 0, 0, 0.18));
+          }
+          78% {
+            transform: rotate(calc(var(--fc-rot) * -0.35)) translate(calc(var(--fc-x) * -0.25), calc(var(--fc-raise) * 0.4)) scale(0.98);
+            z-index: 2;
+            filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.12));
+          }
+          100% {
+            transform: rotate(0deg) translate(0, 0) scale(1);
+            z-index: 1;
+            filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.12));
+          }
+        }
+      `}</style>
     </div>
   );
 }

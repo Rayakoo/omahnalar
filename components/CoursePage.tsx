@@ -18,6 +18,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { id, en } from "@/data/translations";
 import CourseCard from "@/components/CourseCard";
+import ProfileIncompleteModal from "@/components/ProfileIncompleteModal";
 
 function seededColor(seed: number, i: number) {
   const colors = ["#F07A94", "#7C78A8", "#6BBF8A", "#FAC775", "#E6E4F9"];
@@ -32,10 +33,12 @@ interface UserStats {
 
 export default function CoursePage() {
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, profileComplete, loading: authLoading } = useAuth();
   const { locale } = useLanguage();
   const t = locale === "id" ? id.omahBelajar : en.omahBelajar;
   const common = locale === "id" ? id.common : en.common;
+
+  const profileIncomplete = !!user && !profileComplete;
 
   const [courses, setCourses] = useState<CourseWithRelations[]>([]);
   const defaultCats: Category[] = [
@@ -52,6 +55,13 @@ export default function CoursePage() {
   const [activeTab, setActiveTab] = useState<string>("Semua");
   const [selectedLevel, setSelectedLevel] = useState<string>("Semua");
   const [search, setSearch] = useState("");
+  const [showProfileGate, setShowProfileGate] = useState(false);
+
+  useEffect(() => {
+    if (!authLoading && user && profileIncomplete) {
+      setShowProfileGate(true);
+    }
+  }, [authLoading, user, profileIncomplete]);
 
   useEffect(() => {
     const fetchAll = async () => {
@@ -152,6 +162,10 @@ export default function CoursePage() {
     e.preventDefault();
     if (!user) {
       router.push("/login");
+      return;
+    }
+    if (!authLoading && profileIncomplete) {
+      setShowProfileGate(true);
       return;
     }
     const course = courses.find((c) => c.id === courseId);
@@ -434,6 +448,8 @@ export default function CoursePage() {
           </div>
         )}
       </main>
+
+      <ProfileIncompleteModal open={showProfileGate} onClose={() => setShowProfileGate(false)} />
     </div>
   );
 }

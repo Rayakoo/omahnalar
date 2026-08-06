@@ -10,11 +10,12 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { id, en } from "@/data/translations";
 import { transformImageUrl } from "@/lib/image";
+import ProfileIncompleteModal from "@/components/ProfileIncompleteModal";
 
 export default function CourseDetailPage() {
   const params = useParams();
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, profileComplete, loading: authLoading } = useAuth();
   const { locale } = useLanguage();
   const t = locale === "id" ? id.omahBelajar : en.omahBelajar;
   const common = locale === "id" ? id.common : en.common;
@@ -24,6 +25,9 @@ export default function CourseDetailPage() {
   const [loading, setLoading] = useState(true);
   const [isEnrolled, setIsEnrolled] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
+  const [showProfileGate, setShowProfileGate] = useState(false);
+
+  const profileIncomplete = !!user && !profileComplete;
 
   useEffect(() => {
     if (!courseId) return;
@@ -46,12 +50,16 @@ export default function CourseDetailPage() {
   }, [user, courseId]);
 
   const handleStart = async () => {
-    if (course?.course_type === "unsolved_case") {
-      router.push(`/unsolved-case/${courseId}`);
-      return;
-    }
     if (!user) {
       router.push("/login");
+      return;
+    }
+    if (!authLoading && profileIncomplete) {
+      setShowProfileGate(true);
+      return;
+    }
+    if (course?.course_type === "unsolved_case") {
+      router.push(`/unsolved-case/${courseId}`);
       return;
     }
     if (!isEnrolled) {
@@ -204,6 +212,8 @@ export default function CourseDetailPage() {
           })}
         </div>
       </main>
+
+      <ProfileIncompleteModal open={showProfileGate} onClose={() => setShowProfileGate(false)} />
     </div>
   );
 }

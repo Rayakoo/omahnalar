@@ -18,6 +18,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://omahnalar.org"),
   title: "Omah Nalar",
   description: "Ruang aman untuk berbagi cerita, belajar, dan melapor — komunitas pendidikan dan kesehatan reproduksi seksual.",
   icons: {

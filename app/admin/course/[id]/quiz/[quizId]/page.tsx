@@ -12,7 +12,7 @@ export default function EditQuizPage() {
   const courseId = params?.id as string;
   const quizId = params?.quizId as string;
   const [quizData, setQuizData] = useState<Quiz | null>(null);
-  const [questions, setQuestions] = useState<{ id: string; question_text: string; options: string[]; correct_answer: string; urutan: number; image_url?: string | null }[]>([]);
+  const [questions, setQuestions] = useState<{ id: string; question_text: string; options: string[]; correct_answer: string; urutan: number; image_url?: string | null; explanation?: string | null }[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {

@@ -7,7 +7,6 @@ import { Menu, X, LogIn, Languages } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { id, en } from "@/data/translations";
-
 const NAV_LINKS = [
   { key: "program", href: "/program" },
   { key: "berita", href: "/berita" },
@@ -21,10 +20,12 @@ const NAV_LINKS = [
 
 export default function Navbar() {
   const pathname = usePathname();
-  const { user, loading, signOut } = useAuth();
+  const { user, profileComplete, loading, signOut } = useAuth();
   const { locale, toggleLanguage } = useLanguage();
   const [menuOpen, setMenuOpen] = useState(false);
   const t = locale === "id" ? id.nav : en.nav;
+
+  const profileIncomplete = !!user && !profileComplete;
 
   return (
     <nav className="bg-secondary-200 px-6 py-4 flex items-center justify-between shadow-sm relative">
@@ -78,11 +79,20 @@ export default function Navbar() {
                   {t.admin}
                 </Link>
               )}
-              <img
-                src={user.user_metadata?.avatar_url || "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=150"}
-                alt={user.user_metadata?.full_name || "Profile"}
-                className="w-10 h-10 rounded-full border-2 border-brand-700 object-cover shadow-sm"
-              />
+              <Link
+                href="/profile"
+                className="relative shrink-0"
+                title={t.profil}
+              >
+                <img
+                  src={user.user_metadata?.avatar_url || "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=150"}
+                  alt={user.user_metadata?.full_name || "Profile"}
+                  className="w-10 h-10 rounded-full border-2 border-brand-700 object-cover shadow-sm hover:border-brand-900 transition-all"
+                />
+                {profileIncomplete && (
+                  <span className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 bg-red-500 border-2 border-secondary-200 rounded-full" />
+                )}
+              </Link>
               <button
                 onClick={signOut}
                 className="text-[10px] font-bold bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 rounded-md transition-colors hidden lg:block"
@@ -139,6 +149,13 @@ export default function Navbar() {
             </button>
             {user ? (
               <>
+                <Link
+                  href="/profile"
+                  onClick={() => setMenuOpen(false)}
+                  className="px-4 py-3 rounded-xl text-sm font-medium bg-brand-100 text-brand-900 text-center"
+                >
+                  {t.profil}
+                </Link>
                 {user.user_metadata?.role === "admin" && (
                   <Link
                     href="/admin"

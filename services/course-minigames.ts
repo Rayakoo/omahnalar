@@ -12,7 +12,7 @@ export type CourseMinigame = {
   settings: Record<string, unknown>;
 };
 
-export type MinigameType = "tts" | "find_the_word" | "true_or_false" | "drawing" | "fill_the_blank" | "match_pairs";
+export type MinigameType = "tts" | "find_the_word" | "true_or_false" | "drawing" | "fill_the_blank" | "match_pairs" | "flashcard";
 
 export const MINIGAME_TYPE_LABELS: Record<MinigameType, string> = {
   tts: "Teka Teki Silang",
@@ -21,6 +21,7 @@ export const MINIGAME_TYPE_LABELS: Record<MinigameType, string> = {
   drawing: "Menggambar",
   fill_the_blank: "Mengisi Kotak Kosong",
   match_pairs: "Memasangkan Gambar",
+  flashcard: "Flashcard",
 };
 
 // TTS (crossword)
@@ -115,6 +116,19 @@ export type MatchPairs = {
   pair_count: number;
   items: MatchPairItem[];
 };
+
+// Flashcard (kartu depan; kartu belakang disimpan di course_minigames.settings.back_image)
+export type FlashcardCard = {
+  id: string;
+  minigame_id: string;
+  front_image_url: string;
+  correct_answer: string;
+  explanation: string | null;
+  options: string[];
+  created_at?: string;
+};
+
+export type FlashcardCardInput = Omit<FlashcardCard, "id" | "minigame_id">;
 
 // ── CRUD: course_minigames ──────────────────────────────
 
@@ -490,4 +504,54 @@ export async function saveMatchPairs(
       if (!itemRes.ok) throw new Error(`Gagal insert match pair items: ${itemRes.status}`);
     }
   }
+}
+
+// ── CRUD: Flashcard ──────────────────────────────────────
+
+export async function getFlashcards(minigameId: string) {
+  const { data, error } = await getSupabase()
+    .from("minigame_flashcards")
+    .select("*")
+    .eq("minigame_id", minigameId)
+    .order("created_at", { ascending: true });
+
+  if (error) throw error;
+  return (data || []).map((c: Record<string, unknown>) => ({
+    ...c,
+    options: typeof c.options === "string" ? JSON.parse(c.options) : c.options,
+  })) as FlashcardCard[];
+}
+
+export function getFlashcardBackImage(settings: Record<string, unknown>): string {
+  return typeof settings?.back_image === "string" ? settings.back_image : "";
+}
+
+export async function saveFlashcards(minigameId: string, cards: FlashcardCardInput[]) {
+  const token = await getValidToken().catch(() => getAccessToken());
+
+  const deleteRes = await fetch(
+    `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/minigame_flashcards?minigame_id=eq.${minigameId}`,
+    {
+      method: "DELETE",
+      headers: { apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, Authorization: `Bearer ${token}` },
+    }
+  );
+  if (!deleteRes.ok) throw new Error(`Gagal hapus kartu lama: ${deleteRes.status}`);
+
+  if (cards.length === 0) return;
+
+  const insertRes = await fetch(
+    `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/minigame_flashcards?select=*`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+        Authorization: `Bearer ${token}`,
+        Prefer: "return=representation",
+      },
+      body: JSON.stringify(cards.map((c) => ({ ...c, minigame_id: minigameId, options: JSON.stringify(c.options) }))),
+    }
+  );
+  if (!insertRes.ok) throw new Error(`Gagal insert kartu: ${insertRes.status}`);
 }

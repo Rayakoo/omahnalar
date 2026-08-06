@@ -17,12 +17,13 @@ interface QuestionState {
   options: string[];
   correctAnswer: string;
   imageUrl: string;
+  explanation: string;
 }
 
 interface QuizFormProps {
   courseId: string;
   quizData?: Quiz | null;
-  existingQuestions?: { id: string; question_text: string; options: string[]; correct_answer: string; urutan: number; image_url?: string | null }[];
+  existingQuestions?: { id: string; question_text: string; options: string[]; correct_answer: string; urutan: number; image_url?: string | null; explanation?: string | null }[];
   onSuccess?: () => void;
 }
 
@@ -62,17 +63,18 @@ export default function QuizForm({ courseId, quizData, existingQuestions, onSucc
             options: q.options.length >= 2 ? q.options : ["", ""],
             correctAnswer,
             imageUrl: q.image_url || "",
+            explanation: q.explanation || "",
           };
         })
       );
     } else {
-      setQuestions([{ id: 1, tempId: genTempId(), text: "", options: ["", ""], correctAnswer: "", imageUrl: "" }]);
+      setQuestions([{ id: 1, tempId: genTempId(), text: "", options: ["", ""], correctAnswer: "", imageUrl: "", explanation: "" }]);
     }
   }, [existingQuestions]);
 
   const handleAddQuestion = () => {
     const newId = questions.length + 1;
-    setQuestions([...questions, { id: newId, tempId: genTempId(), text: "", options: ["", ""], correctAnswer: "", imageUrl: "" }]);
+    setQuestions([...questions, { id: newId, tempId: genTempId(), text: "", options: ["", ""], correctAnswer: "", imageUrl: "", explanation: "" }]);
   };
 
   const handleRemoveQuestion = (id: number) => {
@@ -163,6 +165,7 @@ export default function QuizForm({ courseId, quizData, existingQuestions, onSucc
             correct_answer: q.correctAnswer,
             urutan: i,
             image_url: q.imageUrl || null,
+            explanation: q.explanation || null,
           });
         } else {
           submittedIds.add(q.tempId);
@@ -172,6 +175,7 @@ export default function QuizForm({ courseId, quizData, existingQuestions, onSucc
             correct_answer: q.correctAnswer,
             urutan: i,
             image_url: q.imageUrl || null,
+            explanation: q.explanation || null,
           });
         }
       }
@@ -323,6 +327,17 @@ export default function QuizForm({ courseId, quizData, existingQuestions, onSucc
                     + Tambah pilihan
                   </button>
                 )}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-600 mb-2">Penjelasan Jawaban (opsional)</label>
+                <textarea
+                  value={q.explanation}
+                  onChange={(e) => setQuestions(questions.map((x) => x.id === q.id ? { ...x, explanation: e.target.value } : x))}
+                  placeholder="Penjelasan kenapa jawaban ini benar. Ditampilkan setelah user menjawab."
+                  rows={3}
+                  className="w-full bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-[#9792EC] placeholder-gray-300 resize-y"
+                />
               </div>
             </div>
           ))}

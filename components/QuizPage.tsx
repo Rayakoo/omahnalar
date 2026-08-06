@@ -10,16 +10,19 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { id, en } from "@/data/translations";
 import QuizResultModal from "./QuizResultModal";
+import ProfileIncompleteModal from "@/components/ProfileIncompleteModal";
 
 export default function QuizPage() {
   const router = useRouter();
   const params = useParams();
   const courseId = params["id-course"] as string;
   const quizId = params["id-quiz"] as string;
-  const { user } = useAuth();
+  const { user, profileComplete, loading: authLoading } = useAuth();
   const { locale } = useLanguage();
   const t = locale === "id" ? id.omahBelajar : en.omahBelajar;
   const common = locale === "id" ? id.common : en.common;
+
+  const profileIncomplete = !!user && !profileComplete;
 
   const [questions, setQuestions] = useState<QuizQuestion[]>([]);
   const [loadingData, setLoadingData] = useState(true);
@@ -30,8 +33,15 @@ export default function QuizPage() {
   const [modalStatus, setModalStatus] = useState<"correct" | "wrong">("correct");
   const [loading, setLoading] = useState(false);
   const [errorPopup, setErrorPopup] = useState<string | null>(null);
+  const [showProfileGate, setShowProfileGate] = useState(false);
   const startTimeRef = useRef(Date.now());
   const [elapsed, setElapsed] = useState(0);
+
+  useEffect(() => {
+    if (!loadingData && !authLoading && user && profileIncomplete) {
+      setShowProfileGate(true);
+    }
+  }, [loadingData, authLoading, user, profileIncomplete]);
 
   useEffect(() => {
     if (!quizId) return;
@@ -341,9 +351,12 @@ export default function QuizPage() {
             question={currentQuestion.question_text}
             selectedAnswer={selectedAnswers[currentQuestion.id]}
             correctAnswer={currentQuestion.correct_answer}
+            explanation={currentQuestion.explanation}
           />
         )}
       </AnimatePresence>
+
+      <ProfileIncompleteModal open={showProfileGate} block />
     </div>
   );
 }

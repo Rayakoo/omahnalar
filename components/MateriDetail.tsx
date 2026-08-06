@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { ChevronLeft, Play, FileText, HelpCircle, CheckCircle2, Clock, BookOpen, BarChart, Download, File as FileIcon, Gamepad2 } from "lucide-react";
+import { ChevronLeft, Play, FileText, HelpCircle, CheckCircle2, Clock, BookOpen, BarChart, Download, File as FileIcon, Gamepad2, Lock } from "lucide-react";
 import { getCourseById, getCourseSections, type CourseWithRelations, type CourseSection } from "@/services/courses";
 import { getQuizById, getQuizIdsByCourse, getUserQuizResults } from "@/services/quizzes";
 import { getUserCourse, enrollCourse, updateProgress } from "@/services/userCourses";
@@ -14,6 +14,7 @@ import { id, en } from "@/data/translations";
 import { getVideoEmbedUrl } from "@/lib/video";
 import { getProxiedUrl } from "@/services/garage";
 import { saveCourseDuration } from "@/services/userCourses";
+import ProfileIncompleteModal from "@/components/ProfileIncompleteModal";
 
 function sectionIcon(type: string) {
   switch (type) {
@@ -25,14 +26,24 @@ function sectionIcon(type: string) {
   }
 }
 
+function getUnlockedCount(items: { urutan: number }[], progressUrutan: number): number {
+  let lastIdx = -1;
+  for (let i = 0; i < items.length; i++) {
+    if (items[i].urutan <= progressUrutan) lastIdx = i;
+  }
+  return Math.max(2, Math.min(items.length, lastIdx + 2));
+}
+
 export default function MateriDetail() {
   const router = useRouter();
   const params = useParams();
-  const { user } = useAuth();
+  const { user, profileComplete, loading: authLoading } = useAuth();
   const { locale } = useLanguage();
   const t = locale === "id" ? id.omahBelajar : en.omahBelajar;
   const common = locale === "id" ? id.common : en.common;
   const courseId = params["id-course"] as string;
+
+  const profileIncomplete = !!user && !profileComplete;
 
   const [course, setCourse] = useState<CourseWithRelations | null>(null);
   const [sections, setSections] = useState<CourseSection[]>([]);
@@ -41,12 +52,14 @@ export default function MateriDetail() {
   const [materiTab, setMateriTab] = useState<"materi" | "file">("materi");
   const [fileLoading, setFileLoading] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [showProfileGate, setShowProfileGate] = useState(false);
   const [mgList, setMgList] = useState<CourseMinigame[]>([]);
   const [courseElapsed, setCourseElapsed] = useState(0);
   const courseAccumulatedRef = useRef(0);
   const courseSessionStartRef = useRef<number | null>(null);
   const [timerReady, setTimerReady] = useState(false);
   const userUrutan = useRef(0);
+  const [progressUrutan, setProgressUrutan] = useState(0);
 
   useEffect(() => {
     if (!courseId) return;
@@ -69,6 +82,7 @@ export default function MateriDetail() {
           ]);
           if (uc) {
             userUrutan.current = uc.current_urutan;
+            setProgressUrutan(uc.current_urutan);
             if (uc.current_urutan > 0) {
               const idx = secs.findIndex((s) => s.data.urutan === uc.current_urutan);
               if (idx >= 0) setActiveIdx(idx);
@@ -104,8 +118,16 @@ export default function MateriDetail() {
     fetchData();
   }, [courseId, user]);
 
+  useEffect(() => {
+    if (!loading && !authLoading && user && profileIncomplete) {
+      setShowProfileGate(true);
+    }
+  }, [loading, authLoading, user, profileIncomplete]);
+
   const activeSection = sections[activeIdx];
   const courseTitle = course?.title || "";
+  const unlockedCount = user ? getUnlockedCount(sections.map((s) => s.data), progressUrutan) : sections.length;
+  const mgUnlockedCount = user ? getUnlockedCount(mgList, progressUrutan) : mgList.length;
 
   const saveTimer = useCallback(() => {
     if (!user || courseSessionStartRef.current === null) return;
@@ -153,6 +175,7 @@ export default function MateriDetail() {
 
   const handleSectionClick = async (idx: number) => {
     const sec = sections[idx];
+    if (idx >= unlockedCount) return;
     if (sec.type === "materi") {
       if (sec.data.file_url) setFileLoading(true);
       if (!sec.data.content && sec.data.file_url) {
@@ -170,6 +193,7 @@ export default function MateriDetail() {
         if (sec.data.urutan > dbUrutan) {
           await updateProgress(user.id, courseId, sec.data.urutan);
           userUrutan.current = sec.data.urutan;
+          setProgressUrutan(sec.data.urutan);
         }
       } catch (e) {
         console.error("Gagal update progress:", e);
@@ -385,21 +409,31 @@ export default function MateriDetail() {
             <div className="bg-white rounded-3xl border border-gray-100 p-6 shadow-sm">
               <h3 className="text-base font-bold text-brand-900 mb-4">Minigame</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                {mgList.map((mg) => (
-                  <button
-                    key={mg.id}
-                    onClick={() => router.push(`/omah-belajar/${courseId}/minigame/${mg.id}`)}
-                    className="bg-[#FFF0F5] border border-[#FFC0D5] rounded-xl p-4 text-left hover:bg-[#FFE8EF] transition-colors shadow-sm"
-                  >
-                    <div className="flex items-center gap-2 mb-1">
-                      <Gamepad2 className="w-4 h-4 text-[#E75480] shrink-0" />
-                      <span className="text-xs font-bold text-gray-700">{mg.title}</span>
-                    </div>
-                    <span className="text-[10px] text-gray-400 font-medium block">
-                      {MINIGAME_TYPE_LABELS[mg.type as keyof typeof MINIGAME_TYPE_LABELS] || mg.type}
-                    </span>
-                  </button>
-                ))}
+                {mgList.map((mg, mgIdx) => {
+                  const mgLocked = mgIdx >= mgUnlockedCount;
+                  return (
+                    <button
+                      key={mg.id}
+                      disabled={mgLocked}
+                      onClick={() => router.push(`/omah-belajar/${courseId}/minigame/${mg.id}`)}
+                      className={`bg-[#FFF0F5] border border-[#FFC0D5] rounded-xl p-4 text-left transition-colors shadow-sm ${
+                        mgLocked ? "opacity-50 cursor-not-allowed" : "hover:bg-[#FFE8EF]"
+                      }`}
+                    >
+                      <div className="flex items-center gap-2 mb-1">
+                        {mgLocked ? (
+                          <Lock className="w-4 h-4 text-[#E75480] shrink-0" />
+                        ) : (
+                          <Gamepad2 className="w-4 h-4 text-[#E75480] shrink-0" />
+                        )}
+                        <span className="text-xs font-bold text-gray-700">{mg.title}</span>
+                      </div>
+                      <span className="text-[10px] text-gray-400 font-medium block">
+                        {MINIGAME_TYPE_LABELS[mg.type as keyof typeof MINIGAME_TYPE_LABELS] || mg.type}
+                      </span>
+                    </button>
+                  );
+                })}
               </div>
             </div>
           )}
@@ -418,6 +452,7 @@ export default function MateriDetail() {
                 sections.map((sec, idx) => {
                   const isActive = activeIdx === idx;
                   const isCompleted = completedIds.includes(sec.data.id);
+                  const isLocked = idx >= unlockedCount;
                   const Icon = sectionIcon(sec.type);
 
                   return (
@@ -427,17 +462,23 @@ export default function MateriDetail() {
                       )}
                       <button
                         onClick={() => handleSectionClick(idx)}
-                        className={`w-full flex items-center justify-between p-3 rounded-2xl cursor-pointer border transition-all text-left ${
-                          isActive
-                            ? "bg-white border-brand-700 shadow-sm scale-[1.01]"
-                            : "bg-[#E6E4F9] border-transparent hover:bg-white/40"
+                        disabled={isLocked}
+                        aria-label={isLocked ? `${sec.data.title} — ${t.terkunci}` : sec.data.title}
+                        className={`w-full flex items-center justify-between p-3 rounded-2xl border transition-all text-left ${
+                          isLocked
+                            ? "bg-[#E6E4F9] opacity-50 cursor-not-allowed"
+                            : isActive
+                              ? "bg-white border-brand-700 shadow-sm scale-[1.01] cursor-pointer"
+                              : "bg-[#E6E4F9] border-transparent hover:bg-white/40 cursor-pointer"
                         }`}
                       >
                         <div className="flex items-center gap-3">
                           <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                            isCompleted ? "text-brand-700" : "text-brand-900/40"
+                            isLocked ? "text-brand-900/30" : isCompleted ? "text-brand-700" : "text-brand-900/40"
                           }`}>
-                            {isCompleted ? (
+                            {isLocked ? (
+                              <Lock className="w-4 h-4 stroke-[2.5]" />
+                            ) : isCompleted ? (
                               <CheckCircle2 className="w-5 h-5 stroke-[2.5]" />
                             ) : (
                               <Icon className={`w-4 h-4 ${sec.type === "quiz" ? "text-orange-500" : ""}`} />
@@ -449,7 +490,7 @@ export default function MateriDetail() {
                               {sec.data.title}
                             </span>
                             <span className="text-[10px] text-brand-700/60 font-semibold mt-0.5 capitalize">
-                              {sec.type}
+                              {isLocked ? t.terkunci : sec.type}
                             </span>
                           </div>
                         </div>
@@ -473,6 +514,8 @@ export default function MateriDetail() {
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
       `}</style>
+
+      <ProfileIncompleteModal open={showProfileGate} block />
     </div>
   );
 }
