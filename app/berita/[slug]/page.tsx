@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft, Calendar, User } from "lucide-react";
+import Reveal from "@/components/Reveal";
 import { getBeritaBySlug, type Berita, type ImageUrl } from "@/services/berita";
 import { transformImageUrl } from "@/lib/image";
 import { getVideoEmbedUrl } from "@/lib/video";
@@ -48,7 +49,7 @@ export default function BeritaDetail() {
       <div className="min-h-screen bg-page-50 flex items-center justify-center">
         <div className="text-center">
           <h2 className="text-2xl font-bold text-brand-900">{t.notFound}</h2>
-          <button onClick={() => router.push("/berita")} className="mt-4 px-5 py-2 bg-brand-900 text-white rounded-xl text-sm">
+          <button onClick={() => router.push("/program")} className="mt-4 px-5 py-2 bg-brand-900 text-white rounded-xl text-sm">
             {common.back}
           </button>
         </div>
@@ -62,16 +63,19 @@ export default function BeritaDetail() {
     <div className="min-h-screen bg-page-50 font-sans antialiased flex flex-col">
       {/* Back button */}
       <div className="max-w-4xl mx-auto w-full px-4 md:px-6 pt-24 md:pt-28">
-        <button
-          onClick={() => router.push("/berita")}
-          className="inline-flex items-center gap-1.5 px-4 py-2 bg-white border border-gray-200 text-sm font-semibold rounded-xl hover:bg-gray-50 transition-all text-brand-900"
-        >
-          <ArrowLeft className="w-4 h-4" /> {t.backToAll}
-        </button>
+        <Reveal>
+          <button
+            onClick={() => router.push("/program")}
+            className="inline-flex items-center gap-1.5 px-4 py-2 bg-white border border-gray-200 text-sm font-semibold rounded-xl hover:bg-gray-50 transition-all text-brand-900"
+          >
+            <ArrowLeft className="w-4 h-4" /> {t.backToAll}
+          </button>
+        </Reveal>
       </div>
 
       <article className="max-w-4xl mx-auto w-full px-4 md:px-6 py-8 md:py-12">
         {/* Header */}
+        <Reveal>
         <header className="mb-8">
           <h1 className="text-3xl md:text-4xl font-extrabold text-brand-900 tracking-tight leading-tight">
             {berita.title}
@@ -87,9 +91,11 @@ export default function BeritaDetail() {
             </span>
           </div>
         </header>
+        </Reveal>
 
         {/* Thumbnail */}
         {images.length > 0 && (
+          <Reveal delay={0.05}>
           <div className="rounded-2xl overflow-hidden bg-gray-100 mb-8 aspect-video">
             <img
               src={transformImageUrl(images[0].url)}
@@ -104,10 +110,12 @@ export default function BeritaDetail() {
               }}
             />
           </div>
+          </Reveal>
         )}
 
         {/* Videos */}
         {berita.video_url?.filter((v) => v.trim()).length > 0 && (
+          <Reveal delay={0.05}>
           <div className="mb-8 space-y-4">
             {berita.video_url.filter((v) => v.trim()).map((v, idx) => {
               const embedUrl = getVideoEmbedUrl(v);
@@ -125,21 +133,27 @@ export default function BeritaDetail() {
               );
             })}
           </div>
+          </Reveal>
         )}
 
         {/* Content */}
+        <Reveal delay={0.05}>
         <div
           className="prose prose-sm md:prose-base max-w-none text-brand-700/80 leading-relaxed [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_li]:my-1 [&_a]:text-blue-600 [&_a]:underline [&_a]:hover:text-blue-800"
           dangerouslySetInnerHTML={{ __html: berita.content }}
         />
+        </Reveal>
 
         {/* Additional images */}
         {images.length > 1 && (
           <div className="mt-10">
+            <Reveal>
             <h3 className="text-lg font-bold text-brand-900 mb-4">{t.dokumentasi}</h3>
+            </Reveal>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
               {images.slice(1).map((img, idx) => (
-                <div key={idx} className="rounded-xl overflow-hidden bg-gray-100 aspect-video">
+                <Reveal key={idx} delay={(idx % 3) * 0.08}>
+                <div className="rounded-xl overflow-hidden bg-gray-100 aspect-video">
                   <img
                     src={transformImageUrl(img.url)}
                     alt={`${berita.title} ${idx + 2}`}
@@ -149,6 +163,7 @@ export default function BeritaDetail() {
                     }}
                   />
                 </div>
+                </Reveal>
               ))}
             </div>
           </div>

@@ -1,34 +1,26 @@
 "use client";
 
-import { Handshake, Users, BookOpen, GraduationCap } from "lucide-react";
-import { useLanguage } from "@/contexts/LanguageContext";
-import { id, en } from "@/data/translations";
+import Reveal from "@/components/Reveal";
 
-const STATS_BASE = [
-  { icon: <Handshake className="w-8 h-8" />, value: "50+", labelKey: "statsMitra" as const, bg: "bg-[#FDE8E8]", color: "text-[#EF4444]" },
-  { icon: <Users className="w-8 h-8" />, value: "500+", labelKey: "statsKawan" as const, bg: "bg-[#DBEAFE]", color: "text-[#3B82F6]" },
-  { icon: <BookOpen className="w-8 h-8" />, value: "12", labelKey: "statsProgram" as const, bg: "bg-[#FEF3C7]", color: "text-[#F59E0B]" },
-  { icon: <GraduationCap className="w-8 h-8" />, value: "1.200+", labelKey: "statsSiswa" as const, bg: "bg-[#D1FAE5]", color: "text-[#10B981]" },
+const STAT_IMAGES = [
+  { src: "/stat/stat_mitra.png", alt: "Jumlah Mitra" },
+  { src: "/stat/stat_kawan.png", alt: "Kawan Nalar" },
+  { src: "/stat/stat_program.png", alt: "Program" },
+  { src: "/stat/stat_siswa.png", alt: "Siswa" },
 ];
 
 export default function StatsSection() {
-  const { locale } = useLanguage();
-  const t = locale === "id" ? id.home : en.home;
-
   return (
-    <section className="max-w-6xl mx-auto px-6 py-16">
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-        {STATS_BASE.map((stat, idx) => (
-          <div
-            key={idx}
-            className={`${stat.bg} rounded-3xl p-8 flex flex-col items-center text-center shadow-sm hover:shadow-md transition-shadow`}
-          >
-            <div className={`${stat.color} mb-4`}>{stat.icon}</div>
-            <span className={`text-3xl md:text-4xl font-bold ${stat.color} mb-1`}>
-              {stat.value}
-            </span>
-            <span className="text-sm text-brand-700/80 font-medium">{t[stat.labelKey]}</span>
-          </div>
+    <section className="bg-white py-16">
+      <div className="max-w-6xl mx-auto px-6 grid grid-cols-2 lg:grid-cols-4 gap-1">
+        {STAT_IMAGES.map((stat, idx) => (
+          <Reveal key={stat.src} delay={idx * 0.1}>
+            <img
+              src={stat.src}
+              alt={stat.alt}
+              className="w-full h-auto rounded-3xl"
+            />
+          </Reveal>
         ))}
       </div>
     </section>

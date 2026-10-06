@@ -199,6 +199,19 @@ export async function getSession() {
   }
 }
 
+// ── Sign In With Google ─────────────────────────────────────
+export async function signInWithGoogle() {
+  const supabase = createOAuthClient();
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: "google",
+    options: {
+      redirectTo: `${window.location.origin}/auth/callback`,
+    },
+  });
+  if (error) throw error;
+  return data.url;
+}
+
 // ── Exchange OAuth code from URL ────────────────────────────
 export async function exchangeOAuthCode(code: string) {
   const supabase = createOAuthClient();

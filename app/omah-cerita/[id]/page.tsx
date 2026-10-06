@@ -3,6 +3,7 @@ import { DUMMY_STORIES } from "@/data/dummyStories";
 import { ArrowLeft, Calendar, User } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import Reveal from "@/components/Reveal";
 
 function formatDate(iso: string) {
   const d = new Date(iso);
@@ -26,13 +27,16 @@ export default async function CeritaDetailPage({ params }: { params: Promise<{ i
   return (
     <div className="min-h-screen bg-page-50 font-sans antialiased">
       <div className="max-w-3xl mx-auto px-4 py-8">
-        <Link
-          href="/omah-cerita"
-          className="inline-flex items-center gap-1.5 text-sm text-brand-700 hover:text-brand-900 transition-colors mb-6"
-        >
-          <ArrowLeft className="w-4 h-4" /> Kembali
-        </Link>
+        <Reveal>
+          <Link
+            href="/omah-cerita"
+            className="inline-flex items-center gap-1.5 text-sm text-brand-700 hover:text-brand-900 transition-colors mb-6"
+          >
+            <ArrowLeft className="w-4 h-4" /> Kembali
+          </Link>
+        </Reveal>
 
+        <Reveal delay={0.08}>
         <article className="bg-white rounded-2xl shadow-sm border border-brand-100 overflow-hidden">
           <div className="h-2" style={{ background: "linear-gradient(90deg, #7C78A8, #FAC775, #F07A94)" }} />
 
@@ -61,6 +65,7 @@ export default async function CeritaDetailPage({ params }: { params: Promise<{ i
             </div>
           </div>
         </article>
+        </Reveal>
       </div>
     </div>
   );

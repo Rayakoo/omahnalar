@@ -1,52 +1,96 @@
-"use client";
-
-import { useRouter } from "next/navigation";
-import { motion } from "framer-motion";
-import { ArrowRight } from "lucide-react";
-import { useLanguage } from "@/contexts/LanguageContext";
-import { id, en } from "@/data/translations";
+import Image from "next/image";
+import Link from "next/link";
+import Reveal from "@/components/Reveal";
 
 export default function AboutSection() {
-  const router = useRouter();
-  const { locale } = useLanguage();
-  const t = locale === "id" ? id.home : en.home;
-
   return (
-    <section className="bg-page-50 py-20">
-      <div className="max-w-6xl mx-auto px-6 flex flex-col lg:flex-row items-center gap-12">
-        <motion.div
-          initial={{ opacity: 0, x: -30 }}
-          whileInView={{ opacity: 1, x: 0 }}
-          viewport={{ once: true }}
-          className="w-full lg:w-1/2"
-        >
-          <div className="relative bg-brand-100 rounded-3xl overflow-hidden">
-            <img
+    <section className="w-full bg-[#f4f8fb] py-16 px-6 md:px-12 lg:px-20 font-sans">
+      <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center">
+
+        {/* 1. SISI KIRI: Gambar Frame Rumah */}
+        <Reveal className="lg:col-span-5 flex justify-center">
+          <div className="relative w-full max-w-md aspect-[4/3] md:aspect-square">
+            <Image
               src="/images/omah_nalar.JPG"
-              alt="Omah Nalar"
-              className="w-full h-full object-cover"
+              alt="Kegiatan Omah Nalar"
+              fill
+              sizes="(max-width: 1024px) 100vw, 448px"
+              className="object-contain"
+              priority
             />
           </div>
-        </motion.div>
-        <motion.div
-          initial={{ opacity: 0, x: 30 }}
-          whileInView={{ opacity: 1, x: 0 }}
-          viewport={{ once: true }}
-          className="w-full lg:w-1/2"
-        >
-          <span className="text-sm font-semibold text-secondary-600 uppercase tracking-wider">
-            {t.aboutTitle}
-          </span>
-          <h2 className="text-2xl md:text-3xl font-bold text-brand-900 mt-3 mb-5 leading-tight">
-            {t.aboutHeading}
-          </h2>
-          <p className="text-brand-700/80 leading-relaxed mb-6">
-            {t.aboutDesc}
+        </Reveal>
+
+        {/* 2. SISI KANAN: Konten Teks & Tombol */}
+        <Reveal delay={0.15} className="lg:col-span-7 flex flex-col justify-center">
+
+          {/* Sub-header / Category Dot & Text */}
+          <div className="flex items-center gap-2.5 mb-3">
+            <span className="w-3.5 h-3.5 rounded-full bg-[#00296b] shrink-0" />
+            <span className="text-[#00296b] font-bold tracking-wider text-xs md:text-sm uppercase">
+              TENTANG OMAH NALAR
+            </span>
+          </div>
+
+          {/* Heading + Maskot Otak */}
+          <div className="flex items-center justify-start gap-2 mb-4">
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-extrabold text-[#721e7c] leading-tight">
+              Selamat Datang <br />
+              di Omah Nalar
+            </h2>
+
+            {/* Maskot Kanan */}
+            <div className="relative w-28 h-28 md:w-40 md:h-40 shrink-0">
+              <Image
+                src="/images/maskot_nalar.png"
+                alt="Maskot Omah Nalar"
+                fill
+                sizes="(max-width: 768px) 112px, 160px"
+                className="object-contain"
+              />
+            </div>
+          </div>
+
+          {/* Deskripsi */}
+          <p className="text-[#721e7c]/90 text-sm md:text-base leading-relaxed mb-8 max-w-xl font-medium">
+            Omah Nalar adalah komunitas non-profit yang menyediakan platform
+            ruang belajar menyenangkan, berbagi cerita dengan aman dan
+            mendapatkan dukungan.
           </p>
-          <button onClick={() => router.push("/tentang")} className="bg-brand-900 text-white font-medium px-6 py-3 rounded-full hover:bg-brand-700 transition-colors flex items-center gap-2 text-sm shadow-sm">
-            {t.aboutCta} <ArrowRight className="w-4 h-4" />
-          </button>
-        </motion.div>
+
+          {/* Tombol Aksi */}
+          <div className="flex flex-wrap items-center gap-4">
+
+            {/* Tombol 1 */}
+            <Link
+              href="/tentang"
+              className="inline-flex items-center justify-between gap-4 px-6 py-3 bg-[#f1e5cd] hover:bg-[#e7d8bc] text-[#00296b] font-bold text-sm md:text-base rounded-full shadow-sm transition-all group"
+            >
+              <span>Pelajari lebih lanjut</span>
+              <div className="w-7 h-7 bg-[#721e7c] rounded-full flex items-center justify-center text-white transition-transform group-hover:translate-x-0.5 shrink-0">
+                <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                  <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z" />
+                </svg>
+              </div>
+            </Link>
+
+            {/* Tombol 2 */}
+            <Link
+              href="/terlibat"
+              className="inline-flex items-center justify-between gap-4 px-6 py-3 bg-[#f1e5cd] hover:bg-[#e7d8bc] text-[#00296b] font-bold text-sm md:text-base rounded-full shadow-sm transition-all group"
+            >
+              <span>Mau ikut terlibat</span>
+              <div className="w-7 h-7 bg-[#721e7c] rounded-full flex items-center justify-center text-white transition-transform group-hover:translate-x-0.5 shrink-0">
+                <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                  <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z" />
+                </svg>
+              </div>
+            </Link>
+
+          </div>
+
+        </Reveal>
+
       </div>
     </section>
   );

@@ -16,6 +16,7 @@ import {
   Users,
   BarChart3,
 } from "lucide-react";
+import Reveal from "@/components/Reveal";
 import { getReportByTicket, getReportLogs, getConversations, addConversationMessage, type Report, type ReportLog, type ReportConversation } from "@/services/reports";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { id, en } from "@/data/translations";
@@ -167,7 +168,7 @@ function DetailLaporan() {
 
       <main className="max-w-6xl mx-auto w-full p-4 md:p-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* LEFT COLUMN */}
-        <section className="lg:col-span-2 space-y-6">
+        <Reveal className="lg:col-span-2 space-y-6">
           <h1 className="text-xl md:text-2xl font-bold text-[#3B3654] text-center lg:text-left">{t.detailLaporan}</h1>
 
           <div className="bg-[#E5E2F8] bg-opacity-40 border border-[#D7D3F2] rounded-2xl p-5 space-y-3.5">
@@ -233,10 +234,10 @@ function DetailLaporan() {
               )}
             </div>
           </div>
-        </section>
+        </Reveal>
 
         {/* RIGHT COLUMN */}
-        <section className="space-y-6">
+        <Reveal delay={0.1} className="space-y-6">
           {/* TIMELINE */}
           <div className="space-y-4">
             <h3 className="text-base font-bold text-[#3B3654] flex items-center gap-2">
@@ -342,7 +343,7 @@ function DetailLaporan() {
               </button>
             </div>
           </div>
-        </section>
+        </Reveal>
       </main>
     </div>
   );

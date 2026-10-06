@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { ArrowLeft, Calendar, MapPin, Target, Users, Image as ImageIcon } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
+import Reveal from "@/components/Reveal";
 import { getProgramBySlug, type Program, type ImageUrl } from "@/services/programs";
 import { transformImageUrl } from "@/lib/image";
 import { getVideoEmbedUrl } from "@/lib/video";
@@ -55,7 +56,7 @@ export default function ProgramDetail() {
     <div className="min-h-screen bg-page-50 font-sans antialiased flex flex-col">
       {/* Hero Banner */}
       <div className="relative overflow-hidden bg-secondary-500">
-        <div className="max-w-6xl mx-auto px-6 py-12 md:py-16 relative z-10">
+        <Reveal className="max-w-6xl mx-auto px-6 py-12 md:py-16 relative z-10">
           <button
             onClick={() => router.push("/program")}
             className="inline-flex items-center gap-1.5 px-4 py-2 bg-white/20 backdrop-blur-sm text-sm font-semibold rounded-xl hover:bg-white/30 transition-all mb-6 text-brand-900"
@@ -83,7 +84,7 @@ export default function ProgramDetail() {
               {prog.location}
             </span>
           </div>
-        </div>
+        </Reveal>
       </div>
 
       {/* Content */}
@@ -91,6 +92,7 @@ export default function ProgramDetail() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left: Main Content */}
           <div className="lg:col-span-2 space-y-6">
+            <Reveal>
             <div className="bg-white rounded-2xl p-6 md:p-8 border border-gray-100 shadow-sm">
               <div className="flex items-center gap-2 mb-4">
                 <Target className="w-5 h-5 text-brand-700" />
@@ -102,7 +104,9 @@ export default function ProgramDetail() {
                 ))}
               </div>
             </div>
+            </Reveal>
 
+            <Reveal delay={0.05}>
             <div className="bg-brand-100/50 border border-brand-100 rounded-2xl p-6 md:p-8">
               <div className="flex items-center gap-2 mb-6">
                 <Users className="w-5 h-5 text-brand-700" />
@@ -119,10 +123,12 @@ export default function ProgramDetail() {
                 ))}
               </div>
             </div>
+            </Reveal>
           </div>
 
           {/* Right: Goals Sidebar */}
           <div className="space-y-6">
+            <Reveal delay={0.1}>
             <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm sticky top-6">
               <div className="flex items-center gap-2 mb-4">
                 <Target className="w-5 h-5 text-brand-700" />
@@ -139,11 +145,13 @@ export default function ProgramDetail() {
                 ))}
               </div>
             </div>
+            </Reveal>
           </div>
         </div>
 
         {/* Videos */}
         {prog.video_url?.filter((v) => v.trim()).length > 0 && (
+          <Reveal>
           <section className="mt-12 mb-8">
             <div className="flex items-center gap-2 mb-6">
               <svg className="w-5 h-5 text-brand-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -169,10 +177,12 @@ export default function ProgramDetail() {
               })}
             </div>
           </section>
+          </Reveal>
         )}
 
         {/* Documentation Section */}
         {images.length > 0 && (
+          <Reveal>
           <section className="mt-12 mb-8">
             <div className="flex items-center gap-2 mb-6">
               <ImageIcon className="w-5 h-5 text-brand-700" />
@@ -206,6 +216,7 @@ export default function ProgramDetail() {
               ))}
             </div>
           </section>
+          </Reveal>
         )}
       </main>
     </div>

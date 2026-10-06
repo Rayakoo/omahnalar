@@ -4,8 +4,7 @@ import Features from "@/components/Features";
 import StatsSection from "@/components/StatsSection";
 import PilarSection from "@/components/PilarSection";
 import HomeCeritaSection from "@/components/HomeCeritaSection";
-import ProgramSection from "@/components/ProgramSection";
-import MinigamesSection from "@/components/MinigamesSection";
+import ServicesSection from "@/components/ServicesSection";
 import TestimonialSection from "@/components/TestimonialSection";
 
 export default function HomePage() {
@@ -13,12 +12,9 @@ export default function HomePage() {
     <>
       <Hero />
       <AboutSection />
-      <Features />
       <StatsSection />
       <PilarSection />
-      <MinigamesSection />
-      <HomeCeritaSection />
-      <ProgramSection />
+      <ServicesSection />
       <TestimonialSection />
     </>
   );

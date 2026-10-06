@@ -4,6 +4,7 @@ import { MessageSquare, AlertTriangle, BookOpen, Award } from "lucide-react";
 import Link from "next/link";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { id, en } from "@/data/translations";
+import Reveal from "@/components/Reveal";
 
 const COLORS = [
   { bg: "bg-[#DBEAFE]", icon: "text-[#3B82F6]", title: "text-[#2563EB]" },
@@ -90,22 +91,22 @@ export default function Features() {
   return (
     <section className="bg-white py-20">
       <div className="max-w-6xl mx-auto px-6">
-        <div className="text-center mb-14">
+        <Reveal className="text-center mb-14">
           <span className="text-sm font-semibold text-secondary-600 uppercase tracking-wider">
             {t.featuresTitle}
           </span>
           <h2 className="text-xl md:text-2xl font-bold text-brand-900 mt-3">
             {t.featuresSub}
           </h2>
-        </div>
+        </Reveal>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {features.map((feat, idx) => {
           const c = COLORS[feat.colorIdx];
           return (
+            <Reveal key={idx} delay={idx * 0.1} className="h-full">
             <Link
-              key={idx}
               href={feat.href}
-              className="group flex flex-col rounded-2xl overflow-hidden border border-brand-100 shadow-sm transition-transform duration-200 hover:-translate-y-1 hover:shadow-md"
+              className="group flex flex-col h-full rounded-2xl overflow-hidden border border-brand-100 shadow-sm transition-transform duration-200 hover:-translate-y-1 hover:shadow-md"
             >
               <div className="h-28 bg-cover bg-center relative" style={{ backgroundImage: `url(${feat.img})` }}>
                 <div className="absolute inset-0 bg-gradient-to-t from-white/60 via-white/20 to-transparent" />
@@ -118,6 +119,7 @@ export default function Features() {
                 <p className="text-sm text-brand-700/80 leading-relaxed">{feat.desc}</p>
               </div>
             </Link>
+            </Reveal>
           );
         })}
       </div>

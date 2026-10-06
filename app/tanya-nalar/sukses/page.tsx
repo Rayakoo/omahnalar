@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useState } from "react";
 import { Check, Info, ClipboardList, Home, Copy, CheckCheck } from "lucide-react";
+import Reveal from "@/components/Reveal";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { id, en } from "@/data/translations";
 
@@ -45,7 +46,7 @@ function LaporanSukses() {
   return (
     <div className="min-h-screen bg-[#FFFBF3] font-sans antialiased text-gray-800 flex flex-col">
       <section className="bg-[#4C4765] text-white p-8 md:p-12 text-center rounded-b-[24px] shadow-sm flex flex-col items-center justify-center">
-        <div className="max-w-xl mx-auto space-y-4">
+        <Reveal className="max-w-xl mx-auto space-y-4">
           <div className="w-16 h-16 rounded-full border-4 border-[#F4C46B] flex items-center justify-center mx-auto">
             <Check className="w-8 h-8 text-[#F4C46B] stroke-[3]" />
           </div>
@@ -57,11 +58,11 @@ function LaporanSukses() {
           <p className="text-sm text-gray-300 leading-relaxed max-w-md mx-auto">
             {t.suksesDesc}
           </p>
-        </div>
+        </Reveal>
       </section>
 
       <main className="flex-1 max-w-4xl mx-auto w-full p-6 flex flex-col items-center justify-center -mt-4">
-        <div className="w-full max-w-2xl bg-[#E5E2F8] bg-opacity-60 border border-[#D7D3F2] rounded-2xl p-6 md:p-8 text-center mb-8">
+        <Reveal className="w-full max-w-2xl bg-[#E5E2F8] bg-opacity-60 border border-[#D7D3F2] rounded-2xl p-6 md:p-8 text-center mb-8">
           <p className="text-xs font-bold tracking-wider text-[#736A9C] uppercase mb-2">
             {t.kodeLaporanmu}
           </p>
@@ -92,9 +93,9 @@ function LaporanSukses() {
               {t.kodeHint}
             </p>
           </div>
-        </div>
+        </Reveal>
 
-        <div className="flex flex-col sm:flex-row gap-3 w-full justify-center items-center">
+        <Reveal delay={0.1} className="flex flex-col sm:flex-row gap-3 w-full justify-center items-center">
           <Link
             href={`/tanya-nalar/detail-laporan?ticket=${kodeLaporan}`}
             className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#4C4765] text-white text-xs font-semibold rounded-lg hover:bg-opacity-90 transition-colors shadow-sm w-full sm:w-auto justify-center"
@@ -108,7 +109,7 @@ function LaporanSukses() {
           >
             <Home className="w-3.5 h-3.5" /> {common.backToHome}
           </Link>
-        </div>
+        </Reveal>
       </main>
     </div>
   );

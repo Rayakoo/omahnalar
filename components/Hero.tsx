@@ -1,20 +1,15 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { ArrowRight, X } from "lucide-react";
+import { motion } from "framer-motion";
 import { getGalleries, type Gallery } from "@/services/galleries";
 import { transformImageUrl } from "@/lib/image";
-import { useLanguage } from "@/contexts/LanguageContext";
-import { id, en } from "@/data/translations";
 
 export default function Hero() {
-  const router = useRouter();
-  const { locale } = useLanguage();
-  const t = locale === "id" ? id.home : en.home;
   const [galleries, setGalleries] = useState<Gallery[]>([]);
   const [current, setCurrent] = useState(0);
-  const [showPopup, setShowPopup] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStartX, setDragStartX] = useState(0);
 
   useEffect(() => {
     getGalleries(15).then(setGalleries).catch(() => {});
@@ -28,34 +23,36 @@ export default function Hero() {
     return () => clearInterval(interval);
   }, [galleries.length]);
 
-  const POPUP_ITEMS = [
-    {
-      title: locale === "id" ? "Jadi Volunteer" : "Be a Volunteer",
-      desc: locale === "id" ? "Apakah anda ingin menjadi volunteer?" : "Do you want to be a volunteer?",
-      href: "https://docs.google.com/forms/d/e/1FAIpQLSfBR0PmdhvrJexxg6ycK1a27aHGFHIkaWm8J51vtOAYLdM5IA/viewform",
-    },
-    {
-      title: locale === "id" ? "Donasi" : "Donate",
-      desc: locale === "id" ? "Apakah anda ingin berdonasi?" : "Do you want to donate?",
-      href: "https://docs.google.com/forms/d/e/1FAIpQLSeYeUyB-29jvAPCjWNEpSwsUWbj7ADnj2DcG1qGyDK6hi22HQ/viewform",
-    },
-    {
-      title: locale === "id" ? "Jadi Mitra" : "Be a Partner",
-      desc: locale === "id" ? "Apakah anda ingin menjadi mitra?" : "Do you want to be a partner?",
-      href: "https://forms.gle/tjB2wzqasMcaVgsS6",
-    },
-  ];
-
   return (
-    <header className="bg-brand-900 text-white relative overflow-hidden">
-      {/* Background Slider */}
+    <section className="relative w-full min-h-screen overflow-hidden shadow-xl font-sans sm:pt-12">
+      {/* Background Gallery Slider - Desktop */}
       {galleries.length > 0 && (
-        <div className="absolute inset-0">
+        <div
+          className="hidden sm:block absolute inset-0 z-0"
+          onPointerDown={(e) => {
+            setIsDragging(true);
+            setDragStartX(e.clientX);
+          }}
+          onPointerUp={(e) => {
+            if (isDragging) {
+              setIsDragging(false);
+              const deltaX = e.clientX - dragStartX;
+              if (Math.abs(deltaX) > 50) {
+                if (deltaX > 0) {
+                  setCurrent((prev) => (prev - 1 + galleries.length) % galleries.length);
+                } else {
+                  setCurrent((prev) => (prev + 1) % galleries.length);
+                }
+              }
+            }
+          }}
+          onPointerLeave={() => setIsDragging(false)}
+        >
           {galleries.map((g, idx) => (
             <div
               key={g.id}
-              className={`absolute inset-0 transition-opacity duration-1000 ${
-                idx === current ? "opacity-20" : "opacity-0"
+              className={`absolute inset-0 transition-opacity duration-700 ease-in-out ${
+                idx === current ? "opacity-100" : "opacity-0"
               }`}
             >
               <img
@@ -65,83 +62,169 @@ export default function Hero() {
               />
             </div>
           ))}
+
+          {/* Navigator Slider - Desktop */}
+          <div className="absolute bottom-12 right-32 hidden sm:flex items-center gap-3 z-40">
+            {Array(4).fill(0).map((_, idx) => {
+              const navIdx = idx;
+              const isActive = Math.floor(current / 4) === navIdx;
+              return (
+                <button
+                  key={navIdx}
+                  onClick={() => setCurrent(Math.min(navIdx * 4, galleries.length - 1))}
+                  className={`h-6 rounded-full transition-all duration-300 ease-in-out ${
+                    isActive ? "w-20 bg-[#ffc580] opacity-100" : "w-8 bg-white/40 hover:bg-white/60"
+                  }`}
+                  aria-label={`Slide ${navIdx + 1}`}
+                />
+              );
+            })}
+          </div>
+
           <div className="absolute inset-0 bg-gradient-to-b from-brand-900/0 via-brand-900/10 to-brand-900/30" />
         </div>
       )}
 
-      {/* Dots */}
-      {galleries.length > 1 && (
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
-          {galleries.map((_, idx) => (
-            <button
-              key={idx}
-              onClick={() => setCurrent(idx)}
-              className={`w-1.5 h-1.5 rounded-full transition-all ${
-                idx === current ? "bg-secondary-500 w-4" : "bg-white/40 hover:bg-white/60"
-              }`}
-            />
-          ))}
-        </div>
-      )}
+      {/* Foreground Hero Image - hanya ini yang di-rotate saat mobile */}
+      <img
+        src="/images/foreground_hero.png"
+        alt="Background Omah Nalar"
+        fetchPriority="high"
+        decoding="async"
+        draggable={false}
+        className="absolute inset-0 z-10 w-full h-full object-cover pointer-events-none origin-center rotate-90 scale-[1.6] sm:rotate-0 sm:scale-100 will-change-transform"
+      />
 
-      <div className="max-w-6xl mx-auto px-6 py-24 md:py-32 flex flex-col items-center text-center gap-6 relative z-10">
-        <div className="max-w-3xl flex flex-col items-center gap-4">
-          <span className="bg-secondary-500 text-brand-900 text-xs font-semibold px-4 py-1.5 rounded-full shadow-sm">
-            {t.heroBadge}
+      <div className="relative z-20 flex flex-col justify-start items-start h-full min-h-0 px-4 sm:px-6 md:px-6 lg:px-12 py-0 pt-24 sm:pt-0 pb-10 sm:pb-0 text-white sm:mt-20">
+        {/* Badge / Pill Atas */}
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.1 }}
+          className="w-fit mb-6"
+        >
+          <span className="inline-block px-4 py-1.5 rounded-full border-3 border-[#f6ebd9] text-white text-xs md:text-sm font-medium tracking-wide">
+            Ruang belajar & bertumbuh
           </span>
-          <h1 className="text-3xl md:text-5xl font-normal tracking-wide leading-tight text-page-50">
-            {t.heroTitle}
-          </h1>
-          <p className="text-brand-100/80 text-base md:text-lg max-w-xl">
-            {t.heroDesc}
-          </p>
-        </div>
-        <div className="flex gap-4 mt-2">
-          <button
-            onClick={() => setShowPopup(true)}
-            className="bg-secondary-500 text-brand-900 font-semibold px-8 py-3 rounded-full shadow-md hover:bg-secondary-600 transition-colors flex items-center gap-2 text-sm"
-          >
-            {t.heroCta} <ArrowRight className="w-4 h-4" />
-          </button>
-          <button
-            onClick={() => router.push("/tentang")}
-            className="border border-brand-100/40 text-page-50 font-medium px-8 py-3 rounded-full hover:bg-white/10 transition-colors text-sm"
-          >
-            {t.heroLearn}
-          </button>
-        </div>
-      </div>
+        </motion.div>
 
-      {/* Popup */}
-      {showPopup && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-          <div className="bg-white rounded-3xl p-8 max-w-sm w-full mx-4 shadow-2xl relative">
-            <button
-              onClick={() => setShowPopup(false)}
-              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
-            >
-              <X className="w-5 h-5" />
-            </button>
-            <h3 className="text-lg font-bold text-brand-900 mb-6 text-center">
-              {locale === "id" ? "Ikut Terlibat" : "Get Involved"}
-            </h3>
-            <div className="flex flex-col gap-3">
-              {POPUP_ITEMS.map((item, idx) => (
-                <a
-                  key={idx}
-                  href={item.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="block w-full text-left bg-brand-900 hover:bg-brand-700 text-page-50 rounded-xl px-5 py-4 transition-colors"
+        {/* Heading utama */}
+        <motion.h1
+          initial={{ opacity: 0, y: 24 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+          className="text-3xl md:text-5xl font-extrabold leading-tight text-white mb-4 tracking-tight"
+        >
+          Tempat belajar menyenangkan <br className="hidden sm:inline" />
+          & bicara dengan aman
+        </motion.h1>
+
+        {/* Garis Pembatas Kecil */}
+        <motion.div
+          initial={{ opacity: 0, scaleX: 0 }}
+          animate={{ opacity: 1, scaleX: 1 }}
+          transition={{ duration: 0.6, delay: 0.3 }}
+          className="w-32 h-1 bg-[#f6ebd9] rounded-full my-4 sm:my-6 origin-left"
+        />
+
+        {/* Deskripsi */}
+        <motion.p
+          initial={{ opacity: 0, y: 24 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.4 }}
+          className="text-white/90 text-base md:text-lg leading-relaxed mb-6 max-w-lg font-normal my-2"
+        >
+          Omah Nalar membekali pengetahuan komprehensif, menguatkan critical thinking dan mendorong transformasi perilaku.
+        </motion.p>
+
+        {/* Tombol CTA */}
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.5 }}
+        >
+          <a
+            href="#belajar"
+            className="inline-flex items-center gap-3 px-6 py-3 bg-[#f6ebd9] hover:bg-[#ede0cb] text-[#2b1736] font-bold text-sm md:text-base rounded-full shadow-md transition-all duration-200 group sm:ml-0 md:ml-36"
+          >
+            <span>Belajar, yuk!</span>
+            <div className="w-7 h-7 bg-black rounded-full flex items-center justify-center text-white transition-transform group-hover:translate-x-0.5">
+              <svg
+                className="w-4 h-4 fill-current"
+                viewBox="0 0 24 24"
+              >
+                <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z" />
+              </svg>
+            </div>
+          </a>
+        </motion.div>
+
+        {/* Gallery Mobile - dibawah tombol Belajar, yuk! (hanya layar kecil) */}
+        {galleries.length > 0 && (
+          <div
+            className="sm:hidden w-full mt-8"
+            onPointerDown={(e) => {
+              setIsDragging(true);
+              setDragStartX(e.clientX);
+            }}
+            onPointerUp={(e) => {
+              if (isDragging) {
+                setIsDragging(false);
+                const deltaX = e.clientX - dragStartX;
+                if (Math.abs(deltaX) > 50) {
+                  if (deltaX > 0) {
+                    setCurrent((prev) => (prev - 1 + galleries.length) % galleries.length);
+                  } else {
+                    setCurrent((prev) => (prev + 1) % galleries.length);
+                  }
+                }
+              }
+            }}
+            onPointerLeave={() => setIsDragging(false)}
+          >
+            <div className="relative w-full aspect-[4/3] overflow-hidden rounded-2xl shadow-lg">
+              {galleries.map((g, idx) => (
+                <div
+                  key={g.id}
+                  className={`absolute inset-0 transition-opacity duration-700 ease-in-out ${
+                    idx === current ? "opacity-100" : "opacity-0"
+                  }`}
                 >
-                  <span className="font-bold text-sm">{item.title}</span>
-                  <p className="text-xs text-brand-100/70 mt-0.5">{item.desc}</p>
-                </a>
+                  <img
+                    src={transformImageUrl(g.url)}
+                    alt="Dokumentasi Omah Nalar"
+                    className="w-full h-full object-cover"
+                    draggable={false}
+                  />
+                </div>
               ))}
+
+              <div className="absolute inset-0 bg-gradient-to-t from-brand-900/30 via-transparent to-transparent pointer-events-none" />
+
+              {/* Navigator Slider Mobile */}
+              <div className="absolute bottom-3 right-3 flex items-center gap-2 z-40">
+                {Array(4)
+                  .fill(0)
+                  .map((_, idx) => {
+                    const isActive = Math.floor(current / 4) === idx;
+                    return (
+                      <button
+                        key={idx}
+                        onClick={() => setCurrent(Math.min(idx * 4, galleries.length - 1))}
+                        className={`h-4 rounded-full transition-all duration-300 ease-in-out ${
+                          isActive
+                            ? "w-10 bg-[#ffc580] opacity-100"
+                            : "w-4 bg-white/40 hover:bg-white/60"
+                        }`}
+                        aria-label={`Slide ${idx + 1}`}
+                      />
+                    );
+                  })}
+              </div>
             </div>
           </div>
-        </div>
-      )}
-    </header>
+        )}
+      </div>
+    </section>
   );
 }

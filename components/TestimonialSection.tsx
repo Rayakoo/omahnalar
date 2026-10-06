@@ -1,48 +1,136 @@
 "use client";
 
-import { useLanguage } from "@/contexts/LanguageContext";
-import { id, en } from "@/data/translations";
+import Image from "next/image";
+import Link from "next/link";
+import Reveal from "@/components/Reveal";
 
 export default function TestimonialSection() {
-  const { locale } = useLanguage();
-  const t = locale === "id" ? id.home : en.home;
-
   return (
-    <section className="bg-brand-900 py-20">
-      <div className="max-w-6xl mx-auto px-6">
-        <div className="text-center mb-14">
-          <span className="text-sm font-semibold text-secondary-500 uppercase tracking-wider">
-            {t.testimonialsTitle}
+    <section className="w-full bg-white py-16 px-6 md:px-12 lg:px-20 font-sans">
+      <div className="max-w-6xl mx-auto flex flex-col gap-16">
+
+        {/* ================= HEADER SECTION ================= */}
+        <Reveal className="text-center flex flex-col items-center gap-2">
+          <span className="text-[#00296b] font-bold text-sm tracking-widest uppercase">
+            TESTIMONI
           </span>
-          <h2 className="text-2xl md:text-3xl font-bold text-page-50 mt-3">
-            {t.testimonialsSub}
+          <h2 className="text-2xl md:text-4xl font-extrabold text-[#721e7c]">
+            Apa kata mereka tentang Omah Nalar
           </h2>
-        </div>
+        </Reveal>
 
-        <div className="mx-auto max-w-4xl flex flex-col lg:flex-row items-stretch gap-8">
-          {/* Video */}
-          <div className="flex-1">
-            <div className="relative w-full aspect-video rounded-2xl overflow-hidden shadow-lg bg-black">
-              <iframe
-                src="https://drive.google.com/file/d/1GX3Tl4uSqmqO_gJ2_74d51wnLhyZ7Rod/preview"
-                className="absolute inset-0 w-full h-full"
-                allow="autoplay; encrypted-media"
-                allowFullScreen
-              />
+        {/* ================= CARD 1: GAMBAR KIRI, TEKS KANAN ================= */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
+
+          {/* Box Gambar + Fade White Gradient */}
+          <Reveal className="lg:col-span-5 relative overflow-hidden rounded-[2rem] aspect-[4/3]">
+            <Image
+              src="/images/testi1.png"
+              alt="Perwakilan Guru MI Nurul Huda 02"
+              fill
+              sizes="(max-width: 1024px) 100vw, 480px"
+              className="object-cover"
+            />
+            {/* Soft White Gradient Overlays (Sisi Kanan, Bawah, & Atas) */}
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-transparent to-white/90 pointer-events-none" />
+            <div className="absolute inset-0 bg-gradient-to-t from-white/80 via-transparent to-white/30 pointer-events-none" />
+            <div className="absolute inset-0 bg-gradient-to-l from-transparent via-transparent to-white/40 pointer-events-none" />
+          </Reveal>
+
+          {/* Konten Teks Kanan */}
+          <Reveal delay={0.15} className="lg:col-span-7 flex flex-col justify-center">
+            <div className="flex items-center gap-3 mb-4">
+              <span className="w-4 h-4 rounded-full bg-[#00296b] shrink-0" />
+              <h3 className="text-xl md:text-2xl lg:text-3xl font-bold text-[#00296b]">
+                Perwakilan Guru MI Nurul Huda 02
+              </h3>
             </div>
-          </div>
 
-          {/* Card Teks */}
-          <div className="flex-1 bg-white rounded-3xl p-6 md:p-8 border border-brand-100/20 shadow-lg flex flex-col justify-center">
-            <svg className="w-6 h-6 md:w-8 md:h-8 text-secondary-500/60 mb-3 shrink-0" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10H14.017zM0 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151C7.546 6.068 5.983 8.789 5.983 11H10v10H0z" />
-            </svg>
-            <p className="text-brand-900/80 leading-relaxed text-sm md:text-base">
-              &ldquo;Kami sangat terbantu dengan kehadiran Omah Nalar. Sekolah kami memiliki banyak kekurangan, terutama dalam hal ketersediaan buku untuk mendukung program literasi dan numerasi siswa. Pojok baca di kelas-kelas juga masih minim, dan Omah Nalar telah memberikan kontribusi yang sangat berarti dalam menutupi kekurangan tersebut. Kami berharap kerja sama ini dapat terus berlanjut dan menjadi lebih baik lagi di masa mendatang, serta terus membantu meningkatkan kualitas pendidikan di sekolah kami, khususnya dalam penyediaan sumber daya belajar.&rdquo;
+            <p className="text-[#00296b] text-sm md:text-base leading-relaxed mb-6 font-normal text-justify">
+              &ldquo;Kami sangat terbantu dengan kehadiran Omah Nalar. Sekolah
+              kami memiliki banyak kekurangan, terutama dalam hal ketersediaan
+              buku untuk mendukung program literasi dan numerasi siswa. Pojok
+              baca di kelas-kelas juga masih minim, dan Omah Nalar telah
+              memberikan kontribusi yang sangat berarti dalam meutupi kekurangan
+              tersebut. Kami berharap kerja sama ini dapat terus berlanjut dan
+              menjadi lebih baik lagi di masa mendatang, serta terus membantu
+              meningkatkan kualitas pendidikan di sekolah kami, khususnya dalam
+              penyediaan sumber daya belajar.&rdquo;
             </p>
-            <p className="text-brand-900 font-bold text-sm mt-4">&mdash; Perwakilan Guru MI Nurul Huda 02</p>
-          </div>
+
+            <div>
+              <Link
+                href="/testimoni/1"
+                className="inline-flex items-center gap-3 px-6 py-2.5 bg-[#f1e5cd] hover:bg-[#e6d6b8] text-[#00296b] font-bold text-sm md:text-base rounded-full shadow-sm transition-all group"
+              >
+                <span>Pelajari lebih lanjut</span>
+                <div className="w-6 h-6 bg-[#721e7c] rounded-full flex items-center justify-center text-white transition-transform group-hover:translate-x-0.5 shrink-0">
+                  <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
+                    <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z" />
+                  </svg>
+                </div>
+              </Link>
+            </div>
+          </Reveal>
+
         </div>
+
+        {/* ================= CARD 2: TEKS KIRI, GAMBAR KANAN ================= */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
+
+          {/* Konten Teks Kiri */}
+          <Reveal className="lg:col-span-7 flex flex-col justify-center order-2 lg:order-1">
+            <div className="flex items-center gap-3 mb-4">
+              <span className="w-4 h-4 rounded-full bg-[#00296b] shrink-0" />
+              <h3 className="text-xl md:text-2xl lg:text-3xl font-bold text-[#00296b]">
+                Perwakilan Guru MI Nurul Huda 02
+              </h3>
+            </div>
+
+            <p className="text-[#00296b] text-sm md:text-base leading-relaxed mb-6 font-normal text-justify">
+              &ldquo;Kami sangat terbantu dengan kehadiran Omah Nalar. Sekolah
+              kami memiliki banyak kekurangan, terutama dalam hal ketersediaan
+              buku untuk mendukung program literasi dan numerasi siswa. Pojok
+              baca di kelas-kelas juga masih minim, dan Omah Nalar telah
+              memberikan kontribusi yang sangat berarti dalam meutupi kekurangan
+              tersebut. Kami berharap kerja sama ini dapat terus berlanjut dan
+              menjadi lebih baik lagi di masa mendatang, serta terus membantu
+              meningkatkan kualitas pendidikan di sekolah kami, khususnya dalam
+              penyediaan sumber daya belajar.&rdquo;
+            </p>
+
+            <div>
+              <Link
+                href="/testimoni/2"
+                className="inline-flex items-center gap-3 px-6 py-2.5 bg-[#f1e5cd] hover:bg-[#e6d6b8] text-[#00296b] font-bold text-sm md:text-base rounded-full shadow-sm transition-all group"
+              >
+                <span>Pelajari lebih lanjut</span>
+                <div className="w-6 h-6 bg-[#721e7c] rounded-full flex items-center justify-center text-white transition-transform group-hover:translate-x-0.5 shrink-0">
+                  <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
+                    <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z" />
+                  </svg>
+                </div>
+              </Link>
+            </div>
+          </Reveal>
+
+          {/* Box Gambar + Fade White Gradient */}
+          <Reveal delay={0.15} className="lg:col-span-5 relative overflow-hidden rounded-[2rem] aspect-[4/3] order-1 lg:order-2">
+            <Image
+              src="/images/testi2.png"
+              alt="Perwakilan Guru MI Nurul Huda 02"
+              fill
+              sizes="(max-width: 1024px) 100vw, 480px"
+              className="object-cover"
+            />
+            {/* Soft White Gradient Overlays (Sisi Kiri, Bawah, & Atas) */}
+            <div className="absolute inset-0 bg-gradient-to-l from-transparent via-transparent to-white/90 pointer-events-none" />
+            <div className="absolute inset-0 bg-gradient-to-t from-white/80 via-transparent to-white/30 pointer-events-none" />
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-transparent to-white/40 pointer-events-none" />
+          </Reveal>
+
+        </div>
+
       </div>
     </section>
   );

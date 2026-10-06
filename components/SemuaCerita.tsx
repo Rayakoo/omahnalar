@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo, useId } from "react";
 import { useInView } from "react-intersection-observer";
 import { useRouter } from "next/navigation";
 import { ChevronLeft, Heart, MessageSquare, Flag } from "lucide-react";
+import Reveal from "@/components/Reveal";
 import { getStoriesPaginated, type Story } from "@/services/stories";
 import { DUMMY_STORIES } from "@/data/dummyStories";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -133,15 +134,20 @@ export default function SemuaCerita() {
       </nav>
 
       <main className="max-w-7xl mx-auto px-6 py-12">
-        <h1 className="text-2xl font-bold mb-8 text-brand-900 tracking-wide">
-          {t.ceritaKawan}
-        </h1>
+        <Reveal>
+          <h1 className="text-2xl font-bold mb-8 text-brand-900 tracking-wide">
+            {t.ceritaKawan}
+          </h1>
+        </Reveal>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {stories.map((story) => (
-            <div
+            <Reveal
               key={story.id}
-              className="rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow duration-200 flex flex-col justify-between border min-h-[260px] cursor-pointer"
+              className="h-full"
+            >
+            <div
+              className="rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow duration-200 flex flex-col justify-between border min-h-[260px] cursor-pointer h-full"
               style={{
                 backgroundColor: story.theme.bg,
                 color: story.theme.text,
@@ -187,6 +193,7 @@ export default function SemuaCerita() {
                 </button>
               </div>
             </div>
+            </Reveal>
           ))}
         </div>
 

@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft, ShoppingCart, Play } from "lucide-react";
+import Reveal from "@/components/Reveal";
 import { getProductBySlug, type Product, type ProductImage } from "@/services/products";
 import { transformImageUrl } from "@/lib/image";
 import { getVideoEmbedUrl } from "@/lib/video";
@@ -70,18 +71,20 @@ export default function ProdukDetail() {
   return (
     <div className="min-h-screen bg-page-50 font-sans antialiased flex flex-col">
       <div className="max-w-6xl mx-auto w-full px-4 md:px-6 pt-24 md:pt-28">
-        <button
-          onClick={() => router.push("/produk")}
-          className="inline-flex items-center gap-1.5 px-4 py-2 bg-white border border-gray-200 text-sm font-semibold rounded-xl hover:bg-gray-50 transition-all text-brand-900 mb-6"
-        >
-          <ArrowLeft className="w-4 h-4" /> {t.backToAll}
-        </button>
+        <Reveal>
+          <button
+            onClick={() => router.push("/produk")}
+            className="inline-flex items-center gap-1.5 px-4 py-2 bg-white border border-gray-200 text-sm font-semibold rounded-xl hover:bg-gray-50 transition-all text-brand-900 mb-6"
+          >
+            <ArrowLeft className="w-4 h-4" /> {t.backToAll}
+          </button>
+        </Reveal>
       </div>
 
       <div className="max-w-6xl mx-auto w-full px-4 md:px-6 pb-16">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {/* Images */}
-          <div className="space-y-3">
+          <Reveal className="space-y-3">
             <div className="rounded-2xl overflow-hidden bg-gray-100 aspect-square shadow-sm">
               {images[selectedImage] ? (
                 <img
@@ -120,10 +123,10 @@ export default function ProdukDetail() {
                 ))}
               </div>
             )}
-          </div>
+          </Reveal>
 
           {/* Info */}
-          <div className="flex flex-col">
+          <Reveal delay={0.1} className="flex flex-col">
             <h1 className="text-3xl md:text-4xl font-extrabold text-brand-900 tracking-tight leading-tight">
               {produk.name}
             </h1>
@@ -163,7 +166,7 @@ export default function ProdukDetail() {
                 {t.whatsappBtn}
               </button>
             </div>
-          </div>
+          </Reveal>
         </div>
       </div>
     </div>
