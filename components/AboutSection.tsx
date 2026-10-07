@@ -1,16 +1,67 @@
+"use client";
+
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import Reveal from "@/components/Reveal";
+import { getGalleries } from "@/services/galleries";
+import { transformImageUrl } from "@/lib/image";
+
+// Fallback sementara bila galeri belum termuat / gagal dimuat
+const FALLBACK_SLIDES = [
+  "/images/omah_nalar.JPG",
+  "/images/features/berbagi-cerita.jpg",
+  "/images/features/ikut-course.jpg",
+  "/images/features/buat-laporan.jpg",
+  "/images/features/main-games.jpg",
+];
+
+const SLIDE_INTERVAL_MS = 4000;
+const MAX_SLIDES = 6;
 
 export default function AboutSection() {
+  const [slides, setSlides] = useState<string[]>(FALLBACK_SLIDES);
+  const [slide, setSlide] = useState(0);
+  const [paused, setPaused] = useState(false);
+
+  // Sementara: pakai gambar galeri seperti hero section.
+  // Daftar diputar (offset setengah) + dibatasi agar gambar yang tampil
+  // berbeda dari hero yang mulai dari awal.
+  useEffect(() => {
+    getGalleries(15)
+      .then((galleries) => {
+        const urls = galleries
+          .map((g) => transformImageUrl(g.url))
+          .filter((url) => url.length > 0);
+        if (urls.length === 0) return;
+        const offset = Math.floor(urls.length / 2);
+        const rotated = [...urls.slice(offset), ...urls.slice(0, offset)];
+        setSlides(rotated.slice(0, MAX_SLIDES));
+        setSlide(0);
+      })
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    if (paused || slides.length <= 1) return;
+    const timer = setInterval(() => {
+      setSlide((s) => (s + 1) % slides.length);
+    }, SLIDE_INTERVAL_MS);
+    return () => clearInterval(timer);
+  }, [paused, slides.length]);
+
   return (
     <section className="w-full bg-[#f4f8fb] py-16 px-6 md:px-12 lg:px-20 font-sans">
       <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center">
 
-        {/* 1. SISI KIRI: Foto di dalam border rumah */}
+        {/* 1. SISI KIRI: Slider foto di dalam border rumah */}
         <Reveal className="lg:col-span-5 flex justify-center">
-          <div className="relative w-full max-w-md aspect-[2121/1755]">
-            {/* Foto di belakang (di dalam bingkai rumah) */}
+          <div
+            className="relative w-full max-w-md aspect-[2121/1755]"
+            onMouseEnter={() => setPaused(true)}
+            onMouseLeave={() => setPaused(false)}
+          >
+            {/* Slider foto di belakang (di dalam bingkai rumah) */}
             <div
               className="absolute inset-0"
               style={{
@@ -18,14 +69,17 @@ export default function AboutSection() {
                   "polygon(50.65% 4.27%, 96.6% 37.9%, 90.3% 38.5%, 90.3% 88.4%, 9.7% 88.4%, 9.4% 37.9%, 3.4% 37.9%)",
               }}
             >
-              <Image
-                src="/images/omah_nalar.JPG"
-                alt="Kegiatan Omah Nalar"
-                fill
-                sizes="(max-width: 1024px) 100vw, 448px"
-                className="object-cover"
-                priority
-              />
+              {slides.map((src, i) => (
+                <img
+                  key={src}
+                  src={src}
+                  alt={`Kegiatan Omah Nalar ${i + 1}`}
+                  draggable={false}
+                  className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${
+                    i === slide ? "opacity-100" : "opacity-0"
+                  }`}
+                />
+              ))}
             </div>
             {/* Border rumah di depan */}
             <div className="absolute inset-0 z-10 pointer-events-none">
@@ -37,6 +91,22 @@ export default function AboutSection() {
                 className="object-contain"
                 priority
               />
+            </div>
+            {/* Indikator dots */}
+            <div className="absolute bottom-1.5 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1.5">
+              {slides.map((src, i) => (
+                <button
+                  key={src}
+                  type="button"
+                  onClick={() => setSlide(i)}
+                  aria-label={`Foto ${i + 1}`}
+                  className={`h-1.5 rounded-full transition-all duration-300 ${
+                    i === slide
+                      ? "w-5 bg-[#721e7c]"
+                      : "w-1.5 bg-white/80 hover:bg-white shadow"
+                  }`}
+                />
+              ))}
             </div>
           </div>
         </Reveal>

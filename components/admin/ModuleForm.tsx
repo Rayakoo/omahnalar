@@ -37,8 +37,13 @@ export default function ModuleForm({ courseId, moduleData, onSuccess }: ModuleFo
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (saving) return;
-    if (!title || !content) {
-      alert("Judul dan isi modul wajib diisi.");
+    if (!title.trim()) {
+      alert("Judul modul wajib diisi.");
+      return;
+    }
+    // Isi modul boleh kosong — minimal salah satu dari isi / file harus ada
+    if (!content.trim() && !fileUrl.trim()) {
+      alert("Isi salah satu: Isi Modul atau File Pendukung.");
       return;
     }
     setSaving(true);
@@ -94,11 +99,11 @@ export default function ModuleForm({ courseId, moduleData, onSuccess }: ModuleFo
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-600 mb-2">Isi Modul</label>
+          <label className="block text-sm font-medium text-gray-600 mb-2">Isi Modul <span className="text-gray-400 font-normal text-xs">(opsional bila ada file)</span></label>
           <RichTextEditor
             value={content}
             onChange={setContent}
-            placeholder="Tulis materi di sini..."
+            placeholder="Tulis materi di sini... (boleh dikosongkan bila hanya mengunggah file)"
           />
         </div>
 

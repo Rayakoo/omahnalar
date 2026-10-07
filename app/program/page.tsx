@@ -1,30 +1,34 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import Reveal from "@/components/Reveal";
 import { getPrograms, type Program } from "@/services/programs";
 import { getBerita, type Berita } from "@/services/berita";
+import { getBeholdPosts } from "@/services/behold";
 import { transformImageUrl } from "@/lib/image";
 
 const FALLBACK_IMG = "/images/omah_nalar.JPG";
+const IG_HANDLE = "@omahnalar";
+const SOSMED_BATCH = 9;
 
 type CardItem = {
   id: string;
-  category: "Artikel" | "Berita";
+  category: "Sosmed" | "Berita";
   title: string;
   excerpt: string;
   author: string;
   date: string;
   image: string;
   href: string;
+  external?: boolean;
 };
 
-const articlesData: CardItem[] = [
+const staticData: CardItem[] = [
   {
     id: "static-1",
-    category: "Artikel",
+    category: "Berita",
     title:
       "Tim Penelitian Omah Nalar Edukasi Kesehatan Reproduksi pada Siswa MTS Taufiqiyah Kabupaten Malang",
     excerpt:
@@ -48,7 +52,7 @@ const articlesData: CardItem[] = [
   },
   {
     id: "static-3",
-    category: "Artikel",
+    category: "Berita",
     title: "",
     excerpt: "",
     author: "User",
@@ -74,12 +78,18 @@ function formatDate(dateStr: string | null): string {
 }
 
 export default function NewsSection() {
-  const [activeTab, setActiveTab] = useState<"semua" | "artikel" | "berita">("semua");
-  const [items, setItems] = useState<CardItem[]>(articlesData);
+  const [activeTab, setActiveTab] = useState<"semua" | "sosmed" | "berita">("semua");
+  const [items, setItems] = useState<CardItem[]>(staticData);
+  const [sosmedCount, setSosmedCount] = useState(SOSMED_BATCH);
+  const loadMoreRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    Promise.all([getPrograms(), getBerita()])
-      .then(([progs, news]) => {
+    Promise.all([
+      getPrograms(),
+      getBerita(),
+      getBeholdPosts().catch(() => []),
+    ])
+      .then(([progs, news, posts]) => {
         const programItems: CardItem[] = progs.map((p: Program) => ({
           id: `program-${p.id}`,
           category: "Berita",
@@ -92,7 +102,7 @@ export default function NewsSection() {
         }));
         const beritaItems: CardItem[] = news.map((b: Berita) => ({
           id: `berita-${b.id}`,
-          category: b.kategori?.toLowerCase() === "artikel" ? "Artikel" : "Berita",
+          category: "Berita",
           title: b.title,
           excerpt: b.excerpt || "",
           author: b.author || "Omah Nalar",
@@ -100,7 +110,18 @@ export default function NewsSection() {
           image: getThumbnail(b.image_url),
           href: `/berita/${b.slug}`,
         }));
-        setItems([...programItems, ...beritaItems, ...articlesData]);
+        const sosmedItems: CardItem[] = posts.map((post) => ({
+          id: `sosmed-${post.id}`,
+          category: "Sosmed",
+          title: post.alt,
+          excerpt: "",
+          author: IG_HANDLE,
+          date: formatDate(post.timestamp),
+          image: post.imageUrl,
+          href: post.postUrl,
+          external: true,
+        }));
+        setItems([...sosmedItems, ...programItems, ...beritaItems, ...staticData]);
       })
       .catch(() => {});
   }, []);
@@ -109,6 +130,33 @@ export default function NewsSection() {
     if (activeTab === "semua") return true;
     return item.category.toLowerCase() === activeTab;
   });
+
+  // Lazy load tab Sosmed: tampilkan bertahap per batch agar ringan,
+  // otomatis tambah saat sentinel terlihat (infinite scroll).
+  const sosmedTotal = useMemo(
+    () => items.filter((item) => item.category === "Sosmed").length,
+    [items]
+  );
+  const displayedItems = useMemo(() => {
+    if (activeTab !== "sosmed") return filteredArticles;
+    return filteredArticles.slice(0, sosmedCount);
+  }, [filteredArticles, activeTab, sosmedCount]);
+
+  useEffect(() => {
+    if (activeTab !== "sosmed" || displayedItems.length >= sosmedTotal) return;
+    const el = loadMoreRef.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          setSosmedCount((c) => (c < sosmedTotal ? c + SOSMED_BATCH : c));
+        }
+      },
+      { rootMargin: "400px" }
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, [activeTab, displayedItems.length, sosmedTotal]);
 
   return (
     <div className="w-full bg-white font-sans pb-20">
@@ -124,17 +172,17 @@ export default function NewsSection() {
         >
           {/* Badge Outline */}
           <div className="px-5 py-1 rounded-full border border-white/80 text-xs font-semibold tracking-wider uppercase bg-white/10 backdrop-blur-sm">
-            BERITA
+            SOSMED & BERITA
           </div>
 
           {/* Title Utama */}
           <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight">
-            Berita &amp; Artikel
+            Sosmed &amp; Berita
           </h1>
 
           {/* Subtitle */}
           <p className="text-white/90 text-sm md:text-base font-normal max-w-2xl">
-            Informasi dan artikel terbaru seputar kegiatan dan program Omah Nalar
+            Konten Instagram dan berita terbaru seputar kegiatan dan program Omah Nalar
           </p>
 
           {/* Garis Accent Kecil */}
@@ -158,14 +206,14 @@ export default function NewsSection() {
             Semua
           </button>
           <button
-            onClick={() => setActiveTab("artikel")}
+            onClick={() => setActiveTab("sosmed")}
             className={`px-5 py-1.5 rounded-full text-sm font-bold transition-all ${
-              activeTab === "artikel"
+              activeTab === "sosmed"
                 ? "bg-[#721e7c] text-white shadow-sm"
                 : "bg-[#f1e5cd] text-[#721e7c] hover:bg-[#e6d6b8]"
             }`}
           >
-            Artikel
+            Sosmed
           </button>
           <button
             onClick={() => setActiveTab("berita")}
@@ -181,7 +229,7 @@ export default function NewsSection() {
 
         {/* Card Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {filteredArticles.map((item, idx) => (
+          {displayedItems.map((item, idx) => (
             <Reveal
               key={item.id}
               delay={(idx % 3) * 0.08}
@@ -251,15 +299,29 @@ export default function NewsSection() {
                   </div>
 
                   {/* Arrow Action Button */}
-                  <Link
-                    href={item.href}
-                    className="w-7 h-7 bg-[#721e7c] rounded-full flex items-center justify-center text-white hover:bg-[#591662] transition-colors shrink-0"
-                    aria-label="Baca selengkapnya"
-                  >
-                    <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
-                      <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z" />
-                    </svg>
-                  </Link>
+                  {item.external ? (
+                    <a
+                      href={item.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-7 h-7 bg-[#721e7c] rounded-full flex items-center justify-center text-white hover:bg-[#591662] transition-colors shrink-0"
+                      aria-label="Lihat postingan Instagram"
+                    >
+                      <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                        <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z" />
+                      </svg>
+                    </a>
+                  ) : (
+                    <Link
+                      href={item.href}
+                      className="w-7 h-7 bg-[#721e7c] rounded-full flex items-center justify-center text-white hover:bg-[#591662] transition-colors shrink-0"
+                      aria-label="Baca selengkapnya"
+                    >
+                      <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                        <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z" />
+                      </svg>
+                    </Link>
+                  )}
                 </div>
               </div>
 
@@ -267,6 +329,45 @@ export default function NewsSection() {
             </Reveal>
           ))}
         </div>
+
+        {/* Sentinel lazy load tab Sosmed */}
+        {activeTab === "sosmed" && displayedItems.length < sosmedTotal && (
+          <div ref={loadMoreRef} className="flex justify-center mt-10">
+            <button
+              onClick={() => setSosmedCount((c) => c + SOSMED_BATCH)}
+              className="px-6 py-2.5 rounded-full text-sm font-bold bg-[#f1e5cd] text-[#721e7c] hover:bg-[#e6d6b8] transition-all shadow-sm"
+            >
+              Muat lebih banyak ({displayedItems.length}/{sosmedTotal})
+            </button>
+          </div>
+        )}
+
+        {/* Button CTA Instagram (sama seperti page Tentang) */}
+        {activeTab === "sosmed" && (
+          <Reveal className="flex justify-center mt-10">
+            <a
+              href="https://www.instagram.com/0mahnalar"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2.5 bg-[#8338ec] hover:bg-[#721e7c] text-white font-bold text-sm px-7 py-3.5 rounded-2xl transition-all duration-300 shadow-md hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0"
+            >
+              <svg
+                className="w-5 h-5 text-white"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                />
+              </svg>
+              Ikuti Kami di Instagram
+            </a>
+          </Reveal>
+        )}
 
       </section>
     </div>
