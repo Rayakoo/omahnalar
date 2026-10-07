@@ -116,7 +116,7 @@ export default function NewsSection() {
           title: post.alt,
           excerpt: "",
           author: IG_HANDLE,
-          date: formatDate(post.timestamp),
+          date: formatDate(post.timestamp || ""),
           image: post.imageUrl,
           href: post.postUrl,
           external: true,

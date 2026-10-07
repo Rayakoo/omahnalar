@@ -3,7 +3,7 @@ export type BeholdPost = {
   imageUrl: string;
   postUrl: string;
   alt: string;
-  timestamp: string;
+  timestamp?: string;
 };
 
 type BeholdSize = {
