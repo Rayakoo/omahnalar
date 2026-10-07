@@ -6,6 +6,7 @@ import { Pen, Send, Loader2, ArrowLeft, Check, Info, UserCheck } from "lucide-re
 import { getDetectiveName, getConfirmed, clearAll } from "@/lib/unsolvedCaseStorage";
 import { getCourseById } from "@/services/courses";
 import { getUnsolvedCase, submitDetective } from "@/services/unsolvedCase";
+import { OMAH_BELAJAR_URL } from "@/lib/external";
 
 export default function AnswerPage() {
   const params = useParams();
@@ -61,7 +62,7 @@ export default function AnswerPage() {
         </p>
         <p className="text-xs text-[#a09080] mb-6 italic">&quot;Kebenaran tidak pernah bersembunyi selamanya.&quot;</p>
         <button
-          onClick={() => router.push("/omah-belajar")}
+          onClick={() => router.push(OMAH_BELAJAR_URL)}
           className="inline-flex items-center gap-2 bg-[#8b4513] text-white px-6 py-3 rounded-xl text-sm font-bold hover:bg-[#6b3410] transition-all shadow-sm"
         >
           <ArrowLeft className="w-3.5 h-3.5" /> Kembali

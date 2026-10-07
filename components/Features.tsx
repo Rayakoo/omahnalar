@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { id, en } from "@/data/translations";
 import Reveal from "@/components/Reveal";
+import { OMAH_BELAJAR_URL } from "@/lib/external";
 
 const COLORS = [
   { bg: "bg-[#DBEAFE]", icon: "text-[#3B82F6]", title: "text-[#2563EB]" },
@@ -36,7 +37,7 @@ const FEATURES_ID = [
     desc: "Edukasi + kuis interaktif. Perkuat pemahamanmu tentang hubungan sehat, consent, dan kekerasan berbasis gender.",
     colorIdx: 2,
     img: "/images/ikut_course.png",
-    href: "/omah-belajar",
+    href: OMAH_BELAJAR_URL,
   },
   {
     icon: <Award className="w-8 h-8" />,
@@ -71,7 +72,7 @@ const FEATURES_EN = [
     desc: "Interactive education + quizzes. Strengthen your understanding of healthy relationships, consent, and gender-based violence.",
     colorIdx: 2,
     img: "/images/ikut_course.png",
-    href: "/omah-belajar",
+    href: OMAH_BELAJAR_URL,
   },
   {
     icon: <Award className="w-8 h-8" />,

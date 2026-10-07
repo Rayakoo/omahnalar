@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { OMAH_BELAJAR_URL } from "@/lib/external";
 
 const footerSections = [
   {
@@ -16,7 +17,7 @@ const footerSections = [
     title: "PROGRAM",
     links: [
       { label: "Omah Cerita", href: "/omah-cerita" },
-      { label: "Omah Belajar", href: "/program" },
+      { label: "Omah Belajar", href: OMAH_BELAJAR_URL },
       { label: "Tanya Nalar", href: "/tanya-nalar" },
       { label: "Produk", href: "/produk" },
     ],

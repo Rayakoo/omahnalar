@@ -4,6 +4,7 @@ import { MessageCircle, BookOpen, PenLine, Gamepad2, ArrowRight } from "lucide-r
 import Link from "next/link";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { id, en } from "@/data/translations";
+import { OMAH_BELAJAR_URL } from "@/lib/external";
 
 const PROGRAMS_ID = [
   {
@@ -18,7 +19,7 @@ const PROGRAMS_ID = [
     title: "Omah Belajar",
     desc: "Platform pembelajaran interaktif dengan modul-modul edukatif tentang kesehatan dan hak reproduksi.",
     tag: "Belajar",
-    href: "/omah-belajar",
+    href: OMAH_BELAJAR_URL,
   },
   {
     icon: <PenLine className="w-10 h-10 text-brand-700" />,
@@ -49,7 +50,7 @@ const PROGRAMS_EN = [
     title: "Omah Belajar",
     desc: "An interactive learning platform with educational modules on health and reproductive rights.",
     tag: "Learn",
-    href: "/omah-belajar",
+    href: OMAH_BELAJAR_URL,
   },
   {
     icon: <PenLine className="w-10 h-10 text-brand-700" />,

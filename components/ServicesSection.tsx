@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import Reveal from "@/components/Reveal";
+import { OMAH_BELAJAR_URL } from "@/lib/external";
 
 export default function ServicesSection() {
   return (
@@ -54,7 +55,7 @@ export default function ServicesSection() {
                 Kamu bisa bermain sambil belajar dan mendapatkan sertifikat.
               </p>
               <Link
-                href="/program"
+                href={OMAH_BELAJAR_URL}
                 className="inline-flex items-center gap-2 px-6 py-2.5 bg-[#f1e5cd] hover:bg-[#e6d6b8] text-[#00296b] font-bold text-sm rounded-full shadow-md transition-all group mt-2"
               >
                 <span>Jelajahi</span>

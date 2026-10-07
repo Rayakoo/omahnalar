@@ -60,7 +60,7 @@ export default function TestimonialSection() {
 
             <div>
               <Link
-                href="/testimoni/1"
+                href="/tentang"
                 className="inline-flex items-center gap-3 px-6 py-2.5 bg-[#f1e5cd] hover:bg-[#e6d6b8] text-[#00296b] font-bold text-sm md:text-base rounded-full shadow-sm transition-all group"
               >
                 <span>Pelajari lebih lanjut</span>
@@ -101,7 +101,7 @@ export default function TestimonialSection() {
 
             <div>
               <Link
-                href="/testimoni/2"
+                href="/tentang"
                 className="inline-flex items-center gap-3 px-6 py-2.5 bg-[#f1e5cd] hover:bg-[#e6d6b8] text-[#00296b] font-bold text-sm md:text-base rounded-full shadow-sm transition-all group"
               >
                 <span>Pelajari lebih lanjut</span>

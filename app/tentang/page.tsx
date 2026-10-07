@@ -8,6 +8,7 @@ import dynamic from "next/dynamic";
 import { getGalleries, type Gallery } from "@/services/galleries";
 import { getBeholdPosts, type BeholdPost } from "@/services/behold";
 import { transformImageUrl } from "@/lib/image";
+import { OMAH_BELAJAR_URL } from "@/lib/external";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { id, en } from "@/data/translations";
 import OrganizationalStructureSection from "@/components/StrukturOrganisasi";
@@ -50,7 +51,7 @@ const fiturCards = [
     descEn: "Interactive education on healthy relationships and reproductive health.",
     iconSrc: "/images/fitur3.png",
     bgColor: "bg-[#f8f3e6]",
-    href: "/omah-belajar",
+    href: OMAH_BELAJAR_URL,
   },
   {
     id: 4,

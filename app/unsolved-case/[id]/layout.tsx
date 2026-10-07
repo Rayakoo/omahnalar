@@ -9,6 +9,7 @@ import { getUnsolvedCase, getHints } from "@/services/unsolvedCase";
 import { getDetectiveName, getConfirmed, getRevealedHints } from "@/lib/unsolvedCaseStorage";
 import type { UnsolvedCase, UnsolvedCaseHint } from "@/types/unsolvedCase";
 import type { CourseWithRelations } from "@/services/courses";
+import { OMAH_BELAJAR_URL } from "@/lib/external";
 import { useAuth } from "@/contexts/AuthContext";
 import ProfileIncompleteModal from "@/components/ProfileIncompleteModal";
 

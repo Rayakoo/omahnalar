@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { motion } from "framer-motion";
 import Reveal from "@/components/Reveal";
+import { GFORM_VOLUNTEER, GFORM_DONASI, GFORM_MITRA } from "@/lib/external";
 
 const SUPPORTS = [
   {
@@ -10,18 +11,21 @@ const SUPPORTS = [
     title: "Ikut Volunteer",
     desc: "Bergabung sebagai relawan Omah Nalar dan berkontribusi langsung dalam program edukasi, literasi, dan kegiatan komunitas.",
     cta: "Daftar Volunteer",
+    href: GFORM_VOLUNTEER,
   },
   {
     id: "donasi",
     title: "Donasi",
     desc: "Dukung keberlanjutan program Omah Nalar melalui donasi buku, dana, atau sumber daya belajar untuk sekolah dan komunitas.",
     cta: "Donasi Sekarang",
+    href: GFORM_DONASI,
   },
   {
     id: "gabung-mitra",
     title: "Gabung Mitra",
     desc: "Jalin kerja sama sebagai mitra sekolah, komunitas, atau organisasi untuk memperluas dampak pendidikan bersama Omah Nalar.",
     cta: "Jadi Mitra",
+    href: GFORM_MITRA,
   },
 ];
 
@@ -63,7 +67,7 @@ export default function DukunganPage() {
               </p>
             </div>
             <Link
-              href="https://wa.me/..."
+              href={item.href}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-3 px-6 py-3 bg-[#721e7c] hover:opacity-90 text-white font-bold text-sm md:text-base rounded-full shadow-sm transition-all group shrink-0"
