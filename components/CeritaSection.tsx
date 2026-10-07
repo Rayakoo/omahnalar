@@ -15,11 +15,15 @@ function formatDate(iso: string) {
   return d.toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" });
 }
 
-// Background card bergantian (peach / ungu) mengikuti desain
+// Background card: cerita 1 (peach) / cerita 2 (mint), bergantian.
+// Mobile pakai versi mobile, md ke atas pakai versi desktop.
+// SVG ber-viewBox + bg-cover: selalu fill penuh tanpa distorsi
+// di semua resolusi layar; warna solid sebagai fallback.
 function cardBackgroundClass(index: number) {
+  const base = "bg-cover bg-center bg-no-repeat border border-white/60 shadow-xl";
   return index % 2 === 0
-    ? "bg-gradient-to-b from-[#FFF5EC] via-[#FFE4D6] to-[#FFA88B] border border-white/60 shadow-xl"
-    : "bg-gradient-to-b from-[#F7EFFF] via-[#EADBFF] to-[#C0A0ED] border border-white/60 shadow-xl";
+    ? `${base} bg-[#FFE8D6] bg-[url('/images/card_ceritamobile1.svg')] md:bg-[url('/images/card_cerita1.svg')]`
+    : `${base} bg-[#DFF3E8] bg-[url('/images/card_ceritamobile2.svg')] md:bg-[url('/images/card_cerita2.svg')]`;
 }
 
 export default function CeritaSection() {

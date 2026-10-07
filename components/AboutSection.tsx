@@ -7,17 +7,37 @@ export default function AboutSection() {
     <section className="w-full bg-[#f4f8fb] py-16 px-6 md:px-12 lg:px-20 font-sans">
       <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center">
 
-        {/* 1. SISI KIRI: Gambar Frame Rumah */}
+        {/* 1. SISI KIRI: Foto di dalam border rumah */}
         <Reveal className="lg:col-span-5 flex justify-center">
-          <div className="relative w-full max-w-md aspect-[4/3] md:aspect-square">
-            <Image
-              src="/images/omah_nalar.JPG"
-              alt="Kegiatan Omah Nalar"
-              fill
-              sizes="(max-width: 1024px) 100vw, 448px"
-              className="object-contain"
-              priority
-            />
+          <div className="relative w-full max-w-md aspect-[2121/1755]">
+            {/* Foto di belakang (di dalam bingkai rumah) */}
+            <div
+              className="absolute inset-0"
+              style={{
+                clipPath:
+                  "polygon(50.65% 4.27%, 96.6% 37.9%, 90.3% 38.5%, 90.3% 88.4%, 9.7% 88.4%, 9.4% 37.9%, 3.4% 37.9%)",
+              }}
+            >
+              <Image
+                src="/images/omah_nalar.JPG"
+                alt="Kegiatan Omah Nalar"
+                fill
+                sizes="(max-width: 1024px) 100vw, 448px"
+                className="object-cover"
+                priority
+              />
+            </div>
+            {/* Border rumah di depan */}
+            <div className="absolute inset-0 z-10 pointer-events-none">
+              <Image
+                src="/images/border_rumah.svg"
+                alt="Bingkai rumah Omah Nalar"
+                fill
+                sizes="(max-width: 1024px) 100vw, 448px"
+                className="object-contain"
+                priority
+              />
+            </div>
           </div>
         </Reveal>
 

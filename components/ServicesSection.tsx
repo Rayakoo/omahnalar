@@ -20,7 +20,15 @@ export default function ServicesSection() {
         </Reveal>
 
         {/* ================= CARD UTAMA (OMAH BELAJAR) ================= */}
-        <Reveal className="relative overflow-hidden rounded-3xl bg-white border border-gray-100 p-6 md:p-10 min-h-[320px] flex items-center shadow-sm">
+        <Reveal
+          className="relative overflow-hidden rounded-3xl border border-gray-100 p-6 md:p-10 min-h-[320px] flex items-center shadow-sm bg-center bg-no-repeat bg-[#f8f3e9]"
+          style={{
+            backgroundImage: `url(/layanankami/background_omahbelajar%201.svg)`,
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            backgroundRepeat: "no-repeat",
+          }}
+        >
 
           <div className="relative z-10 grid grid-cols-1 md:grid-cols-12 gap-6 items-center w-full">
 
@@ -61,7 +69,16 @@ export default function ServicesSection() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
 
           {/* CARD 2: OMAH CERITA */}
-          <Reveal delay={0.1} className="relative overflow-hidden rounded-3xl bg-white border border-gray-100 p-6 flex flex-col items-center text-center justify-between min-h-[380px] shadow-sm">
+          <Reveal
+            delay={0.1}
+            className="relative overflow-hidden rounded-3xl border border-gray-100 p-6 flex flex-col items-center text-center justify-between min-h-[380px] shadow-sm bg-center bg-no-repeat bg-[#f8f3e9]"
+            style={{
+              backgroundImage: `url(/layanankami/background_lain%201.svg)`,
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+              backgroundRepeat: "no-repeat",
+            }}
+          >
 
             <div className="relative z-10 w-full flex flex-col items-center gap-4">
               {/* Gambar Orang */}
@@ -97,7 +114,16 @@ export default function ServicesSection() {
           </Reveal>
 
           {/* CARD 3: TANYA NALAR */}
-          <Reveal delay={0.2} className="relative overflow-hidden rounded-3xl bg-white border border-gray-100 p-6 flex flex-col items-center text-center justify-between min-h-[380px] shadow-sm">
+          <Reveal
+            delay={0.2}
+            className="relative overflow-hidden rounded-3xl border border-gray-100 p-6 flex flex-col items-center text-center justify-between min-h-[380px] shadow-sm bg-center bg-no-repeat bg-[#f8f3e9]"
+            style={{
+              backgroundImage: `url(/layanankami/background_lain%201.svg)`,
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+              backgroundRepeat: "no-repeat",
+            }}
+          >
 
             <div className="relative z-10 w-full flex flex-col items-center gap-4">
               {/* Gambar Orang */}
