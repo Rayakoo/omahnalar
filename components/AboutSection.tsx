@@ -62,13 +62,10 @@ export default function AboutSection() {
             onMouseLeave={() => setPaused(false)}
           >
             {/* Slider foto di belakang (di dalam bingkai rumah) */}
-            <div
-              className="absolute inset-0"
-              style={{
-                clipPath:
-                  "polygon(50.65% 4.27%, 96.6% 37.9%, 90.3% 38.5%, 90.3% 88.4%, 9.7% 88.4%, 9.4% 37.9%, 3.4% 37.9%)",
-              }}
-            >
+            {/* Foto dibuat full-bleed; SVG border di atasnya menutup area luar
+                rumah dengan warna background sehingga foto hanya terlihat
+                penuh di dalam lubang border. */}
+            <div className="absolute inset-0 overflow-hidden">
               {slides.map((src, i) => (
                 <img
                   key={src}
@@ -142,11 +139,40 @@ export default function AboutSection() {
           </div>
 
           {/* Deskripsi */}
-          <p className="text-[#721e7c]/90 text-sm md:text-base leading-relaxed mb-8 max-w-xl font-medium">
+          <p className="text-[#721e7c]/90 text-sm md:text-base leading-relaxed mb-4 max-w-xl font-medium">
             Omah Nalar adalah komunitas non-profit yang menyediakan platform
             ruang belajar menyenangkan, berbagi cerita dengan aman dan
             mendapatkan dukungan.
           </p>
+
+          {/* Lokasi */}
+          <div className="flex items-start gap-2.5 text-[#00296b] text-sm md:text-base font-medium mb-8 max-w-xl">
+            <svg
+              className="w-5 h-5 mt-0.5 shrink-0 text-[#721e7c]"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+              />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+              />
+            </svg>
+            <span>
+              Komunitas kami berlokasi di{" "}
+              <strong className="font-bold text-[#721e7c]">
+                Kota Malang, Jawa Timur, Indonesia
+              </strong>
+              .
+            </span>
+          </div>
 
           {/* Tombol Aksi */}
           <div className="flex flex-wrap items-center gap-4">
@@ -166,7 +192,7 @@ export default function AboutSection() {
 
             {/* Tombol 2 */}
             <Link
-              href="/terlibat"
+              href="/dukungan"
               className="inline-flex items-center justify-between gap-4 px-6 py-3 bg-[#f1e5cd] hover:bg-[#e7d8bc] text-[#00296b] font-bold text-sm md:text-base rounded-full shadow-sm transition-all group"
             >
               <span>Mau ikut terlibat</span>

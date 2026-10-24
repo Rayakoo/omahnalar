@@ -5,6 +5,11 @@
   --foreground: #171717;
 }
 
+/* Catatan: tinggi navbar (sticky) = pt-4 + tinggi pill + pb-3 ≈ 100px.
+   Nilai 100px dipakai langsung pada -mt-[100px] dan pt-[calc(100px_+_...)]
+   di header halaman agar background header tetap sampai atas, sementara
+   isi (judul/teks/logo) tidak tertutup navbar. */
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -81,6 +86,56 @@
 
 .nav-link:hover {
   animation: bounce-hover 0.5s ease;
+}
+
+/* ========== Marquee Mitra ========== */
+@keyframes marquee-to-right {
+  0% { transform: translateX(-50%); }
+  100% { transform: translateX(0); }
+}
+
+@keyframes marquee-to-left {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.mitra-track-right {
+  animation: marquee-to-right 55s linear infinite;
+}
+
+.mitra-track-left {
+  animation: marquee-to-left 45s linear infinite;
+}
+
+.mitra-marquee:hover .mitra-track-right,
+.mitra-marquee:hover .mitra-track-left,
+.mitra-marquee:focus-within .mitra-track-right,
+.mitra-marquee:focus-within .mitra-track-left {
+  animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mitra-track-right,
+  .mitra-track-left {
+    animation: none;
+  }
+}
+
+.mitra-fade {
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent 0,
+    #000 7%,
+    #000 93%,
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    to right,
+    transparent 0,
+    #000 7%,
+    #000 93%,
+    transparent 100%
+  );
 }
 
 @media (prefers-color-scheme: dark) {

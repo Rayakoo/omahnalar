@@ -53,10 +53,10 @@ export default function ProgramDetail() {
   const images = prog.image_url.filter((img) => img.url).map((img) => ({ ...img, url: transformImageUrl(img.url) }));
 
   return (
-    <div className="min-h-screen bg-page-50 font-sans antialiased flex flex-col">
+    <div className="-mt-[100px] min-h-screen bg-page-50 font-sans antialiased flex flex-col">
       {/* Hero Banner */}
       <div className="relative overflow-hidden bg-secondary-500">
-        <Reveal className="max-w-6xl mx-auto px-6 py-12 md:py-16 relative z-10">
+        <Reveal className="max-w-6xl mx-auto px-6 pt-[calc(100px_+_3rem)] md:pt-[calc(100px_+_4rem)] pb-12 md:pb-16 relative z-10">
           <button
             onClick={() => router.push("/program")}
             className="inline-flex items-center gap-1.5 px-4 py-2 bg-white/20 backdrop-blur-sm text-sm font-semibold rounded-xl hover:bg-white/30 transition-all mb-6 text-brand-900"

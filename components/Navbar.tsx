@@ -24,9 +24,11 @@ export default function Navbar() {
 
   const profileIncomplete = !!user && !profileComplete;
 
+  // Navbar sticky: tetap terlihat saat halaman digulir, dan karena berada
+  // dalam alur dokumen ia tidak menutupi header konten di bawahnya.
   return (
-    <div className="absolute top-0 left-0 right-0 z-50 px-4 pt-4">
-      <nav className="w-full max-w-7xl mx-auto flex items-center justify-between gap-4 px-6 py-2 bg-[#fafafa] rounded-2xl shadow-sm font-sans relative">
+    <div className="sticky top-0 z-50 px-4 pt-4 pb-3 pointer-events-none">
+      <nav className="pointer-events-auto w-full max-w-7xl mx-auto flex items-center justify-between gap-4 px-6 py-2 bg-white rounded-2xl shadow-sm font-sans relative">
         {/* 1. Logo Kiri */}
         <Link href="/" className="flex items-center shrink-0">
           <img src="/images/logo_omah.png" alt="Omah Nalar" className="h-14 w-auto object-contain" />
@@ -124,7 +126,7 @@ export default function Navbar() {
         </div>
 
         {menuOpen && (
-          <div className="absolute top-full left-0 right-0 bg-[#fafafa] rounded-b-2xl shadow-lg lg:hidden z-50">
+          <div className="absolute top-full left-0 right-0 bg-white rounded-b-2xl shadow-lg lg:hidden z-50">
             <div className="flex flex-col p-4 gap-2">
               {NAV_LINKS.map((link) => {
                 const isActive = pathname === link.href;

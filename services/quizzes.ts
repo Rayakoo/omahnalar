@@ -1,6 +1,6 @@
 import { getSupabase, getAccessToken, getValidToken } from "@/lib/supabaseClient";
 
-// ── Quizzes ──────────────────────────────────────────────────
+// ── Quizzes 
 export type Quiz = {
   id: string;
   course_id: string;

@@ -128,9 +128,9 @@ export default function TanyaNalarPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#FAF5ED] font-sans antialiased text-gray-800">
+    <div className="-mt-[100px] min-h-screen bg-[#FAF5ED] font-sans antialiased text-gray-800">
       {/* Banner / Header */}
-      <header className="relative bg-gradient-to-r from-[#53267d] via-[#3a2e8c] to-[#1d41a5] text-white p-6 md:p-10 pb-12 overflow-hidden">
+      <header className="relative bg-gradient-to-r from-[#53267d] via-[#3a2e8c] to-[#1d41a5] text-white px-6 md:px-10 pt-[calc(100px_+_1.5rem)] md:pt-[calc(100px_+_2.5rem)] pb-12 overflow-hidden">
         {/* Pattern Hiasan Samping */}
         <div className="absolute inset-0 bg-[radial-gradient(#ffffff_1px,transparent_1px)] [background-size:16px_16px] opacity-10 pointer-events-none" />
 

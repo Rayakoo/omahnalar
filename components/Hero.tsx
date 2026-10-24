@@ -24,7 +24,7 @@ export default function Hero() {
   }, [galleries.length]);
 
   return (
-    <section className="relative w-full min-h-screen overflow-hidden shadow-xl font-sans sm:pt-12">
+    <section className="relative w-full min-h-screen overflow-hidden shadow-xl font-sans sm:pt-12 -mt-[100px]">
       {/* Background Gallery Slider - Desktop */}
       {galleries.length > 0 && (
         <div
@@ -95,7 +95,7 @@ export default function Hero() {
         className="absolute inset-0 z-10 w-full h-full object-cover pointer-events-none origin-center rotate-90 scale-[1.6] sm:rotate-0 sm:scale-100 will-change-transform"
       />
 
-      <div className="relative z-20 flex flex-col justify-start items-start h-full min-h-0 px-4 sm:px-6 md:px-6 lg:px-12 py-0 pt-24 sm:pt-0 pb-10 sm:pb-0 text-white sm:mt-20">
+      <div className="relative z-20 flex flex-col justify-start items-start h-full min-h-0 px-4 sm:px-6 md:px-6 lg:px-12 py-0 pt-[calc(100px_+_1rem)] sm:pt-0 pb-10 sm:pb-0 text-white sm:mt-20">
         {/* Badge / Pill Atas */}
         <motion.div
           initial={{ opacity: 0, y: 24 }}

@@ -70,7 +70,7 @@ export default function ProdukDetail() {
 
   return (
     <div className="min-h-screen bg-page-50 font-sans antialiased flex flex-col">
-      <div className="max-w-6xl mx-auto w-full px-4 md:px-6 pt-24 md:pt-28">
+      <div className="max-w-6xl mx-auto w-full px-4 md:px-6 pt-6 md:pt-8">
         <Reveal>
           <button
             onClick={() => router.push("/produk")}

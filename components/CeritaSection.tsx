@@ -71,9 +71,9 @@ export default function CeritaSection() {
   const currentStory = stories[index] || stories[0];
 
   return (
-    <div className="min-h-screen bg-[#FAF5ED] font-sans antialiased text-[#3A2E5A]">
+    <div className="-mt-[100px] min-h-screen bg-[#FAF5ED] font-sans antialiased text-[#3A2E5A]">
       {/* 1. HERO BANNER */}
-      <section className="relative bg-gradient-to-r from-[#53267d] via-[#3a2e8c] to-[#1d41a5] text-white py-14 px-6 text-center overflow-hidden">
+      <section className="relative bg-gradient-to-r from-[#53267d] via-[#3a2e8c] to-[#1d41a5] text-white pt-[calc(100px_+_3.5rem)] pb-14 px-6 text-center overflow-hidden">
         {/* Pattern Hiasan Halftone / Dot */}
         <div className="absolute inset-0 bg-[radial-gradient(#ffffff_1.2px,transparent_1.2px)] [background-size:16px_16px] opacity-15 pointer-events-none" />
 

@@ -8,7 +8,7 @@ import dynamic from "next/dynamic";
 import { getGalleries, type Gallery } from "@/services/galleries";
 import { getBeholdPosts, type BeholdPost } from "@/services/behold";
 import { transformImageUrl } from "@/lib/image";
-import { OMAH_BELAJAR_URL } from "@/lib/external";
+import { OMAH_BELAJAR_URL, GFORM_VOLUNTEER } from "@/lib/external";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { id, en } from "@/data/translations";
 import OrganizationalStructureSection from "@/components/StrukturOrganisasi";
@@ -61,7 +61,7 @@ const fiturCards = [
     descEn: "Join Kawan Nalar to support each other and grow together.",
     iconSrc: "/images/fitur4.png",
     bgColor: "bg-[#fde283]",
-    href: "/omah-cerita",
+    href: GFORM_VOLUNTEER,
   },
 ];
 
@@ -88,9 +88,9 @@ export default function TentangPage() {
         }));
 
   return (
-    <div className="min-h-screen bg-page-50 font-sans antialiased text-brand-900 overflow-hidden">
+    <div className="-mt-[100px] min-h-screen bg-page-50 font-sans antialiased text-brand-900 overflow-hidden">
       {/* ============ HERO / HEADER SECTION ============ */}
-      <section className="relative w-full mt-16 py-16 px-6 md:px-12 text-center text-white overflow-hidden bg-gradient-to-r from-[#591662] via-[#721e7c] to-[#00296b]">
+      <section className="relative w-full pt-[calc(100px_+_4rem)] pb-16 px-6 md:px-12 text-center text-white overflow-hidden bg-gradient-to-r from-[#591662] via-[#721e7c] to-[#00296b]">
         {/* Background Title Image — ganti file /images/header-bg-about.png dengan gambarmu */}
         <div className="absolute inset-0 z-0">
           <Image
@@ -123,7 +123,7 @@ export default function TentangPage() {
       </section>
 
       {/* ============ SEJARAH ============ */}
-      <section id="siapa-kami" className="w-full bg-white scroll-mt-24">
+      <section id="siapa-kami" className="w-full bg-white scroll-mt-28">
         <div className="max-w-6xl mx-auto px-6 md:px-12 py-16 md:py-20">
           {/* Header Sejarah */}
           <motion.div

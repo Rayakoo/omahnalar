@@ -30,7 +30,7 @@ export type User = {
   };
 };
 
-// ── OAuth helper: temporary client for code exchange ─────────
+// ── OAuth helper: temporary client for code exchange
 function createOAuthClient() {
   const { url, anonKey } = getSupabaseConfig();
   return createSupabaseClient(url, anonKey);
@@ -55,7 +55,7 @@ function saveOAuthSession(session: {
   );
 }
 
-// ── Sign Up ──────────────────────────────────────────────────
+// ── Sign Up 
 export async function signUp(email: string, password: string, fullName?: string) {
   const { url, anonKey } = getSupabaseConfig();
   const res = await fetch(`${url}/auth/v1/signup`, {

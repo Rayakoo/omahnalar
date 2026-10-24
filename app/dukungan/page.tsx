@@ -31,9 +31,9 @@ const SUPPORTS = [
 
 export default function DukunganPage() {
   return (
-    <div className="min-h-screen bg-white font-sans">
+    <div className="-mt-[100px] min-h-screen bg-white font-sans">
       {/* Hero */}
-      <section className="bg-brand-900 text-white py-20 md:py-28 px-6 mt-16">
+      <section className="bg-brand-900 text-white pt-[calc(100px_+_5rem)] md:pt-[calc(100px_+_7rem)] pb-20 md:pb-28 px-6">
         <motion.div
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
@@ -56,7 +56,7 @@ export default function DukunganPage() {
           <Reveal key={item.id} delay={(idx % 3) * 0.08}>
           <div
             id={item.id}
-            className="bg-[#f1e5cd] rounded-[2rem] px-8 py-8 md:px-12 flex flex-col md:flex-row md:items-center gap-4 md:gap-8 scroll-mt-24"
+            className="bg-[#f1e5cd] rounded-[2rem] px-8 py-8 md:px-12 flex flex-col md:flex-row md:items-center gap-4 md:gap-8 scroll-mt-28"
           >
             <div className="flex-1">
               <h2 className="text-xl md:text-2xl font-extrabold text-[#721e7c]">

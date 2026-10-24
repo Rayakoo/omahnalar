@@ -130,8 +130,16 @@ export default function Footer() {
           </div>
 
           {/* Copyright */}
-          <div className="text-[#721e7c] text-xs md:text-sm font-semibold text-center md:text-right">
-            © 2026 Omah Nalar. All rights reserved.
+          <div className="flex flex-col items-center md:items-end gap-2 text-center md:text-right">
+            <p className="text-[#721e7c] text-xs md:text-sm font-semibold">
+              © 2026 Omah Nalar.
+            </p>
+            <p className="text-[#721e7c] text-[11px] md:text-xs font-medium leading-relaxed max-w-xs">
+              <span className="inline-block bg-[#721e7c]/10 border-l-2 border-[#721e7c] rounded-md px-2 py-1">
+                Seluruh konten dilindungi hak cipta. Dilarang menyalin atau
+                menggunakan konten tanpa izin.
+              </span>
+            </p>
           </div>
 
         </div>

@@ -159,10 +159,10 @@ export default function NewsSection() {
   }, [activeTab, displayedItems.length, sosmedTotal]);
 
   return (
-    <div className="w-full bg-white font-sans pb-20">
+    <div className="-mt-[100px] w-full bg-white font-sans pb-20">
 
       {/* ================= HERO / TITLE SECTION ================= */}
-      <section className="relative w-full py-16 px-6 md:px-12 text-center text-white overflow-hidden bg-gradient-to-r from-[#591662] via-[#721e7c] to-[#00296b] mt-16">
+      <section className="relative w-full pt-[calc(100px_+_4rem)] pb-16 px-6 md:px-12 text-center text-white overflow-hidden bg-gradient-to-r from-[#591662] via-[#721e7c] to-[#00296b]">
 
         <motion.div
           initial={{ opacity: 0, y: 24 }}

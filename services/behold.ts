@@ -46,9 +46,6 @@ function normalizeTimestamp(ts: string | undefined): string {
   return ts.replace(/([+-]\d{2})(\d{2})$/, "$1:$2");
 }
 
-// limit opsional: tanpa limit, semua postingan di feed dikembalikan.
-// (Jumlah total postingan ditentukan pengaturan feed di dashboard Behold,
-// endpoint ini tidak menyediakan pagination.)
 export async function getBeholdPosts(limit?: number): Promise<BeholdPost[]> {
   const res = await fetch(`https://feeds.behold.so/${FEED_ID}`);
   if (!res.ok) throw new Error(`Behold feed error: ${res.status}`);

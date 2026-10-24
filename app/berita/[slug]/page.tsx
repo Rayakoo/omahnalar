@@ -62,7 +62,7 @@ export default function BeritaDetail() {
   return (
     <div className="min-h-screen bg-page-50 font-sans antialiased flex flex-col">
       {/* Back button */}
-      <div className="max-w-4xl mx-auto w-full px-4 md:px-6 pt-24 md:pt-28">
+      <div className="max-w-4xl mx-auto w-full px-4 md:px-6 pt-6 md:pt-8">
         <Reveal>
           <button
             onClick={() => router.push("/program")}

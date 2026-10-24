@@ -105,7 +105,7 @@ function MemberCard({
 // ================= MAIN SECTION & STRUKTUR ORGANISASI =================
 export default function OrganizationalStructureSection({ t }: { t: any }) {
   return (
-    <section id="tim" className="w-full bg-[#fffdfa] py-16 px-6 scroll-mt-24 font-sans">
+    <section id="tim" className="w-full bg-[#fffdfa] py-16 px-6 scroll-mt-28 font-sans">
 
       {/* Header Section */}
       <motion.div
