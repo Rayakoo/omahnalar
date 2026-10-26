@@ -7,6 +7,7 @@ import PilarSection from "@/components/PilarSection";
 import HomeCeritaSection from "@/components/HomeCeritaSection";
 import ServicesSection from "@/components/ServicesSection";
 import TestimonialSection from "@/components/TestimonialSection";
+import VideoTestimonialSection from "@/components/VideoTestimonialSection";
 import LocationSection from "@/components/LocationSection";
 
 export default function HomePage() {
@@ -19,6 +20,7 @@ export default function HomePage() {
       <PilarSection />
       <ServicesSection />
       <TestimonialSection />
+      <VideoTestimonialSection />
       <LocationSection />
     </>
   );
