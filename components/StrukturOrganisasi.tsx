@@ -9,22 +9,22 @@ const founders = [
     name: "Tri Nurdiyanso, S.Pd",
     role: "Founder",
     quote: "Berdedikasi untuk mengembangkan potensi nalar bersama Omah Nalar 2025/2026.",
-    img: "/struktur_organisasi/PAK TRI.png",
+    img: "/struktur_organisasi/PAK TRI.webp",
   },
   {
     name: "Paramytha M. S. Putri, S.K.M., M.Kes.",
     role: "Co-Founder",
     quote: "Rumah untuk belajar bernalar — ruang tumbuh bersama bagi siapa saja.",
-    img: "/struktur_organisasi/BU MAGDA.png",
+    img: "/struktur_organisasi/BU MAGDA.webp",
   },
 ];
 
 const members = [
-  { name: "Charelle Amira Jeihan S", role: "Hubungan Masyarakat", img: "/struktur_organisasi/CHARELLE.png" },
-  { name: "Qhairema Abrysa S", role: "Sie PDD", img: "/struktur_organisasi/QHAIREMA.png" },
-  { name: "Deastri Yustinas Sari", role: "Sie PDD", img: "/struktur_organisasi/DEA.png" },
-  { name: "Alifia Meida Indrayati", role: "Sie Acara", img: "/struktur_organisasi/ALIFIA.png" },
-  { name: "Randy Gustawan", role: "Sie Acara", img: "/struktur_organisasi/RANDY.png" },
+  { name: "Charelle Amira Jeihan S", role: "Hubungan Masyarakat", img: "/struktur_organisasi/CHARELLE.webp" },
+  { name: "Qhairema Abrysa S", role: "Sie PDD", img: "/struktur_organisasi/QHAIREMA.webp" },
+  { name: "Deastri Yustinas Sari", role: "Sie PDD", img: "/struktur_organisasi/DEA.webp" },
+  { name: "Alifia Meida Indrayati", role: "Sie Acara", img: "/struktur_organisasi/ALIFIA.webp" },
+  { name: "Randy Gustawan", role: "Sie Acara", img: "/struktur_organisasi/RANDY.webp" },
 ];
 
 // ================= MEMBER CARD COMPONENT (flip on hover) =================

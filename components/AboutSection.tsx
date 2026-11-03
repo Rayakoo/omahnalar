@@ -9,11 +9,11 @@ import { transformImageUrl } from "@/lib/image";
 
 // Fallback sementara bila galeri belum termuat / gagal dimuat
 const FALLBACK_SLIDES = [
-  "/images/omah_nalar.JPG",
-  "/images/features/berbagi-cerita.jpg",
-  "/images/features/ikut-course.jpg",
-  "/images/features/buat-laporan.jpg",
-  "/images/features/main-games.jpg",
+  "/images/omah_nalar.webp",
+  "/images/features/berbagi-cerita.webp",
+  "/images/features/ikut-course.webp",
+  "/images/features/buat-laporan.webp",
+  "/images/features/main-games.webp",
 ];
 
 const SLIDE_INTERVAL_MS = 4000;
@@ -129,7 +129,7 @@ export default function AboutSection() {
             {/* Maskot Kanan */}
             <div className="relative w-28 h-28 md:w-40 md:h-40 shrink-0">
               <Image
-                src="/images/maskot_nalar.png"
+                src="/images/maskot_nalar.webp"
                 alt="Maskot Omah Nalar"
                 fill
                 sizes="(max-width: 768px) 112px, 160px"

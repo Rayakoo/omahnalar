@@ -18,8 +18,8 @@ export const metadata: Metadata = {
   title: "Omah Nalar",
   description: "Ruang aman untuk berbagi cerita, belajar, dan melapor — komunitas pendidikan dan kesehatan reproduksi seksual.",
   icons: {
-    icon: "/images/logo_omah.png",
-    apple: "/images/logo_omah.png",
+    icon: "/images/logo_omah.webp",
+    apple: "/images/logo_omah.webp",
   },
   other: {
     "apple-mobile-web-app-capable": "yes",
@@ -30,7 +30,7 @@ export const metadata: Metadata = {
     siteName: "Omah Nalar",
     images: [
       {
-        url: "/images/logo_omah.png",
+        url: "/images/logo_omah.webp",
         width: 512,
         height: 512,
         alt: "Omah Nalar",

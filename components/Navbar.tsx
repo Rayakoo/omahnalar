@@ -31,7 +31,7 @@ export default function Navbar() {
       <nav className="pointer-events-auto w-full max-w-7xl mx-auto flex items-center justify-between gap-4 px-6 py-2 bg-white rounded-2xl shadow-sm font-sans relative">
         {/* 1. Logo Kiri */}
         <Link href="/" className="flex items-center shrink-0">
-          <img src="/images/logo_omah.png" alt="Omah Nalar" className="h-14 w-auto object-contain" />
+          <img src="/images/logo_omah.webp" alt="Omah Nalar" className="h-14 w-auto object-contain" />
         </Link>
 
         {/* 2. Menu Navigasi + Tombol Bahasa (terbagi sama rata) */}
@@ -110,7 +110,7 @@ export default function Navbar() {
           {/* Maskot Kanan */}
           <Link href="/" className="flex items-center shrink-0" aria-label="Maskot Nalar">
             <img
-              src="/images/maskot_nalar.png"
+              src="/images/maskot_nalar.webp"
               alt="Maskot Nalar"
               className="h-12 w-12 rounded-full object-cover"
             />

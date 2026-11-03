@@ -8,19 +8,19 @@ const LOGO_DIR = "/Logo Mitra Omah Nalar";
 
 // Logo mitra yang tersedia di public/Logo Mitra Omah Nalar
 const MITRA_LOGOS = [
-  { file: "FIK UM.png", name: "FIK UM" },
-  { file: "BEM FIK UM.png", name: "BEM FIK UM" },
-  { file: "HMD KESMAS UM.png", name: "HMD KESMAS UM" },
-  { file: "MI NURUL HUDA 2.png", name: "MI Nurul Huda 2" },
-  { file: "MTS DZUNNUROIN.png", name: "MTS Dzunnuroin" },
-  { file: "MTS TAUFIQIYAH KAB. MALANG.png", name: "MTS Taufiqiyah Kab. Malang" },
-  { file: "SDN MOJOREJO 2.png", name: "SDN Mojorejo 2" },
-  { file: "SMPN 2 SINGOSARI.png", name: "SMPN 2 Singosari" },
-  { file: "INTRANS PUBLISHING.png", name: "Intrans Publishing" },
-  { file: "KOMUNITAS LENTERA NUSANTARA.png", name: "Komunitas Lentera Nusantara" },
-  { file: "PUKAPS.png", name: "PUKAPS" },
-  { file: "SDGS YOUTH INDONESIA.png", name: "SDGs Youth Indonesia" },
-  { file: "YPK BALI.png", name: "YPK Bali" },
+  { file: "FIK UM.webp", name: "FIK UM" },
+  { file: "BEM FIK UM.webp", name: "BEM FIK UM" },
+  { file: "HMD KESMAS UM.webp", name: "HMD KESMAS UM" },
+  { file: "MI NURUL HUDA 2.webp", name: "MI Nurul Huda 2" },
+  { file: "MTS DZUNNUROIN.webp", name: "MTS Dzunnuroin" },
+  { file: "MTS TAUFIQIYAH KAB. MALANG.webp", name: "MTS Taufiqiyah Kab. Malang" },
+  { file: "SDN MOJOREJO 2.webp", name: "SDN Mojorejo 2" },
+  { file: "SMPN 2 SINGOSARI.webp", name: "SMPN 2 Singosari" },
+  { file: "INTRANS PUBLISHING.webp", name: "Intrans Publishing" },
+  { file: "KOMUNITAS LENTERA NUSANTARA.webp", name: "Komunitas Lentera Nusantara" },
+  { file: "PUKAPS.webp", name: "PUKAPS" },
+  { file: "SDGS YOUTH INDONESIA.webp", name: "SDGs Youth Indonesia" },
+  { file: "YPK BALI.webp", name: "YPK Bali" },
 ];
 
 const logoSrc = (file: string) => encodeURI(`${LOGO_DIR}/${file}`);

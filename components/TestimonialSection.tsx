@@ -25,7 +25,7 @@ export default function TestimonialSection() {
           {/* Box Gambar + Fade White Gradient */}
           <Reveal className="lg:col-span-5 relative overflow-hidden rounded-[2rem] aspect-[4/3]">
             <Image
-              src="/images/testi1.png"
+              src="/images/testi1.webp"
               alt="Perwakilan Guru MI Nurul Huda 02"
               fill
               sizes="(max-width: 1024px) 100vw, 480px"
@@ -117,7 +117,7 @@ export default function TestimonialSection() {
           {/* Box Gambar + Fade White Gradient */}
           <Reveal delay={0.15} className="lg:col-span-5 relative overflow-hidden rounded-[2rem] aspect-[4/3] order-1 lg:order-2">
             <Image
-              src="/images/testi2.png"
+              src="/images/testi2.webp"
               alt="Perwakilan Guru MI Nurul Huda 02"
               fill
               sizes="(max-width: 1024px) 100vw, 480px"

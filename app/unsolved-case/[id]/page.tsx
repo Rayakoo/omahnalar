@@ -38,7 +38,7 @@ function CardPreview({ name, size = "w-44" }: { name: string; size?: string }) {
   return (
     <TiltCard>
       <div className={`relative ${size} mx-auto rounded-xl shadow-lg border-2 border-[#c4a882] overflow-hidden bg-white`}>
-        <img src="/card_detektif.png" alt="Kartu Identitas" className="w-full h-auto" />
+        <img src="/card_detektif.webp" alt="Kartu Identitas" className="w-full h-auto" />
         <p
           style={{
             position: "absolute",

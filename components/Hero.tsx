@@ -88,7 +88,7 @@ export default function Hero() {
 
       {/* Foreground Hero Image - hanya ini yang di-rotate saat mobile */}
       <img
-        src="/images/foreground_hero.png"
+        src="/images/foreground_hero.webp"
         alt="Background Omah Nalar"
         fetchPriority="high"
         decoding="async"

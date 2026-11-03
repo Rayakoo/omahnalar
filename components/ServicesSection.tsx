@@ -24,7 +24,7 @@ export default function ServicesSection() {
         <Reveal
           className="relative overflow-hidden rounded-3xl border border-gray-100 p-6 md:p-10 min-h-[320px] flex items-center shadow-sm bg-center bg-no-repeat bg-[#f8f3e9]"
           style={{
-            backgroundImage: `url(/layanankami/background_omahbelajar%201.svg)`,
+            backgroundImage: `url(/layanankami/background_omahbelajar%201.webp)`,
             backgroundSize: "cover",
             backgroundPosition: "center",
             backgroundRepeat: "no-repeat",
@@ -36,7 +36,7 @@ export default function ServicesSection() {
             {/* Gambar Orang (Kiri) */}
             <div className="md:col-span-5 relative h-64 md:h-80 w-full flex items-center justify-center">
               <Image
-                src="/layanankami/orang_omahbelajar.png"
+                src="/layanankami/orang_omahbelajar.webp"
                 alt="Omah Belajar Person"
                 fill
                 sizes="(max-width: 768px) 100vw, 480px"
@@ -74,7 +74,7 @@ export default function ServicesSection() {
             delay={0.1}
             className="relative overflow-hidden rounded-3xl border border-gray-100 p-6 flex flex-col items-center text-center justify-between min-h-[380px] shadow-sm bg-center bg-no-repeat bg-[#f8f3e9]"
             style={{
-              backgroundImage: `url(/layanankami/background_lain%201.svg)`,
+              backgroundImage: `url(/layanankami/background_lain%201.webp)`,
               backgroundSize: "cover",
               backgroundPosition: "center",
               backgroundRepeat: "no-repeat",
@@ -85,7 +85,7 @@ export default function ServicesSection() {
               {/* Gambar Orang */}
               <div className="relative h-48 md:h-56 w-full">
                 <Image
-                  src="/layanankami/orang_omahcerita.png"
+                  src="/layanankami/orang_omahcerita.webp"
                   alt="Omah Cerita Person"
                   fill
                   sizes="(max-width: 768px) 100vw, 560px"
@@ -119,7 +119,7 @@ export default function ServicesSection() {
             delay={0.2}
             className="relative overflow-hidden rounded-3xl border border-gray-100 p-6 flex flex-col items-center text-center justify-between min-h-[380px] shadow-sm bg-center bg-no-repeat bg-[#f8f3e9]"
             style={{
-              backgroundImage: `url(/layanankami/background_lain%201.svg)`,
+              backgroundImage: `url(/layanankami/background_lain%201.webp)`,
               backgroundSize: "cover",
               backgroundPosition: "center",
               backgroundRepeat: "no-repeat",
@@ -130,7 +130,7 @@ export default function ServicesSection() {
               {/* Gambar Orang */}
               <div className="relative h-48 md:h-56 w-full">
                 <Image
-                  src="/layanankami/orang_tanyanalar.png"
+                  src="/layanankami/orang_tanyanalar.webp"
                   alt="Tanya Nalar Person"
                   fill
                   sizes="(max-width: 768px) 100vw, 560px"

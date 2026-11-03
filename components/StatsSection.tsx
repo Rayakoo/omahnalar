@@ -3,10 +3,10 @@
 import Reveal from "@/components/Reveal";
 
 const STAT_IMAGES = [
-  { src: "/stat/stat_mitra.png", alt: "Jumlah Mitra" },
-  { src: "/stat/stat_kawan.png", alt: "Kawan Nalar" },
-  { src: "/stat/stat_program.png", alt: "Program" },
-  { src: "/stat/stat_siswa.png", alt: "Siswa" },
+  { src: "/stat/stat_mitra.webp", alt: "Jumlah Mitra" },
+  { src: "/stat/stat_kawan.webp", alt: "Kawan Nalar" },
+  { src: "/stat/stat_program.webp", alt: "Program" },
+  { src: "/stat/stat_siswa.webp", alt: "Siswa" },
 ];
 
 export default function StatsSection() {

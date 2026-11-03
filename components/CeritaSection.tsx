@@ -17,13 +17,13 @@ function formatDate(iso: string) {
 
 // Background card: cerita 1 (peach) / cerita 2 (mint), bergantian.
 // Mobile pakai versi mobile, md ke atas pakai versi desktop.
-// SVG ber-viewBox + bg-cover: selalu fill penuh tanpa distorsi
+// WebP resolusi tinggi + bg-cover: selalu fill penuh tanpa distorsi
 // di semua resolusi layar; warna solid sebagai fallback.
 function cardBackgroundClass(index: number) {
   const base = "bg-cover bg-center bg-no-repeat border border-white/60 shadow-xl";
   return index % 2 === 0
-    ? `${base} bg-[#FFE8D6] bg-[url('/images/card_ceritamobile1.svg')] md:bg-[url('/images/card_cerita1.svg')]`
-    : `${base} bg-[#DFF3E8] bg-[url('/images/card_ceritamobile2.svg')] md:bg-[url('/images/card_cerita2.svg')]`;
+    ? `${base} bg-[#FFE8D6] bg-[url('/images/card_ceritamobile1.webp')] md:bg-[url('/images/card_cerita1.webp')]`
+    : `${base} bg-[#DFF3E8] bg-[url('/images/card_ceritamobile2.webp')] md:bg-[url('/images/card_cerita2.webp')]`;
 }
 
 export default function CeritaSection() {

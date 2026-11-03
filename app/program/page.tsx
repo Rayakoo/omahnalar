@@ -9,7 +9,7 @@ import { getBerita, type Berita } from "@/services/berita";
 import { getBeholdPosts } from "@/services/behold";
 import { transformImageUrl } from "@/lib/image";
 
-const FALLBACK_IMG = "/images/omah_nalar.JPG";
+const FALLBACK_IMG = "/images/omah_nalar.webp";
 const IG_HANDLE = "@omahnalar";
 const SOSMED_BATCH = 9;
 

@@ -209,7 +209,7 @@ export default function UnsolvedCaseLayout({ children }: Props) {
                   `}</style>
                   <div className="absolute -inset-1 bg-[#8b4513]/10 rounded-2xl blur-sm" />
                   <div className="relative bg-white rounded-xl shadow-lg border border-[#c4a882] overflow-hidden">
-                    <img src="/card_detektif.png" alt="Kartu Identitas Detektif" className="w-full h-auto" />
+                    <img src="/card_detektif.webp" alt="Kartu Identitas Detektif" className="w-full h-auto" />
                     <p
                       style={{
                         position: "absolute",

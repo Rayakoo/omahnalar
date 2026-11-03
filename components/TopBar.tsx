@@ -12,7 +12,7 @@ export default function TopBar() {
   return (
     <nav className="bg-secondary-200 px-6 py-4 flex items-center justify-between shadow-sm">
       <Link href="/" className="flex items-center gap-2">
-        <img src="/images/logo_omah.png" alt="Omah Nalar" className="h-10 w-auto" />
+        <img src="/images/logo_omah.webp" alt="Omah Nalar" className="h-10 w-auto" />
         <span className="text-lg font-black text-[#7B1E84] tracking-tight">Omah Nalar</span>
       </Link>
 

@@ -5,10 +5,10 @@ import { id, en } from "@/data/translations";
 import Reveal from "@/components/Reveal";
 
 const NILAI_IMAGES = [
-  { src: "/nilai/kesetaraan.png", alt: "Kesetaraan" },
-  { src: "/nilai/edukatif.png", alt: "Edukatif" },
-  { src: "/nilai/pemberdayaan.png", alt: "Pemberdayaan" },
-  { src: "/nilai/inovatif.png", alt: "Inovatif" },
+  { src: "/nilai/kesetaraan.webp", alt: "Kesetaraan" },
+  { src: "/nilai/edukatif.webp", alt: "Edukatif" },
+  { src: "/nilai/pemberdayaan.webp", alt: "Pemberdayaan" },
+  { src: "/nilai/inovatif.webp", alt: "Inovatif" },
 ];
 
 export default function PilarSection() {

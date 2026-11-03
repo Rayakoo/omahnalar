@@ -75,7 +75,7 @@ export default function Footer() {
           <div className="flex items-center gap-3">
             <div className="relative w-8 h-8 md:w-10 md:h-10 shrink-0">
               <Image
-                src="/images/logo_omah.png"
+                src="/images/logo_omah.webp"
                 alt="Omah Nalar Logo"
                 fill
                 sizes="40px"

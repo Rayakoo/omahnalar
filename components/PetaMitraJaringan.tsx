@@ -154,8 +154,8 @@ export default function PetaMitraJaringan() {
         "#f3c246",
         "#f3c246",
         undefined,
-        "/images/logo_omah.png",
-        "/images/omah_nalar.JPG"
+        "/images/logo_omah.webp",
+        "/images/omah_nalar.webp"
       ),
       interactive: false,
       keyboard: false,

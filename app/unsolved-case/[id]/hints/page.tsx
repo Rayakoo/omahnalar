@@ -384,7 +384,7 @@ export default function HintsPage() {
           <div
             className="relative min-h-[320px] rounded-2xl border-2 border-[#c4a882] p-6 mb-4 overflow-hidden"
             style={{
-              backgroundImage: "url('/background_hint.png')",
+              backgroundImage: "url('/background_hint.webp')",
               backgroundSize: "cover",
               backgroundPosition: "center",
               backgroundRepeat: "no-repeat",
@@ -640,7 +640,7 @@ function ChatPhonePopup({ konten, onClose, pageIndex, onPageChange }: {
 }) {
   const [detailMode, setDetailMode] = useState(false);
   const pages = konten.images || [];
-  const currentImage = pages[Math.max(0, Math.min(pageIndex, pages.length - 1))] || "/card_detektif.png";
+  const currentImage = pages[Math.max(0, Math.min(pageIndex, pages.length - 1))] || "/card_detektif.webp";
   const contactName = konten.nama_lawan_chat || konten.judul_hint || "Kontak";
   return (
     <div className="fixed inset-0 z-50 bg-[#3c2415]/60 backdrop-blur-sm" onClick={onClose}>
@@ -708,7 +708,7 @@ function ChatPhonePopup({ konten, onClose, pageIndex, onPageChange }: {
 
 function FloatingGalleryPopup({ title, images, onClose }: { title: string; images: string[]; onClose: () => void }) {
   const [zoomed, setZoomed] = useState(false);
-  const safeImages = images.length > 0 ? images : ["/card_detektif.png"];
+  const safeImages = images.length > 0 ? images : ["/card_detektif.webp"];
   return (
     <div className="fixed inset-0 z-50 bg-[#3c2415]/60 backdrop-blur-sm" onClick={onClose}>
       <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[min(94vw,980px)] rounded-[30px] border-2 border-[#c4a882] bg-[#f8f1e5]/95 p-4 shadow-[0_24px_50px_rgba(53,33,18,0.5)]" onClick={(e) => e.stopPropagation()}>

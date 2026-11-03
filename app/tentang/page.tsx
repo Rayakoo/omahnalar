@@ -29,7 +29,7 @@ const fiturCards = [
     descId: "Curhat anonim di komunitas yang aman dan saling mendukung.",
     titleEn: "Share Stories",
     descEn: "Anonymous sharing in a safe and supportive community.",
-    iconSrc: "/images/fitur1.png",
+    iconSrc: "/images/fitur1.webp",
     bgColor: "bg-[#c39fe0]",
     href: "/omah-cerita",
   },
@@ -39,7 +39,7 @@ const fiturCards = [
     descId: "Aduan kekerasan & pelecehan dengan pendampingan penuh empati.",
     titleEn: "File Reports",
     descEn: "Report violence & harassment with full empathetic support.",
-    iconSrc: "/images/fitur2.png",
+    iconSrc: "/images/fitur2.webp",
     bgColor: "bg-[#ad82b6]",
     href: "/tanya-nalar",
   },
@@ -49,7 +49,7 @@ const fiturCards = [
     descId: "Edukasi interaktif tentang hubungan sehat dan kesehatan reproduksi.",
     titleEn: "Take Courses",
     descEn: "Interactive education on healthy relationships and reproductive health.",
-    iconSrc: "/images/fitur3.png",
+    iconSrc: "/images/fitur3.webp",
     bgColor: "bg-[#f8f3e6]",
     href: OMAH_BELAJAR_URL,
   },
@@ -59,7 +59,7 @@ const fiturCards = [
     descId: "Bergabung dengan Kawan Nalar yang saling mendukung dan tumbuh bersama.",
     titleEn: "Caring Community",
     descEn: "Join Kawan Nalar to support each other and grow together.",
-    iconSrc: "/images/fitur4.png",
+    iconSrc: "/images/fitur4.webp",
     bgColor: "bg-[#fde283]",
     href: GFORM_VOLUNTEER,
   },
@@ -151,7 +151,7 @@ export default function TentangPage() {
             >
               <div className="relative w-full aspect-[4/3] rounded-2xl overflow-hidden border-4 border-[#721e7c] shadow-lg">
                 <Image
-                  src="/images/omah_nalar.JPG"
+                  src="/images/omah_nalar.webp"
                   alt="Foto Sejarah Omah Nalar"
                   fill
                   className="object-cover"
@@ -250,7 +250,7 @@ export default function TentangPage() {
         {/* Background Image (low opacity) — memakai gambar yang sama dengan Sejarah */}
         <div className="absolute inset-0 z-0">
           <Image
-            src="/images/omah_nalar.JPG"
+            src="/images/omah_nalar.webp"
             alt="Section Background"
             fill
             className="object-cover opacity-15"
@@ -371,7 +371,7 @@ export default function TentangPage() {
                 className="relative w-full max-w-md aspect-square cursor-pointer"
               >
                 <Image
-                  src="/images/logo_omah.png"
+                  src="/images/logo_omah.webp"
                   alt="Logo Omah Nalar"
                   fill
                   className="object-contain"
