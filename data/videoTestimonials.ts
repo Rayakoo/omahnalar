@@ -25,18 +25,6 @@ export const VIDEO_TESTIMONIALS: VideoTestimonial[] = [
     fileName: "Testimoni Prof Low.mov",
     modified: "25 Oktober 2026",
   },
-  {
-    id: "1Dya7JmjsZ9rjCWKQiST7PB9DPLA0nl_e",
-    title: "Prof. Dr. Choo Wan Yuen",
-    fileName: "Prof Claire.mov",
-    modified: "19 Oktober 2026",
-  },
-  {
-    id: "1_nO7XMOk75o09xIWftK-j7xG6RWJRfSa",
-    title: "Prof. Low",
-    fileName: "Prof Low.mov",
-    modified: "19 Oktober 2026",
-  },
 ];
 
 export function getDrivePreviewUrl(id: string) {

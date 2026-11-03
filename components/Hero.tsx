@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { getGalleries, type Gallery } from "@/services/galleries";
 import { transformImageUrl } from "@/lib/image";
+import { OMAH_BELAJAR_URL } from "@/lib/external";
 
 export default function Hero() {
   const [galleries, setGalleries] = useState<Gallery[]>([]);
@@ -144,7 +145,9 @@ export default function Hero() {
           transition={{ duration: 0.6, delay: 0.5 }}
         >
           <a
-            href="#belajar"
+            href={OMAH_BELAJAR_URL}
+            target="_blank"
+            rel="noopener noreferrer"
             className="inline-flex items-center gap-3 px-6 py-3 bg-[#f6ebd9] hover:bg-[#ede0cb] text-[#2b1736] font-bold text-sm md:text-base rounded-full shadow-md transition-all duration-200 group sm:ml-0 md:ml-36"
           >
             <span>Belajar, yuk!</span>
